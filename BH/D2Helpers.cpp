@@ -1,3 +1,4 @@
+#include "D2Helpers.h"
 #include "D2Ptrs.h"
 #include "D2Stubs.h"
 #include "Common.h"
@@ -28,7 +29,7 @@ int GetRelation(UnitAny* unit) {
 			
 			// Check if we are in a party with unit.
 			roster = FindPlayerRoster(unit->dwUnitId);
-			if (playerRoster && roster && playerRoster->wPartyId == roster->wPartyId && roster->wPartyId != 0xFFFF)
+			if (playerRoster && roster && playerRoster->wPartyId == roster->wPartyId && roster->wPartyId != INVALID_PARTY_ID)
 				return 3;//Partied
 			
 			// Check if unit is hostile towards us

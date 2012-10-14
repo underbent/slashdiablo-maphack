@@ -30,7 +30,6 @@ void Party::OnLoop() {
 }
 
 void Party::CheckParty() {
-	
 	if(c == 0) {
 		UnitAny* Me = *p_D2CLIENT_PlayerUnit;
 		RosterUnit* MyRoster = FindPlayerRoster(Me->dwUnitId);
@@ -42,14 +41,14 @@ void Party::CheckParty() {
 				c++;
 				return;
 			}
-			if(Party->wPartyId == 0xFFFF || Party->wPartyId != MyRoster->wPartyId) {
-				if(Party->dwPartyFlags & 0x2) {
+			if(Party->wPartyId == INVALID_PARTY_ID || Party->wPartyId != MyRoster->wPartyId) {
+				if(Party->dwPartyFlags & PARTY_INVITED_YOU) {
 					D2CLIENT_ClickParty(Party, 2);
 					c++;
 					return;
 				}
-				if(Party->wPartyId == 0xFFFF) {
-					if(Party->dwPartyFlags & 0x4)
+				if(Party->wPartyId == INVALID_PARTY_ID) {
+					if(Party->dwPartyFlags & PARTY_INVITED_BY_YOU)
 						continue;
 					D2CLIENT_ClickParty(Party, 2);
 					c++;
