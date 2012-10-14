@@ -17,11 +17,8 @@
 
 */
 #pragma once
-#ifdef _DEBUG
+
 #define DLL_NAME L"BH.dll"
-#else
-#define DLL_NAME L"cGuard.dll"
-#endif
 
 #include <Windows.h>
 #include <iostream>

@@ -64,6 +64,9 @@ void Party::CheckParty() {
 }
 
 void Party::OnKey(bool up, BYTE key, LPARAM lParam, bool* block)  {
+	if(!D2CLIENT_GetPlayerUnit())
+		return;
+
 	for (map<string,Toggle>::iterator it = Toggles.begin(); it != Toggles.end(); it++) {
 		if (key == (*it).second.toggle) {
 			*block = true;

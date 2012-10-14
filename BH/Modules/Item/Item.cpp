@@ -18,7 +18,9 @@ void Item::OnLoad() {
 	Toggles["Show Sockets"] = BH::config->ReadToggle("Show Sockets", "None", true);
 	Toggles["Show iLvl"] = BH::config->ReadToggle("Show ILvl", "None", true);
 	Toggles["Show Rune Numbers"] = BH::config->ReadToggle("Show Rune Numbers", "None", true);
-	
+	Toggles["Alt Item Style"] = BH::config->ReadToggle("Alt Item Style", "None", true);
+	Toggles["Color Mod"] = BH::config->ReadToggle("Color Mod", "None", false);
+
 	showPlayer = BH::config->ReadKey("Show Player", "VK_0");
 
 	viewInvPatch1->Install();
@@ -42,7 +44,13 @@ void Item::OnLoad() {
 	new Checkhook(settingsTab, 4, 60, &Toggles["Show Rune Numbers"].state, "Show Rune #");
 	new Keyhook(settingsTab, 130, 62, &Toggles["Show Rune Numbers"].toggle, "");
 
-	new Keyhook(settingsTab, 4, 77, &showPlayer, "Show Players Gear");
+	new Checkhook(settingsTab, 4, 75, &Toggles["Alt Item Style"].state, "Alt Style");
+	new Keyhook(settingsTab, 130, 77, &Toggles["Alt Item Style"].toggle, "");
+
+	new Checkhook(settingsTab, 4, 90, &Toggles["Color Mod"].state, "Color Mod");
+	new Keyhook(settingsTab, 130, 92, &Toggles["Color Mod"].toggle, "");
+
+	new Keyhook(settingsTab, 4, 107, &showPlayer, "Show Players Gear");
 }
 
 void Item::OnUnload() {
@@ -103,31 +111,144 @@ void __fastcall Item::ItemNamePatch(wchar_t *name, UnitAny *item)
 {
 	char* szName = UnicodeToAnsi(name);
 	string itemName = szName;
+	char * code = D2COMMON_GetItemText(item->dwTxtFileNo)->szCode;
+	char test_code[4];
+	string test3;
 
-	if (Toggles["Show Rune Numbers"].state && D2COMMON_GetItemText(item->dwTxtFileNo)->nType == 74)
+	test_code[0] = code[0];
+	test_code[1] = code[1];
+	test_code[2] = code[2];
+	test_code[3] = 0;
+	test3 = test_code;
+	/*Suffix Color Mod*/
+	if( Toggles["Color Mod"].state )
 	{
-		itemName = to_string(item->dwTxtFileNo - 609) + " - " + itemName;
+		/*Essences*/
+		if( code[0] == 't' && code[1] == 'e' && code[2] == 's' )
+			{
+				itemName = itemName + " (Andariel/Duriel)";
+			}
+		if( code[0] == 'c' && code[1] == 'e' && code[2] == 'h' )
+			{
+				itemName = itemName + " (Mephtisto)";
+			}
+		if( code[0] == 'b' && code[1] == 'e' && code[2] == 't' )
+			{
+				itemName = itemName + " (Diablo)";
+			}
+		if( code[0] == 'f' && code[1] == 'e' && code[2] == 'd' )
+			{
+				itemName = itemName + " (Baal)";
+			}
+
+		/*Test code to display item codes*/
+		//itemName += " " + test3;
+	}
+
+	if( Toggles["Alt Item Style"].state )
+	{
+		if (Toggles["Show Rune Numbers"].state && D2COMMON_GetItemText(item->dwTxtFileNo)->nType == 74)
+		{
+			itemName = to_string(item->dwTxtFileNo - 609) + " - " + itemName;
+		}
+		else
+		{
+			if (Toggles["Show Sockets"].state) 
+			{
+				int sockets = D2COMMON_GetUnitStat(item, 194, 0);
+				if (sockets > 0)
+				{
+					itemName += "(" + to_string(sockets) + ")";
+				}
+			}
+
+			if (Toggles["Show Ethereal"].state && item->pItemData->dwFlags & 0x400000)
+			{
+			itemName = "Eth " + itemName;
+			}
+	
+			/*show iLvl unless it is equal to 1*/
+			if (Toggles["Show iLvl"].state && item->pItemData->dwItemLevel != 1)
+			{
+			itemName += " L" + to_string(item->pItemData->dwItemLevel);
+			}
+		}
 	}
 	else
 	{
-		if (Toggles["Show Sockets"].state) 
-		{
+		if (Toggles["Show Sockets"].state) {
 			int sockets = D2COMMON_GetUnitStat(item, 194, 0);
 			if (sockets > 0)
-			{
 				itemName += "(" + to_string(sockets) + ")";
+		}
+		if (Toggles["Show Ethereal"].state && item->pItemData->dwFlags & 0x400000)
+			itemName += "(Eth)";
+
+		if (Toggles["Show iLvl"].state)
+			itemName += "(L" + to_string(item->pItemData->dwItemLevel) + ")";
+
+		if (Toggles["Show Rune Numbers"].state && D2COMMON_GetItemText(item->dwTxtFileNo)->nType == 74)
+			itemName = "[" + to_string(item->dwTxtFileNo - 609) + "]" + itemName;
+	}
+
+	/*Affix (Colors) Color Mod*/
+	if( Toggles["Color Mod"].state )
+	{
+		///*Flawless Gems*/
+		//if( (code[0] == 'g' && code[1] == 'l'					) ||
+		//	(code[0] == 's' && code[1] == 'k' && code[2] == 'l' ) )
+		//{
+		//	itemName = "ÿc:" + itemName;
+		//}
+		///*Perfect Gems*/
+		//if( (code[0] == 'g' && code[1] == 'p'                   ) ||
+		//	(code[0] == 's' && code[1] == 'k' && code[2] == 'p' ) )
+		//{
+		//	itemName = "ÿc<" + itemName;
+		//}
+		/*Ethereal*/
+		if( item->pItemData->dwFlags & 0x400000 )
+		{
+			/*Turn ehtereal elite armors (and paladin shields) purple*/
+			if( (code[0] == 'u'                                    ) ||
+				(code[0] == 'p' && code[1] == 'a' && code[2] >= 'b') )
+			{
+				itemName = "ÿc;" + itemName;
 			}
 		}
-
-		if (Toggles["Show Ethereal"].state && item->pItemData->dwFlags & 0x400000)
+		/*Runes*/
+		if( code[0] == 'r' )
 		{
-		itemName = "Eth " + itemName;
-		}
-	
-		/*show iLvl unless it is equal to 1*/
-		if (Toggles["Show iLvl"].state && item->pItemData->dwItemLevel != 1)
-		{
-		itemName += " L" + to_string(item->pItemData->dwItemLevel);
+			if( code[1] == '0' )
+			{
+				itemName = "ÿc0" + itemName;
+			}
+			else if( code[1] == '1' )
+			{
+				if( code[2] <= '6')
+				{
+					itemName = "ÿc4" + itemName;
+				}
+				else
+				{
+					itemName = "ÿc8" + itemName;
+				}
+			}
+			else if( code[1] == '2' )
+			{
+				if( code[2] <= '2' )
+				{
+					itemName = "ÿc8" + itemName;
+				}
+				else
+				{
+					itemName = "ÿc1" + itemName;
+				}
+			}
+			else if( code[1] == '3' )
+			{
+				itemName = "ÿc1" + itemName;
+			}
 		}
 	}
 

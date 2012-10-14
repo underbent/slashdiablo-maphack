@@ -49,7 +49,7 @@ int main(int argc, const char* argv[]) {
 	vector<DiabloWindow*> Windows;
 
 	//Print intro and the beginning of the menu.
-	printf("BH v0.1.1 By McGod\n");
+	printf("BH v0.1.2 By McGod\n");
 	printf("SlashDiablo Branch: Edited By Deadlock\n" );
 	printf("Visit http://www.reddit.com/r/slashdiablo for updates!\n");
 	printf("Please choose an option to inject.\n");
@@ -69,44 +69,36 @@ int main(int argc, const char* argv[]) {
 		return 1;
 	}
  
-#define LOOPIT	0
-#if LOOPIT
-	while( 1 )
-	{
-#endif
-		printf("\t0) Inject into All\n");
-		printf("\t1) Uninject from All\n");
+	printf("\t0) Inject into All\n");
+	printf("\t1) Uninject from All\n");
 	
-		int nCount = 2;
-		for (vector<DiabloWindow*>::iterator window = Windows.begin(); window < Windows.end(); window++)
-			(*window)->MenuMessage(nCount++);
+	int nCount = 2;
+	for (vector<DiabloWindow*>::iterator window = Windows.begin(); window < Windows.end(); window++)
+		(*window)->MenuMessage(nCount++);
 
-		int nOpt =  _getch() - 48;
+	int nOpt =  _getch() - 48;
 	
-		switch(nOpt) 
-		{
-			case 0://Inject into all
-				for (vector<DiabloWindow*>::iterator window = Windows.begin(); window < Windows.end(); window++)
-					(*window)->Inject();
-			break;
-			case 1://Unload from all
-				for (vector<DiabloWindow*>::iterator window = Windows.begin(); window < Windows.end(); window++)
-					(*window)->Unload();
-			break;
-			default://Specific window
-				int nWindow = nOpt - 2;
-				if (nWindow < 0 || nWindow >= (int)Windows.size())
-					printf("You have chosen an invalid option.\n");
-				else 
-					if (Windows[nWindow]->IsInjected())
-						Windows[nWindow]->Unload();
-					else
-						Windows[nWindow]->Inject();
-			break;
-		}
-#if LOOPIT
+	switch(nOpt) 
+	{
+		case 0://Inject into all
+			for (vector<DiabloWindow*>::iterator window = Windows.begin(); window < Windows.end(); window++)
+				(*window)->Inject();
+		break;
+		case 1://Unload from all
+			for (vector<DiabloWindow*>::iterator window = Windows.begin(); window < Windows.end(); window++)
+				(*window)->Unload();
+		break;
+		default://Specific window
+			int nWindow = nOpt - 2;
+			if (nWindow < 0 || nWindow >= (int)Windows.size())
+				printf("You have chosen an invalid option.\n");
+			else 
+				if (Windows[nWindow]->IsInjected())
+					Windows[nWindow]->Unload();
+				else
+					Windows[nWindow]->Inject();
+		break;
 	}
-#endif
 	
 	system("PAUSE");
 }
