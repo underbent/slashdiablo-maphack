@@ -41,6 +41,11 @@ void Party::CheckParty() {
 				c++;
 				return;
 			}
+			if (Party->wPartyId == INVALID_PARTY_ID && Party->dwPartyFlags & PARTY_IN_PARTY) {
+				// Avoid crashing when multiple players in a game have auto-party enabled
+				// (there seems to be a brief window in which the party data can be invalid)
+				continue;
+			}
 			if(Party->wPartyId == INVALID_PARTY_ID || Party->wPartyId != MyRoster->wPartyId) {
 				if(Party->dwPartyFlags & PARTY_INVITED_YOU) {
 					D2CLIENT_ClickParty(Party, 2);
