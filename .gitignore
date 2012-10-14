@@ -14,6 +14,7 @@
 
 *.exe
 *.bin
+*.dll
 *.obj
 *.pdb
 *.ipch
