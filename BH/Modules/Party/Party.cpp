@@ -41,7 +41,8 @@ void Party::CheckParty() {
 				c++;
 				return;
 			}
-			if (Party->wPartyId == INVALID_PARTY_ID && Party->dwPartyFlags & PARTY_IN_PARTY) {
+			if ((Party->wPartyId == INVALID_PARTY_ID && Party->dwPartyFlags & PARTY_IN_PARTY) ||
+				(Party->wPartyId != INVALID_PARTY_ID && Party->dwPartyFlags & PARTY_NOT_IN_PARTY)) {
 				// Avoid crashing when multiple players in a game have auto-party enabled
 				// (there seems to be a brief window in which the party data can be invalid)
 				continue;
