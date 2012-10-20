@@ -28,7 +28,8 @@ void Item::OnLoad() {
 	viewInvPatch2->Install();
 	viewInvPatch3->Install();
 
-	if (Toggles["Show Ethereal"].state || Toggles["Show Sockets"].state || Toggles["Show iLvl"].state)
+	if (Toggles["Show Ethereal"].state || Toggles["Show Sockets"].state || Toggles["Show iLvl"].state || Toggles["Color Mod"].state ||
+		Toggles["Show Rune Numbers"].state || Toggles["Alt Item Style"].state || Toggles["Shorten Item Names"].state)
 		itemNamePatch->Install();
 
 	settingsTab = new UITab("Item", BH::settingsUI);
