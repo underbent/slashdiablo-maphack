@@ -1,10 +1,18 @@
 slashdiablo-maphack
 ===================
 
-A customized maphack for the slashdiablo D2 server
+A customized maphack for reddit's slashdiablo D2 server
 
-This maphack is based on code written by McGod from the blizzhackers forum.
-You can find his original code here: https://subversion.assembla.com/svn/bh/.
+This maphack is based on BH maphack, written by McGod from the blizzhackers
+forum. It was extensively customized for the slashdiablo realm by Deadlock39,
+who created versions 0.1.1 and 0.1.2.
 
-It was extensively customized for the slashdiablo realm by Deadlock39, who
-created versions 0.1.1 and 0.1.2.
+Major features include:
+
+* Monsters and missiles displayed on map
+* Infinite light radius
+* Indicators of current level's exits
+* Enhanced item displays with sockets, item levels, ethereality
+* Alternative item coloring
+* Automatic party invitation
+
