@@ -114,6 +114,7 @@
     <ClCompile Include="Drawing\Basic\Linehook\Linehook.cpp" />
     <ClCompile Include="Drawing\Basic\Texthook\Texthook.cpp" />
     <ClCompile Include="Drawing\Hook.cpp" />
+    <ClCompile Include="Drawing\Stats\StatsDisplay.cpp" />
     <ClCompile Include="Drawing\UI\UI.cpp" />
     <ClCompile Include="Drawing\UI\UITab.cpp" />
     <ClCompile Include="Modules\AutoTele\AutoTele.cpp" />
@@ -152,6 +153,7 @@
     <ClInclude Include="Drawing\Basic\Linehook\Linehook.h" />
     <ClInclude Include="Drawing\Basic\Texthook\Texthook.h" />
     <ClInclude Include="Drawing\Hook.h" />
+    <ClInclude Include="Drawing\Stats\StatsDisplay.h" />
     <ClInclude Include="Drawing\UI\UI.h" />
     <ClInclude Include="Drawing\UI\UITab.h" />
     <ClInclude Include="Modules.h" />

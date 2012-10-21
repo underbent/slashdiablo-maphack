@@ -14,3 +14,5 @@
 
 #include "Drawing\UI\UI.h"
 #include "Drawing\UI\UITab.h"
+
+#include "Drawing\Stats\StatsDisplay.h"

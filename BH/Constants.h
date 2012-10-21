@@ -168,6 +168,7 @@ enum TextColor {
 #define	STAT_FIREABSORB				143		// fire absorb
 #define	STAT_LIGHTNINGABSORBPERCENT	144		// lightning absorb %
 #define	STAT_LIGHTNINGABSORB		145		// lightning absorb
+#define	STAT_MAGICABSORBPERCENT		146		// magic absorb %
 #define	STAT_COLDABSORBPERCENT		148		// cold absorb %
 #define	STAT_COLDABSORB				149		// cold absorb
 #define STAT_SLOW					150		// slow %

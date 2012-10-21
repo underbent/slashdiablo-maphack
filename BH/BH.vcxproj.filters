@@ -40,6 +40,9 @@
     <Filter Include="Diablo II\Drawing">
       <UniqueIdentifier>{50180689-1893-4262-9a77-1d0acbd119b8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Diablo II\Drawing\Stats">
+      <UniqueIdentifier>{48014caf-89d4-4024-8f21-8ffb8a8ab945}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Diablo II\Drawing\UI">
       <UniqueIdentifier>{463561c9-c80d-4683-8982-9d54e3f8833c}</UniqueIdentifier>
     </Filter>
@@ -153,6 +156,9 @@
     <ClCompile Include="Drawing\Hook.cpp">
       <Filter>Diablo II\Drawing</Filter>
     </ClCompile>
+    <ClCompile Include="Drawing\Stats\StatsDisplay.cpp">
+      <Filter>Diablo II\Drawing\Stats</Filter>
+    </ClCompile>
     <ClCompile Include="Drawing\UI\UI.cpp">
       <Filter>Diablo II\Drawing\UI</Filter>
     </ClCompile>
@@ -259,6 +265,9 @@
     </ClInclude>
     <ClInclude Include="Drawing\Hook.h">
       <Filter>Diablo II\Drawing</Filter>
+    </ClInclude>
+    <ClInclude Include="Drawing\Stats\StatsDisplay.h">
+      <Filter>Diablo II\Drawing\Stats</Filter>
     </ClInclude>
     <ClInclude Include="Drawing\UI\UI.h">
       <Filter>Diablo II\Drawing\UI</Filter>

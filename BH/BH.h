@@ -24,6 +24,7 @@ namespace BH {
 	extern ModuleManager* moduleManager;
 	extern Config* config;
 	extern Drawing::UI* settingsUI;
+	extern Drawing::StatsDisplay* statsDisplay;
 	extern WNDPROC OldWNDPROC;
 	extern bool cGuardLoaded;
 	extern Patch* oogDraw;

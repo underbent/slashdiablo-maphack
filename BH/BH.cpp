@@ -11,6 +11,7 @@ HINSTANCE BH::instance;
 ModuleManager* BH::moduleManager;
 Config* BH::config;
 Drawing::UI* BH::settingsUI;
+Drawing::StatsDisplay* BH::statsDisplay;
 bool BH::cGuardLoaded;
 WNDPROC BH::OldWNDPROC;
 
@@ -69,6 +70,7 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 	}
 
 	settingsUI = new Drawing::UI("Settings", 350, 200);
+	statsDisplay = new Drawing::StatsDisplay("Stats");
 
 	new Maphack();
 	new ScreenInfo();
@@ -92,6 +94,7 @@ bool BH::Shutdown() {
 
 	delete moduleManager;
 	delete settingsUI;
+	delete statsDisplay;
 
 	SetWindowLong(D2GFX_GetHwnd(),GWL_WNDPROC,(LONG)BH::OldWNDPROC);
 	for (int n = 0; n < (sizeof(patches) / sizeof(Patch*)); n++) {

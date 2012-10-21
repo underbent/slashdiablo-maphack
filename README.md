@@ -12,7 +12,8 @@ Major features include:
 * Monsters and missiles displayed on map
 * Infinite light radius
 * Indicators of current level's exits
-* Enhanced item displays with sockets, item levels, ethereality
+* Enhanced item text with sockets, item levels, ethereality
 * Alternative item coloring
 * Automatic party invitation
+* Screen showing secondary character attributes such as IAS and FHR
 

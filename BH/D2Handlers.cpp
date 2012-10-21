@@ -7,6 +7,7 @@
 void GameDraw() {
 	__raise BH::moduleManager->OnDraw();
 	Drawing::UI::Draw();
+	Drawing::StatsDisplay::Draw();
 	Drawing::Hook::Draw(Drawing::InGame);
 }
 
@@ -50,6 +51,8 @@ LONG WINAPI GameWindowEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			blockEvent = true;
 		if (Drawing::UI::LeftClick(false, mouseX, mouseY))
 			blockEvent = true;
+		if (Drawing::StatsDisplay::LeftClick(false, mouseX, mouseY))
+			blockEvent = true;
 		__raise BH::moduleManager->OnLeftClick(false, mouseX, mouseY, &blockEvent);
 	}
 
@@ -57,6 +60,8 @@ LONG WINAPI GameWindowEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		if (Drawing::Hook::LeftClick(true, mouseX, mouseY))
 			blockEvent = true;
 		if (Drawing::UI::LeftClick(true, mouseX, mouseY))
+			blockEvent = true;
+		if (Drawing::StatsDisplay::LeftClick(true, mouseX, mouseY))
 			blockEvent = true;
 		__raise BH::moduleManager->OnLeftClick(true, mouseX, mouseY, &blockEvent);
 	}
@@ -66,6 +71,8 @@ LONG WINAPI GameWindowEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			blockEvent = true;
 		if (Drawing::UI::RightClick(false, mouseX, mouseY))
 			blockEvent = true;
+		if (Drawing::StatsDisplay::RightClick(false, mouseX, mouseY))
+			blockEvent = true;
 		__raise BH::moduleManager->OnRightClick(false, mouseX, mouseY, &blockEvent);
 	}
 
@@ -74,6 +81,8 @@ LONG WINAPI GameWindowEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			blockEvent = true;
 		if (Drawing::UI::RightClick(true, mouseX, mouseY))
 			blockEvent = true;
+		if (Drawing::StatsDisplay::RightClick(true, mouseX, mouseY))
+			blockEvent = true;
 		__raise BH::moduleManager->OnRightClick(true, mouseX, mouseY, &blockEvent);
 	}
 
@@ -81,11 +90,15 @@ LONG WINAPI GameWindowEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		if (uMsg == WM_KEYDOWN) {
 			if (Drawing::Hook::KeyClick(false, wParam, lParam))
 				return NULL;
+			if (Drawing::StatsDisplay::KeyClick(false, wParam, lParam))
+				return NULL;
 			__raise BH::moduleManager->OnKey(false, wParam, lParam, &blockEvent);
 		}
 
 		if (uMsg == WM_KEYUP) {
 			if (Drawing::Hook::KeyClick(true, wParam, lParam))
+				return NULL;
+			if (Drawing::StatsDisplay::KeyClick(true, wParam, lParam))
 				return NULL;
 			__raise BH::moduleManager->OnKey(true, wParam, lParam, &blockEvent);
 		}
