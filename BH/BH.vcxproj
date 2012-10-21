@@ -133,6 +133,7 @@
     <ClInclude Include="BH.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="Config.h" />
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="D2Handlers.h" />
     <ClInclude Include="D2Helpers.h" />
     <ClInclude Include="D2Intercepts.h" />

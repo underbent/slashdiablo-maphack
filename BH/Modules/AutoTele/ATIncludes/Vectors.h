@@ -1,3 +1,4 @@
+#include "../../Constants.h"
 
 Vector vVector[] = {
 	{0}, {0}, {0}, {0},										//0x0

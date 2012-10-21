@@ -127,7 +127,7 @@ void __fastcall Item::ItemNamePatch(wchar_t *name, UnitAny *item)
 	test_code[3] = 0;
 	test3 = test_code;
 
-	// Some common color codes for text strings:
+	// Some common color codes for text strings (see TextColor enum):
 	// ÿc; (purple)
 	// ÿc0 (white)
 	// ÿc1 (red)
@@ -136,7 +136,7 @@ void __fastcall Item::ItemNamePatch(wchar_t *name, UnitAny *item)
 	// ÿc4 (gold)
 	// ÿc5 (gray)
 	// ÿc6 (black)
-	// ÿc7 (pale yellow)
+	// ÿc7 (tan)
 	// ÿc8 (orange)
 	// ÿc9 (yellow)
 
@@ -286,7 +286,7 @@ void __fastcall Item::ItemNamePatch(wchar_t *name, UnitAny *item)
 		{
 			if (Toggles["Show Sockets"].state)
 			{
-				int sockets = D2COMMON_GetUnitStat(item, 194, 0);
+				int sockets = D2COMMON_GetUnitStat(item, ITEMSTAT_SOCKETS, 0);
 				if (sockets > 0)
 				{
 					itemName += "(" + to_string(sockets) + ")";
@@ -308,7 +308,7 @@ void __fastcall Item::ItemNamePatch(wchar_t *name, UnitAny *item)
 	else
 	{
 		if (Toggles["Show Sockets"].state) {
-			int sockets = D2COMMON_GetUnitStat(item, 194, 0);
+			int sockets = D2COMMON_GetUnitStat(item, ITEMSTAT_SOCKETS, 0);
 			if (sockets > 0)
 				itemName += "(" + to_string(sockets) + ")";
 		}
@@ -397,7 +397,7 @@ UnitAny* Item::GetViewUnit ()
 	if (view->dwUnitId == D2CLIENT_GetPlayerUnit()->dwUnitId)
 		return D2CLIENT_GetPlayerUnit();
 
-	Drawing::Texthook::Draw(560, 300, Drawing::Center, 0, Drawing::White, "%s", viewingUnit->pPlayerData->szName);
+	Drawing::Texthook::Draw(560, 300, Drawing::Center, 0, White, "%s", viewingUnit->pPlayerData->szName);
 	return viewingUnit;
 }
 

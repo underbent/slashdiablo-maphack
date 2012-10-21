@@ -1,5 +1,6 @@
 #pragma once
 #include "../Module.h"
+#include "../../Constants.h"
 #include "../../Config.h"
 #include "../../Drawing.h"
 

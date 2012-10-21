@@ -1,5 +1,5 @@
 #pragma once
-
+#include "../../../Constants.h"
 #include "../../Hook.h"
 #include "../../Basic/Texthook/Texthook.h"
 

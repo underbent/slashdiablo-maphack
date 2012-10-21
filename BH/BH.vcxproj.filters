@@ -341,5 +341,8 @@
     <ClInclude Include="Modules\AutoTele\ATIncludes\Vectors.h">
       <Filter>BH\Modules\AutoTele\ATIncludes</Filter>
     </ClInclude>
+    <ClInclude Include="Constants.h">
+      <Filter>BH</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,11 +1,9 @@
 #pragma once
-
+#include "../../../Constants.h"
 #include "../../Hook.h"
 #include <string>
 
 namespace Drawing {
-	enum TextColor {Disabled=-1,White=0,Red,Green,Blue,Gold,Grey,Black,Tan,Orange,Yellow,DarkGreen,Purple,Silver=15};
-
 	class Texthook : public Hook {
 		private:
 			std::string text;//Text to be drawn.

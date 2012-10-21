@@ -204,7 +204,7 @@ void Maphack::OnAutomapDraw() {
 				}
 				
 				if (immunityText.length() > 0)
-					Drawing::Texthook::Draw(automapLoc.x, automapLoc.y - 8, Drawing::Center, 6, Drawing::White, immunityText);
+					Drawing::Texthook::Draw(automapLoc.x, automapLoc.y - 8, Drawing::Center, 6, White, immunityText);
 				Drawing::Crosshook::Draw(automapLoc.x, automapLoc.y, color);
 			} else if (unit->dwType == 3 && Toggles["Show Missiles"].state) {
 				int color = 255;
