@@ -168,6 +168,36 @@ void __fastcall Item::ItemNamePatch(wchar_t *name, UnitAny *item)
 			itemName = "Thaw";
 			displayItemLevel = false;
 		}
+		else if (code[0] == 'g' && code[1] == 'p' && code[2] == 's')  // rancid gas potion
+		{
+			itemName = "Ranc";
+			displayItemLevel = false;
+		}
+		else if (code[0] == 'o' && code[1] == 'p' && code[2] == 's')  // oil potion
+		{
+			itemName = "Oil";
+			displayItemLevel = false;
+		}
+		else if (code[0] == 'g' && code[1] == 'p' && code[2] == 'm')  // choking gas potion
+		{
+			itemName = "Chok";
+			displayItemLevel = false;
+		}
+		else if (code[0] == 'o' && code[1] == 'p' && code[2] == 'm')  // exploding potion
+		{
+			itemName = "Expl";
+			displayItemLevel = false;
+		}
+		else if (code[0] == 'g' && code[1] == 'p' && code[2] == 'l')  // strangling gas potion
+		{
+			itemName = "Stra";
+			displayItemLevel = false;
+		}
+		else if (code[0] == 'o' && code[1] == 'p' && code[2] == 'l')  // fulminating potion
+		{
+			itemName = "Fulm";
+			displayItemLevel = false;
+		}
 		else if (code[0] == 'h' && code[1] == 'p')  // healing potions
 		{
 			if (code[2] == '1')
