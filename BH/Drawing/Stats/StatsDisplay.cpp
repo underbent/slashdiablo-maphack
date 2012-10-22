@@ -150,13 +150,15 @@ bool StatsDisplay::OnKey(bool up, BYTE kkey, LPARAM lParam) {
 		return false;
 
 	if (IsMinimized()) {
-		if (kkey == statsKey && up) {
+		if (!up && kkey == statsKey) {
 			SetMinimized(false);
 			return true;
 		}
 	} else {
-		SetMinimized(true);
-		return true;
+		if (!up && (kkey == statsKey || kkey == VK_ESCAPE)) {
+			SetMinimized(true);
+			return true;
+		}
 	}
 	return false;
 }
@@ -173,7 +175,7 @@ bool StatsDisplay::OnClick(bool up, unsigned int x, unsigned int y) {
 	if (!unit)
 		return false;
 
-	if (!IsMinimized()) {
+	if (!IsMinimized() && InRange(x, y)) {
 		SetMinimized(true);
 		return true;
 	}
