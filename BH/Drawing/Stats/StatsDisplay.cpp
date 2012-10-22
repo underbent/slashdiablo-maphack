@@ -26,7 +26,6 @@ StatsDisplay::StatsDisplay(std::string name) {
 
 	statsKey = BH::config->ReadKey("Character Stats", "VK_8");
 	display = this;
-	FILE *fp = NULL; fopen_s(&fp, "E:\\phild2.txt", "a+"); fprintf(fp, "Instantiate %d\n", statsKey); fflush(fp); fclose(fp);
 }
 
 StatsDisplay::~StatsDisplay() {
@@ -72,16 +71,19 @@ void StatsDisplay::SetYSize(unsigned int newYSize) {
 }
 
 bool StatsDisplay::InRange(unsigned int x, unsigned int y) {
-	return (IsActive() &&
-		x >= GetX() &&
-		y >= GetY() &&
-		x <= GetX() + GetXSize() &&
-		y <= GetY() + GetYSize());
+	return IsActive() &&
+		x >= GetX() && y >= GetY() &&
+		x <= GetX() + GetXSize() && y <= GetY() + GetYSize();
+}
+
+void StatsDisplay::Draw() {
+	display->Lock();
+	display->OnDraw();
+	display->Unlock();
 }
 
 void StatsDisplay::OnDraw() {
 	UnitAny *unit = D2CLIENT_GetPlayerUnit();
-	FILE *fp = NULL; fopen_s(&fp, "E:\\phild2.txt", "a+"); fprintf(fp, "OnDraw %d\n", (int)unit); fflush(fp); fclose(fp);
 	if (!unit)
 		return;
 
@@ -135,20 +137,19 @@ void StatsDisplay::OnDraw() {
 	}
 }
 
-void StatsDisplay::Draw() {
+bool StatsDisplay::KeyClick(bool bUp, BYTE bKey, LPARAM lParam) {
 	display->Lock();
-	display->OnDraw();
+	bool block = display->OnKey(bUp, bKey, lParam);
 	display->Unlock();
+	return block;
 }
 
 bool StatsDisplay::OnKey(bool up, BYTE kkey, LPARAM lParam) {
 	UnitAny *unit = D2CLIENT_GetPlayerUnit();
 	if (!unit)
 		return false;
-	FILE *fp = NULL; fopen_s(&fp, "E:\\phild2.txt", "a+"); fprintf(fp, "OnKey %d, %d\n", kkey, statsKey); fflush(fp); fclose(fp);
 
 	if (IsMinimized()) {
-		FILE *fp = NULL; fopen_s(&fp, "E:\\phild2.txt", "a+"); fprintf(fp, "OnKey %d, %d\n", kkey, statsKey); fflush(fp); fclose(fp);
 		if (kkey == statsKey && up) {
 			SetMinimized(false);
 			return true;
@@ -160,36 +161,18 @@ bool StatsDisplay::OnKey(bool up, BYTE kkey, LPARAM lParam) {
 	return false;
 }
 
-bool StatsDisplay::KeyClick(bool bUp, BYTE bKey, LPARAM lParam) {
+bool StatsDisplay::Click(bool up, unsigned int mouseX, unsigned int mouseY) {
 	display->Lock();
-	bool block = display->OnKey(bUp, bKey, lParam);
+	bool block = display->OnClick(up, mouseX, mouseY);
 	display->Unlock();
 	return block;
 }
 
-bool StatsDisplay::LeftClick(bool up, unsigned int mouseX, unsigned int mouseY) {
-	display->Lock();
-	bool block = display->OnLeftClick(up, mouseX, mouseY);
-	display->Unlock();
-	return block;
-}
+bool StatsDisplay::OnClick(bool up, unsigned int x, unsigned int y) {
+	UnitAny *unit = D2CLIENT_GetPlayerUnit();
+	if (!unit)
+		return false;
 
-bool StatsDisplay::RightClick(bool up, unsigned int mouseX, unsigned int mouseY) {
-	display->Lock();
-	bool block = display->OnRightClick(up, mouseX, mouseY);
-	display->Unlock();
-	return block;
-}
-
-bool StatsDisplay::OnLeftClick(bool up, unsigned int x, unsigned int y) {
-	if (!IsMinimized()) {
-		SetMinimized(true);
-		return true;
-	}
-	return false;
-}
-
-bool StatsDisplay::OnRightClick(bool up, unsigned int x, unsigned int y) {
 	if (!IsMinimized()) {
 		SetMinimized(true);
 		return true;
