@@ -98,8 +98,19 @@ enum TextColor {
 // Player Type Flags
 //////////////////////////////////////////////////////////////////////////
 #define PLAYER_TYPE_HARDCORE	4
-#define PLAYER_TYPE_EXPAC		32
+#define PLAYER_TYPE_DEAD		8
+#define PLAYER_TYPE_EXPANSION	32
 #define PLAYER_TYPE_LADDER		64
+
+//////////////////////////////////////////////////////////////////////////
+// Resistance Penalties
+//////////////////////////////////////////////////////////////////////////
+#define RES_PENALTY_CLS_NORM		0
+#define RES_PENALTY_CLS_NM			-20
+#define RES_PENALTY_CLS_HELL		-50
+#define RES_PENALTY_XPAC_NORM		(2*RES_PENALTY_CLS_NORM)
+#define RES_PENALTY_XPAC_NM			(2*RES_PENALTY_CLS_NM)
+#define RES_PENALTY_XPAC_HELL		(2*RES_PENALTY_CLS_HELL)
 
 //////////////////////////////////////////////////////////////////////////
 // Trade Flags
