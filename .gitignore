@@ -18,6 +18,8 @@
 *.obj
 *.pdb
 *.ipch
+*.ilk
+*.idb
 *.tlog
 *.log
 *.lastbuildstate
