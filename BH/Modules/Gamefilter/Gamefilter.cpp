@@ -186,7 +186,9 @@ VOID __stdcall Gamefilter::DestroyGamelist(Control* pControl)
 }
 
 void Gamefilter::OnOOGDraw() {
-	if((*p_D2MULTI_GameListControl)) {
+	// filterBox is instantiated in the create game box handler, so we can't
+	// draw the join game screen until we have it
+	if((*p_D2MULTI_GameListControl) && filterBox) {
 		wstringstream wFilterStream;
 		wstring wFilterString = L"Games: ";
 		wstring wFilter = filterBox->wText;
