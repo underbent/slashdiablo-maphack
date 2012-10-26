@@ -29,7 +29,6 @@ Patch* patches[] = {
 	new Patch(Call, D2MULTI, 0x10781, (int)ChannelWhisper_Interception, 5),
 	new Patch(Jump, D2MULTI, 0x108A0, (int)ChannelChat_Interception, 6),
 	new Patch(Jump, D2MULTI, 0x107A0, (int)ChannelEmote_Interception, 6),
-
 };
 
 Patch* BH::oogDraw = new Patch(Call, D2WIN, 0x18911, (int)OOGDraw_Interception, 5);
@@ -56,9 +55,6 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 	moduleManager = new ModuleManager();
 	config = new Config("BH.cfg");
 	config->Parse();
-
-	if (!D2CLIENT_GetPlayerUnit())
-		oogDraw->Install();
 
 	if(D2GFX_GetHwnd()) {
 		BH::OldWNDPROC = (WNDPROC)GetWindowLong(D2GFX_GetHwnd(),GWL_WNDPROC);
@@ -90,6 +86,9 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 	for (int n = 0; n < (sizeof(patches) / sizeof(Patch*)); n++) {
 		patches[n]->Install();
 	}
+
+	if (!D2CLIENT_GetPlayerUnit())
+		oogDraw->Install();
 
 	return true;
 }
