@@ -57,10 +57,6 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 	config = new Config("BH.cfg");
 	config->Parse();
 
-	for (int n = 0; n < (sizeof(patches) / sizeof(Patch*)); n++) {
-		patches[n]->Install();
-	}
-
 	if (!D2CLIENT_GetPlayerUnit())
 		oogDraw->Install();
 
@@ -84,6 +80,16 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 	CreateThread(0,0,GameThread, 0,0,0);
 
 	moduleManager->LoadModules();
+
+	// Injection would occasionally deadlock (I only ever saw it when using Tabbed Diablo
+	// but theoretically it could happen during regular injection):
+	// Worker thread in DllMain->LoadModules->AutoTele::OnLoad->UITab->SetCurrentTab->Lock()
+	// Main thread in GameDraw->UI::OnDraw->D2WIN_SetTextSize->GetDllOffset->GetModuleHandle()
+	// GetModuleHandle can invoke the loader lock which causes the deadlock, so delay patch
+	// installation until after all startup initialization is done.
+	for (int n = 0; n < (sizeof(patches) / sizeof(Patch*)); n++) {
+		patches[n]->Install();
+	}
 
 	return true;
 }
