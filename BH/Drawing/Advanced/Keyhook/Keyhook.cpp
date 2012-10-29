@@ -53,7 +53,7 @@ void Keyhook::OnDraw() {
 
 	string text = prefix + keyCode.literalName;
 	if (timeout) {
-		unsigned int time = 3 - floor((double)(GetTickCount() - timeout) / 1000);
+		unsigned int time = (unsigned int)(3 - floor((double)(GetTickCount() - timeout) / 1000));
 		if (time <= 0)
 			timeout = 0;
 		char num[100];

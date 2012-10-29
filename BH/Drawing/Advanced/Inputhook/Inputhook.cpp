@@ -135,7 +135,7 @@ unsigned int Inputhook::GetCharacterLimit() {
 
 	 //Draw the text in!
 	 int len = drawnText.length() - textPos;
-	 if (len > GetCharacterLimit())
+	 if (len > (int)GetCharacterLimit())
 		len = GetCharacterLimit();
 	drawnText = drawnText.substr(textPos, len);
 

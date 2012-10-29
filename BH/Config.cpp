@@ -74,6 +74,7 @@ bool Config::Write() {
 			continue;
 	}
 
+	return true;
 }
 
 /* ReadBoolean(std::string key, bool value)
