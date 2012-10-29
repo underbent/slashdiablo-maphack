@@ -16,7 +16,7 @@ using namespace Drawing;
 void Item::OnLoad() {
 	Toggles["Show Ethereal"] = BH::config->ReadToggle("Show Ethereal", "None", true);
 	Toggles["Show Sockets"] = BH::config->ReadToggle("Show Sockets", "None", true);
-	Toggles["Show iLvl"] = BH::config->ReadToggle("Show ILvl", "None", true);
+	Toggles["Show iLvl"] = BH::config->ReadToggle("Show iLvl", "None", true);
 	Toggles["Show Rune Numbers"] = BH::config->ReadToggle("Show Rune Numbers", "None", true);
 	Toggles["Alt Item Style"] = BH::config->ReadToggle("Alt Item Style", "None", true);
 	Toggles["Color Mod"] = BH::config->ReadToggle("Color Mod", "None", false);
