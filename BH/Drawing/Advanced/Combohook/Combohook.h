@@ -30,6 +30,6 @@ namespace Drawing {
 			bool OnLeftClick(bool up, unsigned int x, unsigned int y);
 			void OnDraw();
 
-			bool InHook(unsigned int nx, unsigned int ny) { return nx >= GetX() && ny >= GetY() && nx <= GetX() + GetXSize() + 5 && ny <= GetX() + GetYSize() + 3; };
+			bool InHook(unsigned int nx, unsigned int ny) { return nx >= GetX() && ny >= GetY() && nx <= GetX() + GetXSize() + 5 && ny <= GetY() + GetYSize() + 3; };
 	};
 };
