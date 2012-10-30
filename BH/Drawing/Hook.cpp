@@ -291,7 +291,7 @@ void Hook::ScreenToAutomap(POINT* ptPos, int x, int y) {
 		ptPos->y += 5; 
 	}
 }
-	
+
 /* Hook::AutomapToScreen(int x, int y)
  *	Returns converted coordinates from automap to screen.
  */
@@ -311,7 +311,11 @@ bool ZSort (Hook* one, Hook* two) {
  *	Called by Handlers to draw appropirate hooks
  */
 void Hook::Draw(HookVisibility type) {
-	Hooks.sort(ZSort);
+	if (type != Drawing::OutOfGame) {
+		// The Z order of the hooks doesn't get changed while OOG, so there's
+		// no need to repeatedly sort them
+		Hooks.sort(ZSort);
+	}
 	for (HookIterator it = Hooks.begin(); it!=Hooks.end(); ++it)
 		if ((*it)->GetVisibility() == type || (*it)->GetVisibility() == Perm)
 			(*it)->OnDraw();
