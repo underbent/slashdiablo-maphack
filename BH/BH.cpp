@@ -73,8 +73,6 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 	new AutoTele();
 	new Party();
 
-	CreateThread(0,0,GameThread, 0,0,0);
-
 	moduleManager->LoadModules();
 
 	// Injection would occasionally deadlock (I only ever saw it when using Tabbed Diablo
@@ -89,6 +87,10 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 
 	if (!D2CLIENT_GetPlayerUnit())
 		oogDraw->Install();
+
+	// GameThread can potentially run oogDraw->Install, so create the thread after all
+	// loading/installation finishes.
+	CreateThread(0, 0, GameThread, 0, 0, 0);
 
 	return true;
 }
