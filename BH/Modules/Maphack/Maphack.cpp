@@ -184,7 +184,7 @@ void Maphack::OnAutomapDraw() {
 			Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pPath->xPos, unit->pPath->yPos);
 
 			// Draw monster on automap
-			if (unit->dwType == 1 && IsValidMonster(unit) && Toggles["Show Monsters"].state) {
+			if (unit->dwType == UNIT_MONSTER && IsValidMonster(unit) && Toggles["Show Monsters"].state) {
 				int color = automapColors["Normal Monster"];
 				if (unit->pMonsterData->fBoss)
 					color = automapColors["Boss Monster"];
@@ -206,7 +206,7 @@ void Maphack::OnAutomapDraw() {
 				if (immunityText.length() > 0)
 					Drawing::Texthook::Draw(automapLoc.x, automapLoc.y - 8, Drawing::Center, 6, White, immunityText);
 				Drawing::Crosshook::Draw(automapLoc.x, automapLoc.y, color);
-			} else if (unit->dwType == 3 && Toggles["Show Missiles"].state) {
+			} else if (unit->dwType == UNIT_MISSILE && Toggles["Show Missiles"].state) {
 				int color = 255;
 				switch(GetRelation(unit)) {
 					case 0:

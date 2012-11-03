@@ -2,6 +2,7 @@
 #include "D2Ptrs.h"
 #include "D2Stubs.h"
 #include "Common.h"
+#include "Constants.h"
 
 RosterUnit* FindPlayerRoster(DWORD unitId) {
 	for (RosterUnit* roster = (*p_D2CLIENT_PlayerUnitList); roster; roster = roster->pNext) {
@@ -21,7 +22,7 @@ int GetRelation(UnitAny* unit) {
 		return 2;
 
 	switch(unit->dwType) {
-		case 0://Player
+		case UNIT_PLAYER://Player
 
 			// Check if we are the unit.
 			if (unit->dwUnitId == player->dwUnitId)
@@ -38,13 +39,13 @@ int GetRelation(UnitAny* unit) {
 
 			return 2;
 		break;
-		case 1://Monster or NPC or Summon
-		case 3://Missile
+		case UNIT_MONSTER://Monster or NPC or Summon
+		case UNIT_MISSILE://Missile
 
 			if (unit->dwOwnerId < 0 || unit->dwOwnerType < 0 || unit->dwOwnerType > 5)
 				return 4;
 
-			if(unit->dwType == 1 && unit->dwOwnerType == 1)
+			if (unit->dwType == UNIT_MONSTER && unit->dwOwnerType == UNIT_MONSTER)
 				return 4;
 			
 			// Find the owner of the unit.

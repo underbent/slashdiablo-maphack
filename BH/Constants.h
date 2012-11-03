@@ -316,7 +316,7 @@ enum Type {
 	UNIT_PLAYER = 0,
 	UNIT_MONSTER,
 	UNIT_OBJECT,
-	UNIT_MISSLE,
+	UNIT_MISSILE,
 	UNIT_ITEM,
 	UNIT_TILE,
 	EXIT,
@@ -348,7 +348,7 @@ enum Type {
 ///////////////////////////////////////////////////
 // Character Classes
 ///////////////////////////////////////////////////
-enum {
+enum CharacterClass {
 	CLASS_AMA = 0,
 	CLASS_SOR,
 	CLASS_NEC,
