@@ -910,8 +910,5 @@ enum QuestFlags {
 #define ITEM_PERSONALIZED		0x01000000 // Personalized
 #define ITEM_RUNEWORD			0x04000000 // Runeword
 
-///////////////////////////////////////////////////
-// Item Stats
-///////////////////////////////////////////////////
-#define ITEMSTAT_SOCKETS		0xC2
+
 #define AFFECT_JUST_PORTALED	102
