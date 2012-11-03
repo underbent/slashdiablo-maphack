@@ -316,7 +316,7 @@ void __fastcall Item::ItemNamePatch(wchar_t *name, UnitAny *item)
 		{
 			if (Toggles["Show Sockets"].state)
 			{
-				int sockets = D2COMMON_GetUnitStat(item, ITEMSTAT_SOCKETS, 0);
+				int sockets = D2COMMON_GetUnitStat(item, STAT_SOCKETS, 0);
 				if (sockets > 0)
 				{
 					itemName += "(" + to_string(sockets) + ")";
@@ -338,7 +338,7 @@ void __fastcall Item::ItemNamePatch(wchar_t *name, UnitAny *item)
 	else
 	{
 		if (Toggles["Show Sockets"].state) {
-			int sockets = D2COMMON_GetUnitStat(item, ITEMSTAT_SOCKETS, 0);
+			int sockets = D2COMMON_GetUnitStat(item, STAT_SOCKETS, 0);
 			if (sockets > 0)
 				itemName += "(" + to_string(sockets) + ")";
 		}
