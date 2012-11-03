@@ -521,6 +521,73 @@ enum {
 #define MAP_A5_TRISTRAM							0x88
 
 ///////////////////////////////////////////////////
+// Quests
+///////////////////////////////////////////////////
+#define SPOKE_TO_WARRIV							0
+#define DEN_OF_EVIL								1
+#define SISTERS_BURIAL_GROUNDS					2
+#define TOOLS_OF_THE_TRADE						3
+#define THE_SEARCH_FOR_CAIN						4
+#define THE_FORGOTTEN_TOWER						5
+#define SISTERS_TO_THE_SLAUGHTER				6
+#define CAN_GO_TO_ACT2							7
+#define SPOKE_TO_JERHYN							8
+#define RADAMENTS_LAIR							9
+#define THE_HORADRIC_STAFF						10
+#define TAINTED_SUN								11
+#define ARCANE_SANCTUARY						12
+#define THE_SUMMONER							13
+#define THE_SEVEN_TOMBS							14
+#define CAN_GO_TO_ACT3							15
+#define SPOKE_TO_HRATLI							16
+#define LAM_ESENS_TOME							17
+#define KHALIMS_WILL							18
+#define BLADE_OF_THE_OLD_RELIGION				19
+#define THE_GOLDEN_BIRD							20
+#define THE_BLACKENED_TEMPLE					21
+#define THE_GUARDIAN							22
+#define CAN_GO_TO_ACT4							23
+#define SPOKE_TO_TYRAEL							24
+#define THE_FALLEN_ANGEL						25
+#define TERRORS_END								26
+#define HELLS_FORGE								27
+#define CAN_GO_TO_ACT5							28
+#define UNKNOWN_29								29
+#define UNKNOWN_30								30
+#define UNKNOWN_31								31
+#define THE_SECRET_COW_LEVEL					32
+#define UNKNOWN_33								33
+#define UNKNOWN_34								34
+#define SIEGE_ON_HARROGATH						35
+#define RESCUE_ON_MOUNT_ARREAT					36
+#define PRISON_OF_ICE							37
+#define BETRAYAL_OF_HARROGATH					38
+#define RITE_OF_PASSAGE							39
+#define EVE_OF_DESTRUCTION						40
+
+///////////////////////////////////////////////////
+// Quest Flags
+///////////////////////////////////////////////////
+enum QuestFlags {
+	QFLAG_REWARD_GRANTED                = 0,
+	QFLAG_REWARD_PENDING                = 1,
+	QFLAG_QUEST_STARTED                 = 2,
+	QFLAG_QUEST_LEAVE_TOWN              = 3,
+	QFLAG_QUEST_ENTER_AREA              = 4,
+	QFLAG_CUSTOM_1                      = 5,
+	QFLAG_CUSTOM_2                      = 6,
+	QFLAG_CUSTOM_3                      = 7,
+	QFLAG_CUSTOM_4                      = 8,
+	QFLAG_CUSTOM_5                      = 9,
+	QFLAG_CUSTOM_6                      = 10,
+	QFLAG_CUSTOM_7                      = 11,
+	QFLAG_UPDATE_QUEST_LOG              = 12,
+	QFLAG_PRIMARY_GOAL_ACHIEVED         = 13,
+	QFLAG_QUEST_COMPLETED_NOW           = 14,
+	QFLAG_QUEST_COMPLETED_BEFORE        = 15
+};
+
+///////////////////////////////////////////////////
 // Item Attributes (From D2jsp scripting document)
 ///////////////////////////////////////////////////
 #define ITEM_IDENTIFIED			0x00000010 // Identified
