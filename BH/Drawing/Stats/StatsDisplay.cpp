@@ -123,7 +123,7 @@ void StatsDisplay::OnDraw() {
 		int cAbsorb = (int)D2COMMON_GetUnitStat(unit, STAT_COLDABSORBPERCENT, 0);
 		int lAbsorb = (int)D2COMMON_GetUnitStat(unit, STAT_LIGHTNINGABSORBPERCENT, 0);
 		Texthook::Draw(15, (y += 16), None, 6, Red, "ÿc4Absorption: ÿc1%dÿc0 / ÿc3%dÿc0 / ÿc9%d", fAbsorb, cAbsorb, lAbsorb);
-		Texthook::Draw(15, (y += 16), None, 6, Tan, "ÿc4Damage Reduction:ÿc0 %d", (int)D2COMMON_GetUnitStat(unit, STAT_DAMAGEREDUCTION, 0));
+		Texthook::Draw(15, (y += 16), None, 6, Tan, "ÿc4Damage Reduction:ÿc0 %d", (int)D2COMMON_GetUnitStat(unit, STAT_DMGREDUCTIONPCT, 0));
 		y += 8;
 
 		Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4Faster Cast Rate:ÿc0 %d", (int)D2COMMON_GetUnitStat(unit, STAT_FASTERCAST, 0));
