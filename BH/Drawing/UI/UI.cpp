@@ -20,6 +20,10 @@ UI::UI(std::string name, unsigned int xSize, unsigned int ySize) {
 	SetX(x);
 	int y = GetPrivateProfileInt(name.c_str(), "Y", 0, path.c_str());
 	SetY(y);
+	int minX = GetPrivateProfileInt(name.c_str(), "minimizedX", MINIMIZED_X_POS, path.c_str());
+	SetMinimizedX(minX);
+	int minY = GetPrivateProfileInt(name.c_str(), "minimizedY", MINIMIZED_Y_POS, path.c_str());
+	SetMinimizedY(minY);
 	char activeStr[20];
 	GetPrivateProfileString(name.c_str(), "Minimized", "true", activeStr, 20, path.c_str());
 	if (StringToBool(activeStr)) {
@@ -82,17 +86,33 @@ void UI::SetYSize(unsigned int newYSize) {
 	}
 }
 
+void UI::SetMinimizedX(unsigned int newX) {
+	if (newX >= 0 && newX <= Hook::GetScreenWidth()) {
+		Lock();
+		minimizedX = newX;
+		Unlock();
+	}
+}
+
+void UI::SetMinimizedY(unsigned int newY) {
+	if (newY >= 0 && newY <= Hook::GetScreenHeight()) {
+		Lock();
+		minimizedY = newY;
+		Unlock();
+	}
+}
+
 void UI::OnDraw() {
 	if (IsMinimized()) {
 		int n = 0;
 		for (list<UI*>::iterator it = Minimized.begin(); it != Minimized.end(); it++, n++)
 			if ((*it) == this)
 				break;
-		int yPos = MINIMIZED_Y_POS - (n * (TITLE_BAR_HEIGHT + 4));
+		int yPos = GetMinimizedY() - (n * (TITLE_BAR_HEIGHT + 4));
 		int xSize = Texthook::GetTextSize(GetName(), 0).x + 8;
-		int inPos = InPos((*p_D2CLIENT_MouseX), (*p_D2CLIENT_MouseY), MINIMIZED_X_POS, yPos, xSize, TITLE_BAR_HEIGHT);
-		Framehook::Draw(MINIMIZED_X_POS, yPos, xSize, TITLE_BAR_HEIGHT, 0, BTOneHalf);
-		Texthook::Draw(MINIMIZED_X_POS + 4, yPos + 3, false, 0, (inPos?Silver:White), GetName());
+		int inPos = InPos((*p_D2CLIENT_MouseX), (*p_D2CLIENT_MouseY), GetMinimizedX(), yPos, xSize, TITLE_BAR_HEIGHT);
+		Framehook::Draw(GetMinimizedX(), yPos, xSize, TITLE_BAR_HEIGHT, 0, BTOneHalf);
+		Texthook::Draw(GetMinimizedX() + 4, yPos + 3, false, 0, (inPos?Silver:White), GetName());
 	} else {
 		if (IsDragged()) {
 			int newX = (*p_D2CLIENT_MouseX) - dragX;
@@ -152,9 +172,9 @@ bool UI::OnLeftClick(bool up, unsigned int mouseX, unsigned int mouseY) {
 		for (list<UI*>::iterator it = Minimized.begin(); it != Minimized.end(); it++, n++)
 			if ((*it) == this)
 				break;
-		int yPos = MINIMIZED_Y_POS - (n * (TITLE_BAR_HEIGHT + 4));
+		int yPos = GetMinimizedY() - (n * (TITLE_BAR_HEIGHT + 4));
 		int xSize = Texthook::GetTextSize(GetName(), 0).x + 8;
-		int inPos = InPos((*p_D2CLIENT_MouseX), (*p_D2CLIENT_MouseY), MINIMIZED_X_POS, yPos, xSize, TITLE_BAR_HEIGHT);
+		int inPos = InPos((*p_D2CLIENT_MouseX), (*p_D2CLIENT_MouseY), GetMinimizedX(), yPos, xSize, TITLE_BAR_HEIGHT);
 		if (inPos /*&& GetAsyncKeyState(VK_CONTROL)*/) 
 		{
 			if(GetAsyncKeyState(VK_CONTROL))

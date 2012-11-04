@@ -18,6 +18,7 @@ namespace Drawing {
 			static std::list<UI*> UIs;
 			static std::list<UI*> Minimized;
 			unsigned int x, y, xSize, ySize, zOrder;//Position and Size and Order
+			unsigned int minimizedX, minimizedY;//Position when minimized
 			bool active, minimized, dragged;//If UI is active or minimized or dragged
 			unsigned int dragX, dragY;//Position where we grabbed it.
 			unsigned int startX, startY;//Position where we grabbed it.
@@ -39,6 +40,8 @@ namespace Drawing {
 			unsigned int GetY() { return y; };
 			unsigned int GetXSize() { return xSize; };
 			unsigned int GetYSize() { return ySize; };
+			unsigned int GetMinimizedX() { return minimizedX; };
+			unsigned int GetMinimizedY() { return minimizedY; };
 			bool IsActive() { return active; };
 			bool IsMinimized() { return minimized; };
 			bool IsDragged() { return dragged; };
@@ -49,6 +52,8 @@ namespace Drawing {
 			void SetY(unsigned int newY);
 			void SetXSize(unsigned int newXSize);
 			void SetYSize(unsigned int newYSize);
+			void SetMinimizedX(unsigned int newX);
+			void SetMinimizedY(unsigned int newY);
 			void SetActive(bool newState) { Lock(); active = newState; Unlock(); };
 			void SetMinimized(bool newState);
 			void SetName(std::string newName) { Lock(); name = newName;  Unlock(); };
