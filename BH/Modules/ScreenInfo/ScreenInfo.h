@@ -22,5 +22,6 @@ class ScreenInfo : public Module {
 		void OnLoad();
 		void OnGameJoin(const string& name, const string& pass, int diff);
 
+		void OnRightClick(bool up, int x, int y, bool* block);
 		void OnAutomapDraw();
 };

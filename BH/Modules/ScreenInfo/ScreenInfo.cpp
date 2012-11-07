@@ -21,6 +21,69 @@ void ScreenInfo::OnGameJoin(const string& name, const string& pass, int diff) {
 	gameTimer = GetTickCount();
 }
 
+// Right-clicking in the chat console pastes from the clipboard
+void ScreenInfo::OnRightClick(bool up, int x, int y, bool* block) {
+	if (up)
+		return;
+
+	int left = 130, top = 500, width = 540, height = 42;
+	if (D2CLIENT_GetUIState(0x05) && x >= left && x <= (left + width) && y >= top && y <= (top + height)) {
+		*block = true;
+
+		if (IsClipboardFormatAvailable(CF_TEXT)) {
+			OpenClipboard(NULL);
+			HGLOBAL glob = GetClipboardData(CF_TEXT);
+			size_t size = GlobalSize(glob);
+			char* cbtext = (char *)glob;
+
+			std::vector<INPUT> events;
+			char buffer[120] = {0};
+			GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_ILANGUAGE, buffer, sizeof(buffer));
+			HKL hKeyboardLayout = LoadKeyboardLayout(buffer, KLF_ACTIVATE);
+
+			for (unsigned int i = 0; i < size-1; i++) {
+				INPUT keyEvent = {0};
+				const SHORT Vk = VkKeyScanEx(cbtext[i], hKeyboardLayout);
+				const UINT VKey = MapVirtualKey(LOBYTE(Vk), 0);
+
+				if (HIBYTE(Vk) == 1) {  // shift key must be pressed
+					ZeroMemory(&keyEvent, sizeof(keyEvent));
+					keyEvent.type = INPUT_KEYBOARD;
+					keyEvent.ki.dwFlags = KEYEVENTF_SCANCODE;
+					keyEvent.ki.wScan = MapVirtualKey(VK_LSHIFT, 0);
+					events.push_back(keyEvent);
+				}
+
+				ZeroMemory(&keyEvent, sizeof(keyEvent));
+				keyEvent.type = INPUT_KEYBOARD;
+				keyEvent.ki.dwFlags = KEYEVENTF_SCANCODE;
+				keyEvent.ki.wScan = VKey;
+				events.push_back(keyEvent);
+
+				ZeroMemory(&keyEvent, sizeof(keyEvent));
+				keyEvent.type = INPUT_KEYBOARD;
+				keyEvent.ki.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
+				keyEvent.ki.wScan = VKey;
+				events.push_back(keyEvent);
+
+				if (HIBYTE(Vk) == 1) {  // release shift key
+					ZeroMemory(&keyEvent, sizeof(keyEvent));
+					keyEvent.type = INPUT_KEYBOARD;
+					keyEvent.ki.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
+					keyEvent.ki.wScan = MapVirtualKey(VK_LSHIFT, 0);
+					events.push_back(keyEvent);
+				}
+			}
+			CloseClipboard();
+
+			if(hKeyboardLayout) {
+				UnloadKeyboardLayout(hKeyboardLayout);
+			}
+			int retval = SendInput(events.size(), &events[0], sizeof(INPUT));
+		}
+	}
+}
+
 void ScreenInfo::OnAutomapDraw() {
 	GameStructInfo* pInfo = (*p_D2CLIENT_GameInfo);
 	BnetData* pData = (*p_D2LAUNCH_BnData);
