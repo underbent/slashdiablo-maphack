@@ -186,7 +186,7 @@ map<string, string> Config::ReadAssoc(std::string key) {
 		if (!(*it).first.find(key + "[")) {
 			pair<string,string> assoc;
 			//Pull the value from between the []'s
-			assoc.first = (*it).first.substr((*it).first.find("["), (*it).first.length() - (*it).first.find("[") - 1);
+			assoc.first = (*it).first.substr((*it).first.find("[") + 1, (*it).first.length() - (*it).first.find("[") - 2);
 			//Simply store the value that was after the :
 			assoc.second = (*it).second;
 			ret.insert(assoc);
