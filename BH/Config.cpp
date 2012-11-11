@@ -42,6 +42,7 @@ bool Config::Parse() {
 
 		//Store them!
 		contents.insert(pair<string, string>(key,value));
+		orderedKeys.push_back(key);
 	}
 	return true;
 }
@@ -173,7 +174,7 @@ vector<string> Config::ReadArray(std::string key) {
 	return ret;
 }
 
-/* ReadGroup(std::string key)
+/* ReadAssoc(std::string key)
  *	Reads in a map from the key->pair
  *	Config Example:
  *		Value[Test]: 0
@@ -190,6 +191,29 @@ map<string, string> Config::ReadAssoc(std::string key) {
 			//Simply store the value that was after the :
 			assoc.second = (*it).second;
 			ret.insert(assoc);
+		}
+	}
+
+	return ret;
+}
+
+/* ReadAssocList(std::string key)
+ *	Reads in a map from the key->pair, preserving original order
+ *	Config Example:
+ *		Value[Test]: 0
+ *		Value[Pickles]: 1
+ */
+vector<pair<string,string>> Config::ReadMapList(std::string key) {
+	vector<pair<string, string>> ret;
+
+	for (unsigned int i = 0; i < orderedKeys.size(); i++) {
+		if (!orderedKeys[i].find(key + "[")) {
+			pair<string, string> assoc;
+			//Pull the value from between the []'s
+			assoc.first = orderedKeys[i].substr(orderedKeys[i].find("[") + 1, orderedKeys[i].length() - orderedKeys[i].find("[") - 2);
+			//Also store the value
+			assoc.second = contents[orderedKeys[i]];
+			ret.push_back(assoc);
 		}
 	}
 
