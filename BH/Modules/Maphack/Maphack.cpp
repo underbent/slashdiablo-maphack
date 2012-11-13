@@ -8,6 +8,7 @@
 #include "Maphack.h"
 #include "../../BH.h"
 #include "../../Drawing.h"
+#include "../Item/ItemDisplay.h"
 
 using namespace Drawing;
 Patch* weatherPatch = new Patch(Jump, D2COMMON, 0x6CC56, (int)Weather_Interception, 5);
@@ -179,9 +180,7 @@ void Maphack::OnAutomapDraw() {
 
 	for (Room1* room1 = player->pAct->pRoom1; room1; room1 = room1->pRoomNext) {
 		for (UnitAny* unit = room1->pUnitFirst; unit; unit = unit->pListNext) {
-
 			POINT automapLoc;
-			Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pPath->xPos, unit->pPath->yPos);
 
 			// Draw monster on automap
 			if (unit->dwType == UNIT_MONSTER && IsValidMonster(unit) && Toggles["Show Monsters"].state) {
@@ -203,6 +202,7 @@ void Maphack::OnAutomapDraw() {
 						immunityText += szImmunities[n];
 				}
 				
+				Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pPath->xPos, unit->pPath->yPos);
 				if (immunityText.length() > 0)
 					Drawing::Texthook::Draw(automapLoc.x, automapLoc.y - 8, Drawing::Center, 6, White, immunityText);
 				Drawing::Crosshook::Draw(automapLoc.x, automapLoc.y, color);
@@ -225,7 +225,24 @@ void Maphack::OnAutomapDraw() {
 						color = automapColors["Hostile Missile"];
 					break;
 				}
-				Drawing::Boxhook::Draw(automapLoc.x - 1, automapLoc.y - 1, 2, 2, color, Drawing::BTHighlight); 
+				Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pPath->xPos, unit->pPath->yPos);
+				Drawing::Boxhook::Draw(automapLoc.x - 1, automapLoc.y - 1, 2, 2, color, Drawing::BTHighlight);
+			} else if (unit->dwType == UNIT_ITEM) {
+				char *code = D2COMMON_GetItemText(unit->dwTxtFileNo)->szCode;
+				for (vector<Rule*>::iterator it = MapRuleList.begin(); it != MapRuleList.end(); it++) {
+					bool match = true;
+					for (unsigned int i = 0; i < (*it)->conditions.size(); i++) {
+						if (!(*it)->conditions[i]->Match(unit, code)) {
+							match = false;
+							break;
+						}
+					}
+					if (match) {
+						Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pItemPath->dwPosX, unit->pItemPath->dwPosY);
+						Drawing::Boxhook::Draw(automapLoc.x - 4, automapLoc.y - 4, 8, 8, 0x60, Drawing::BTHighlight);
+						break;
+					}
+				}
 			}
 		}
 	}

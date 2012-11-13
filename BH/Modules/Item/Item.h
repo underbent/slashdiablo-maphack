@@ -24,6 +24,7 @@ class Item : public Module {
 		void OnLeftClick(bool up, int x, int y, bool* block);
 
 		static void __fastcall ItemNamePatch(wchar_t *name, UnitAny *item);
+		static void OrigGetItemName(UnitAny *item, string &itemName, char *code);
 		static UnitAny* GetViewUnit();
 };
 

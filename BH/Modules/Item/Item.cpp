@@ -2,11 +2,12 @@
 #include "../../D2Ptrs.h"
 #include "../../BH.h"
 #include "../../D2Stubs.h"
+#include "ItemDisplay.h"
 
 map<std::string, Toggle> Item::Toggles;
 UnitAny* Item::viewingUnit;
-Patch* itemNamePatch = new Patch(Call, D2CLIENT, 0x92366, (int)ItemName_Interception, 6);
 
+Patch* itemNamePatch = new Patch(Call, D2CLIENT, 0x92366, (int)ItemName_Interception, 6);
 Patch* viewInvPatch1 = new Patch(Call, D2CLIENT, 0x953E2, (int)ViewInventoryPatch1_ASM, 6);
 Patch* viewInvPatch2 = new Patch(Call, D2CLIENT, 0x94AB4, (int)ViewInventoryPatch2_ASM, 6);
 Patch* viewInvPatch3 = new Patch(Call, D2CLIENT, 0x93A6F, (int)ViewInventoryPatch3_ASM, 5);
@@ -21,6 +22,12 @@ void Item::OnLoad() {
 	Toggles["Alt Item Style"] = BH::config->ReadToggle("Alt Item Style", "None", true);
 	Toggles["Color Mod"] = BH::config->ReadToggle("Color Mod", "None", false);
 	Toggles["Shorten Item Names"] = BH::config->ReadToggle("Shorten Item Names", "None", false);
+	Toggles["Advanced Item Display"] = BH::config->ReadToggle("Advanced Item Display", "None", false);
+
+	if (Toggles["Advanced Item Display"].state) {
+		CreateItemTable();
+		InitializeItemRules();
+	}
 
 	showPlayer = BH::config->ReadKey("Show Player", "VK_0");
 
@@ -29,38 +36,40 @@ void Item::OnLoad() {
 	viewInvPatch3->Install();
 
 	if (Toggles["Show Ethereal"].state || Toggles["Show Sockets"].state || Toggles["Show iLvl"].state || Toggles["Color Mod"].state ||
-		Toggles["Show Rune Numbers"].state || Toggles["Alt Item Style"].state || Toggles["Shorten Item Names"].state)
+		Toggles["Show Rune Numbers"].state || Toggles["Alt Item Style"].state || Toggles["Shorten Item Names"].state || Toggles["Advanced Item Display"].state)
 		itemNamePatch->Install();
 
 	settingsTab = new UITab("Item", BH::settingsUI);
 
 	new Checkhook(settingsTab, 4, 15, &Toggles["Show Ethereal"].state, "Show Ethereal");
-	new Keyhook(settingsTab, 130, 17, &Toggles["Show Ethereal"].toggle, "");
+	new Keyhook(settingsTab, 200, 17, &Toggles["Show Ethereal"].toggle, "");
 
 	new Checkhook(settingsTab, 4, 30, &Toggles["Show Sockets"].state, "Show Sockets");
-	new Keyhook(settingsTab, 130, 32, &Toggles["Show Sockets"].toggle, "");
+	new Keyhook(settingsTab, 200, 32, &Toggles["Show Sockets"].toggle, "");
 
 	new Checkhook(settingsTab, 4, 45, &Toggles["Show iLvl"].state, "Show iLvl");
-	new Keyhook(settingsTab, 130, 47, &Toggles["Show iLvl"].toggle, "");
+	new Keyhook(settingsTab, 200, 47, &Toggles["Show iLvl"].toggle, "");
 
 	new Checkhook(settingsTab, 4, 60, &Toggles["Show Rune Numbers"].state, "Show Rune #");
-	new Keyhook(settingsTab, 130, 62, &Toggles["Show Rune Numbers"].toggle, "");
+	new Keyhook(settingsTab, 200, 62, &Toggles["Show Rune Numbers"].toggle, "");
 
 	new Checkhook(settingsTab, 4, 75, &Toggles["Alt Item Style"].state, "Alt Style");
-	new Keyhook(settingsTab, 130, 77, &Toggles["Alt Item Style"].toggle, "");
+	new Keyhook(settingsTab, 200, 77, &Toggles["Alt Item Style"].toggle, "");
 
 	new Checkhook(settingsTab, 4, 90, &Toggles["Color Mod"].state, "Color Mod");
-	new Keyhook(settingsTab, 130, 92, &Toggles["Color Mod"].toggle, "");
+	new Keyhook(settingsTab, 200, 92, &Toggles["Color Mod"].toggle, "");
 
 	new Checkhook(settingsTab, 4, 105, &Toggles["Shorten Item Names"].state, "Shorten Names");
-	new Keyhook(settingsTab, 130, 107, &Toggles["Shorten Item Names"].toggle, "");
+	new Keyhook(settingsTab, 200, 107, &Toggles["Shorten Item Names"].toggle, "");
 
-	new Keyhook(settingsTab, 4, 122, &showPlayer, "Show Players Gear");
+	new Checkhook(settingsTab, 4, 120, &Toggles["Advanced Item Display"].state, "Advanced Item Display");
+	new Keyhook(settingsTab, 200, 122, &Toggles["Advanced Item Display"].toggle, "");
+
+	new Keyhook(settingsTab, 4, 137, &showPlayer, "Show Players Gear");
 }
 
 void Item::OnUnload() {
 	itemNamePatch->Remove();
-
 	viewInvPatch1->Remove();
 	viewInvPatch2->Remove();
 	viewInvPatch3->Remove();
@@ -70,7 +79,7 @@ void Item::OnLoop() {
 	if (!D2CLIENT_GetUIState(0x01))
 		viewingUnit = NULL;
 
-	if (viewingUnit  && viewingUnit->dwUnitId) {
+	if (viewingUnit && viewingUnit->dwUnitId) {
 		if (!viewingUnit->pInventory){
 			viewingUnit = NULL;
 			D2CLIENT_SetUIVar(0x01, 1, 0);			
@@ -116,16 +125,15 @@ void __fastcall Item::ItemNamePatch(wchar_t *name, UnitAny *item)
 {
 	char* szName = UnicodeToAnsi(name);
 	string itemName = szName;
-	char * code = D2COMMON_GetItemText(item->dwTxtFileNo)->szCode;
+	char* code = D2COMMON_GetItemText(item->dwTxtFileNo)->szCode;
 	char test_code[4];
-	string test3;
-	bool displayItemLevel = Toggles["Show iLvl"].state;
+	test_code[0] = code[0]; test_code[1] = code[1]; test_code[2] = code[2]; test_code[3] = 0;
 
-	test_code[0] = code[0];
-	test_code[1] = code[1];
-	test_code[2] = code[2];
-	test_code[3] = 0;
-	test3 = test_code;
+	if (Toggles["Advanced Item Display"].state) {
+		GetItemName(item, itemName, code);
+	} else {
+		OrigGetItemName(item, itemName, code);
+	}
 
 	// Some common color codes for text strings (see TextColor enum):
 	// ÿc; (purple)
@@ -140,6 +148,18 @@ void __fastcall Item::ItemNamePatch(wchar_t *name, UnitAny *item)
 	// ÿc8 (orange)
 	// ÿc9 (yellow)
 
+	/* Test code to display item codes */
+	//string test3 = test_code;
+	//itemName += " {" + test3 + "}";
+
+	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, itemName.c_str(), itemName.length(), name, itemName.length());
+	name[itemName.length()] = 0;  // null-terminate the string since MultiByteToWideChar doesn't
+	delete[] szName;
+}
+
+void Item::OrigGetItemName(UnitAny *item, string &itemName, char *code)
+{
+	bool displayItemLevel = Toggles["Show iLvl"].state;
 	if (Toggles["Shorten Item Names"].state)
 	{
 		// We will also strip ilvls from these items
@@ -323,7 +343,7 @@ void __fastcall Item::ItemNamePatch(wchar_t *name, UnitAny *item)
 				}
 			}
 
-			if (Toggles["Show Ethereal"].state && item->pItemData->dwFlags & 0x400000)
+			if (Toggles["Show Ethereal"].state && item->pItemData->dwFlags & ITEM_ETHEREAL)
 			{
 				itemName = "Eth " + itemName;
 			}
@@ -342,7 +362,7 @@ void __fastcall Item::ItemNamePatch(wchar_t *name, UnitAny *item)
 			if (sockets > 0)
 				itemName += "(" + to_string(sockets) + ")";
 		}
-		if (Toggles["Show Ethereal"].state && item->pItemData->dwFlags & 0x400000)
+		if (Toggles["Show Ethereal"].state && item->pItemData->dwFlags & ITEM_ETHEREAL)
 			itemName += "(Eth)";
 
 		if (displayItemLevel)
@@ -412,13 +432,6 @@ void __fastcall Item::ItemNamePatch(wchar_t *name, UnitAny *item)
 			}
 		}
 	}
-
-	/* Test code to display item codes */
-	//itemName += " {" + test3 + "}";
-
-	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, itemName.c_str(), itemName.length(), name, itemName.length());
-	name[itemName.length()] = 0;  // null-terminate the string since MultiByteToWideChar doesn't
-	delete[] szName;
 }
 
 UnitAny* Item::GetViewUnit ()

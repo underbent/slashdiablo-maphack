@@ -204,6 +204,9 @@
     <ClCompile Include="Modules\Item\Item.cpp">
       <Filter>BH\Modules\Item</Filter>
     </ClCompile>
+    <ClCompile Include="Modules\Item\ItemDisplay.cpp">
+      <Filter>BH\Modules\Item</Filter>
+    </ClCompile>
     <ClCompile Include="Modules\AutoTele\AutoTele.cpp">
       <Filter>BH\Modules\AutoTele</Filter>
     </ClCompile>
@@ -312,6 +315,9 @@
       <Filter>BH\Modules\Bnet</Filter>
     </ClInclude>
     <ClInclude Include="Modules\Item\Item.h">
+      <Filter>BH\Modules\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Item\ItemDisplay.h">
       <Filter>BH\Modules\Item</Filter>
     </ClInclude>
     <ClInclude Include="Modules\AutoTele\AutoTele.h">

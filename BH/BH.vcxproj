@@ -121,6 +121,7 @@
     <ClCompile Include="Modules\Bnet\Bnet.cpp" />
     <ClCompile Include="Modules\Gamefilter\Gamefilter.cpp" />
     <ClCompile Include="Modules\Item\Item.cpp" />
+    <ClCompile Include="Modules\Item\ItemDisplay.cpp" />
     <ClCompile Include="Modules\Maphack\Maphack.cpp" />
     <ClCompile Include="Modules\Module.cpp" />
     <ClCompile Include="Modules\ModuleManager.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="Modules\Bnet\Bnet.h" />
     <ClInclude Include="Modules\Gamefilter\Gamefilter.h" />
     <ClInclude Include="Modules\Item\Item.h" />
+    <ClInclude Include="Modules\Item\ItemDisplay.h" />
     <ClInclude Include="Modules\Maphack\Maphack.h" />
     <ClInclude Include="Modules\Module.h" />
     <ClInclude Include="Modules\ModuleManager.h" />
