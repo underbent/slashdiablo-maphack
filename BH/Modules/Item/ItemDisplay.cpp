@@ -51,7 +51,18 @@ void SubstituteNameVariables(UnitAny *item, string &name, Action *action) {
 		{"SOCKETS", sockets},
 		{"RUNENUM", runenum},
 		{"RUNENAME", runename},
-		{"ILVL", ilvl}
+		{"ILVL", ilvl},
+		{"WHITE", "ÿc0"},
+		{"RED", "ÿc1"},
+		{"GREEN", "ÿc2"},
+		{"BLUE", "ÿc3"},
+		{"GOLD", "ÿc4"},
+		{"GRAY", "ÿc5"},
+		{"BLACK", "ÿc6"},
+		{"TAN", "ÿc7"},
+		{"ORANGE", "ÿc8"},
+		{"YELLOW", "ÿc9"},
+		{"PURPLE", "ÿc;"}
 	};
 	name.assign(action->name);
 	for (int n = 0; n < sizeof(replacements) / sizeof(replacements[0]); n++) {
