@@ -14,13 +14,14 @@ using namespace Drawing;
 
 void AutoTele::OnLoad() {
 
-	settingsTab = new UITab("Map Paths", BH::settingsUI);
+	settingsTab = new UITab("Miscellaneous", BH::settingsUI);
 
 	Toggles["CP to cave"] = BH::config->ReadToggle("CP to cave", "None", false);
 	Toggles["Display Messages"] = BH::config->ReadToggle("Display Messages", "None", true);
 	Toggles["Draw Path"] = BH::config->ReadToggle("Draw Path", "None", true);	
 	Toggles["Draw Destination"] = BH::config->ReadToggle("Draw Destination", "None", true);
 	Toggles["Fast Teleport"] = BH::config->ReadToggle("Fast Teleport", "None", true);
+	Toggles["Quest Drop Warning"] = BH::config->ReadToggle("Quest Drop Warning", "None", false);
 
 	NextKey = BH::config->ReadKey("Next Tele", "VK_NUMPAD0");
 	OtherKey = BH::config->ReadKey("Other Tele", "VK_NUMPAD1");
@@ -32,15 +33,16 @@ void AutoTele::OnLoad() {
 	Colors[3] = BH::config->ReadInt("WP Color", 0x84);
 	Colors[4] = BH::config->ReadInt("Prev Color", 0x5B);
 
-	new Texthook(settingsTab, 60, 12, "Toggle");
-	//new Texthook(settingsTab, 60, 12, "Toggles");
+	new Texthook(settingsTab, 60, 12, "Toggles");
 
 	new Checkhook(settingsTab, 40, 27, &Toggles["Draw Destination"].state, "Draw Paths");
+
+	new Checkhook(settingsTab, 40, 57, &Toggles["Quest Drop Warning"].state, "Quest Drop Warning");
 
 	//this doesn't change the path.  I can't figure out how to make it work either.
 	//new Checkhook(settingsTab, 40, 42, &Toggles["CP to cave"].state, "CP to cave");
 
-	new Texthook(settingsTab, 250, 12, "Colors");
+	new Texthook(settingsTab, 250, 12, "Map Colors");
 
 	new Colorhook(settingsTab, 250, 27, &Colors[0], "Path");
 

@@ -52,6 +52,8 @@ class AutoTele : public Module {
 		void OnKey(bool up, BYTE key, LPARAM lParam, bool* block);
 		void OnGamePacketRecv(BYTE* packet, bool* block);
 		
+		std::map<string, Toggle>* GetToggles() { return &Toggles; }
+
 		static Level* GetLevel(Act* pAct, int level);
 		static DWORD GetDistanceSquared(DWORD x1, DWORD y1, DWORD x2, DWORD y2);
 };

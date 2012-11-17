@@ -84,6 +84,53 @@ void ScreenInfo::OnRightClick(bool up, int x, int y, bool* block) {
 	}
 }
 
+void ScreenInfo::OnDraw() {
+	BnetData* pData = (*p_D2LAUNCH_BnData);
+	void *quests = D2CLIENT_GetQuestInfo();
+	if (!pData || !quests) {
+		return;
+	}
+
+	ULONGLONG ticks = GetTickCount64();
+	ULONGLONG ms = ticks - packetTicks;
+	if (!ReceivedQuestPacket && packetRequests < 6 && ms > 5000) {
+		// Ask for quest information from the server; server will respond with packet 0x52.
+		// (In case we inject mid-game and miss the packets sent upon game creation/joining)
+		BYTE RequestQuestData[1] = {0x40};
+		D2NET_SendPacket(1, 0, RequestQuestData);
+		packetTicks = ticks;
+		packetRequests++;
+	}
+
+	// It's a kludge to peek into other modules for config info, but it just seems silly to
+	// create a new UI tab for each module with config parameters.
+	if ((*BH::MiscToggles)["Quest Drop Warning"].state) {
+		char *bossNames[3] = {"Mephisto", "Diablo", "Baal"};
+		int xpac = pData->nCharFlags & PLAYER_TYPE_EXPANSION;
+		int doneDuriel = D2COMMON_GetQuestFlag2(quests, THE_SEVEN_TOMBS, QFLAG_REWARD_GRANTED);
+		int doneMephisto = D2COMMON_GetQuestFlag2(quests, THE_GUARDIAN, QFLAG_REWARD_GRANTED);
+		int doneDiablo = D2COMMON_GetQuestFlag2(quests, TERRORS_END, QFLAG_REWARD_GRANTED);
+		int doneBaal = D2COMMON_GetQuestFlag2(quests, EVE_OF_DESTRUCTION, QFLAG_REWARD_GRANTED);
+
+		int warning = -1;
+		if (doneDuriel && !doneMephisto && !MephistoBlocked) {
+			warning = 0;
+		} else if (doneMephisto && !doneDiablo && !DiabloBlocked) {
+			warning = 1;
+		} else if (xpac && doneDiablo && !doneBaal && !BaalBlocked) {
+			warning = 2;
+		}
+		if (warning >= 0) {
+			ms = ticks - warningTicks;
+			if (ms > 2000) {
+				warningTicks = ticks;
+			} else if (ms > 500) {
+				Texthook::Draw(400, 100, Center, 3, Red, "%s Quest Active", bossNames[warning]);
+			}
+		}
+	}
+}
+
 void ScreenInfo::OnAutomapDraw() {
 	GameStructInfo* pInfo = (*p_D2CLIENT_GameInfo);
 	BnetData* pData = (*p_D2LAUNCH_BnData);
@@ -130,4 +177,51 @@ void ScreenInfo::OnAutomapDraw() {
 		if (key.length() > 0)
 			Texthook::Draw(790, (y+=16), Right,0,Gold,"%s", key.c_str());
 	}
+}
+
+void ScreenInfo::OnGamePacketRecv(BYTE* packet, bool* block) {
+	// These packets tell us which quests are blocked for us because they were
+	// completed by the player who created the game. Packet 29 is sent at game
+	// startup and quest events; likewise with packet 52, but also we can trigger
+	// packet 52 by sending the server packet 40.
+	switch (packet[0])
+	{
+	case 0x29:
+		{
+			// The packet consists of two-byte pairs for each of the 41 quests,
+			// starting at the third byte. The high bit of the first byte in the pair
+			// (corresponding to QFLAG_QUEST_COMPLETED_BEFORE) is always set when the
+			// quest was previously completed. QFLAG_PRIMARY_GOAL_ACHIEVED is often
+			// set as well.
+			int packetLen = 97;
+			MephistoBlocked = (packet[2 + (THE_GUARDIAN * 2)] & 0x80) > 0;
+			DiabloBlocked = (packet[2 + (TERRORS_END * 2)] & 0x80) > 0;
+			BaalBlocked = (packet[2 + (EVE_OF_DESTRUCTION * 2)] & 0x80) > 0;
+			ReceivedQuestPacket = true;
+			break;
+
+			// TODO: does it get cleared when quest completed while we are in game in different act?
+		}
+	case 0x52:
+		{
+			// We have one byte for each of the 41 quests: zero if the quest is blocked,
+			// and nonzero if we can complete it.
+			int packetLen = 42;
+			MephistoBlocked = packet[1 + THE_GUARDIAN] == 0;
+			DiabloBlocked = packet[1 + TERRORS_END] == 0;
+			BaalBlocked = packet[1 + EVE_OF_DESTRUCTION] == 0;
+			ReceivedQuestPacket = true;
+			break;
+		}
+	default:
+		break;
+	}
+	return;
+}
+
+void ScreenInfo::OnGameExit() {
+	MephistoBlocked = false;
+	DiabloBlocked = false;
+	BaalBlocked = false;
+	ReceivedQuestPacket = false;
 }

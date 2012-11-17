@@ -18,6 +18,7 @@ class ModuleManager {
 
 		// Module Management
 		void Add(Module* module);
+		Module* Get(string name);
 		void Remove(Module* module);
 
 		void LoadModules();

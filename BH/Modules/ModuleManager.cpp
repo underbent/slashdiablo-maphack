@@ -28,6 +28,14 @@ void ModuleManager::Add(Module* module) {
 	moduleList[name] = module;
 }
 
+Module* ModuleManager::Get(string name) {
+	// Get a pointer to a module
+	if (moduleList.count(name) > 0) {
+		return moduleList[name];
+	}
+	return NULL;
+}
+
 void ModuleManager::Remove(Module* module) {
 	// Remove module from list
 	std::string name = module->GetName();

@@ -16,12 +16,24 @@ class ScreenInfo : public Module {
 		Drawing::Texthook* bhText;
 		DWORD gameTimer;
 
+		int packetRequests;
+		ULONGLONG warningTicks;
+		ULONGLONG packetTicks;
+		bool MephistoBlocked;
+		bool DiabloBlocked;
+		bool BaalBlocked;
+		bool ReceivedQuestPacket;
 	public:
-		ScreenInfo() : Module("Screen Info") {};
+		ScreenInfo() :
+			Module("Screen Info"), warningTicks(GetTickCount64()), packetRequests(0),
+			MephistoBlocked(false), DiabloBlocked(false), BaalBlocked(false), ReceivedQuestPacket(false) {};
 
 		void OnLoad();
 		void OnGameJoin(const string& name, const string& pass, int diff);
+		void OnGameExit();
 
 		void OnRightClick(bool up, int x, int y, bool* block);
+		void OnDraw();
 		void OnAutomapDraw();
+		void OnGamePacketRecv(BYTE* packet, bool *block);
 };

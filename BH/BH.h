@@ -26,6 +26,7 @@ namespace BH {
 	extern Drawing::UI* settingsUI;
 	extern Drawing::StatsDisplay* statsDisplay;
 	extern WNDPROC OldWNDPROC;
+	extern map<string, Toggle>* MiscToggles;
 	extern bool cGuardLoaded;
 	extern Patch* oogDraw;
 
