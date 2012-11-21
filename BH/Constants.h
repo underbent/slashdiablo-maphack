@@ -490,6 +490,9 @@ enum TextColor {
 #define STAT_QUESTITEMDIFFICULTY	356
 #define STAT_PASSIVEMAGICDMGMASTERY	357
 #define STAT_PASSIVEMAGICRESREDUC	358
+#define STAT_MAX					358
+
+#define SKILL_MAX					356
 
 ///////////////////////////////////////////////////
 // NodePages

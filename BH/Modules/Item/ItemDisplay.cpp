@@ -156,12 +156,18 @@ const string Condition::tokenDelims = "<=>";
 void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 	size_t delPos = token.find_first_of(tokenDelims);
 	string key;
-	string value = "0";
 	string delim = "";
+	int value = 0;
 	if (delPos != string::npos) {
 		key = Trim(token.substr(0, delPos));
-		value = Trim(token.substr(delPos + 1));
 		delim = token.substr(delPos, 1);
+		string valueStr = Trim(token.substr(delPos + 1));
+		if (valueStr.length() > 0) {
+			stringstream ss(valueStr);
+			if ((ss >> value).fail()) {
+				return;
+			}
+		}
 	} else {
 		key = token;
 	}
@@ -178,7 +184,7 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 	} else if (key.compare(0, 3, "ETH") == 0) {
 		conditions.push_back(new FlagsCondition(negate, ITEM_ETHEREAL));
 	} else if (key.compare(0, 4, "SOCK") == 0) {
-		conditions.push_back(new ItemStatCondition(negate, STAT_SOCKETS, 0, operation, atoi(value.c_str())));
+		conditions.push_back(new ItemStatCondition(negate, STAT_SOCKETS, 0, operation, value));
 	} else if (key.compare(0, 3, "SET") == 0) {
 		conditions.push_back(new QualityCondition(negate, ITEM_QUALITY_SET));
 	} else if (key.compare(0, 3, "MAG") == 0) {
@@ -202,18 +208,18 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 	} else if (key.compare(0, 2, "ID") == 0) {
 		conditions.push_back(new FlagsCondition(negate, ITEM_IDENTIFIED));
 	} else if (key.compare(0, 4, "ILVL") == 0) {
-		conditions.push_back(new ItemLevelCondition(negate, operation, atoi(value.c_str())));
+		conditions.push_back(new ItemLevelCondition(negate, operation, value));
 	} else if (key.compare(0, 4, "RUNE") == 0) {
-		conditions.push_back(new RuneCondition(negate, operation, atoi(value.c_str())));
+		conditions.push_back(new RuneCondition(negate, operation, value));
 	} else if (key.compare(0, 3, "GEM") == 0) {
-		conditions.push_back(new GemCondition(negate, operation, atoi(value.c_str())));
+		conditions.push_back(new GemCondition(negate, operation, value));
 	} else if (key.compare(0, 2, "ED") == 0) {
-		conditions.push_back(new EDCondition(negate, operation, atoi(value.c_str())));
+		conditions.push_back(new EDCondition(negate, operation, value));
 	} else if (key.compare(0, 3, "DEF") == 0) {
-		conditions.push_back(new ItemStatCondition(negate, STAT_DEFENSE, 0, operation, atoi(value.c_str())));
+		conditions.push_back(new ItemStatCondition(negate, STAT_DEFENSE, 0, operation, value));
 	} else if (key.compare(0, 3, "RES") == 0) {
-		conditions.push_back(new ResistAllCondition(negate, operation, atoi(value.c_str())));
-	} else if (key.compare(0, 2, "EQ") == 0) {
+		conditions.push_back(new ResistAllCondition(negate, operation, value));
+	} else if (key.compare(0, 2, "EQ") == 0 && key.length() == 3) {
 		if (key[2] == '1') {
 			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_HELM));
 		} else if (key[2] == '2') {
@@ -227,7 +233,7 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		} else if (key[2] == '6') {
 			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_BELT));
 		}
-	} else if (key.compare(0, 2, "CL") == 0) {
+	} else if (key.compare(0, 2, "CL") == 0 && key.length() == 3) {
 		if (key[2] == '1') {
 			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_DRUID_PELT));
 		} else if (key[2] == '2') {
@@ -244,42 +250,58 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_AMAZON_WEAPON));
 		}
 	} else if (key.compare(0, 2, "WP") == 0) {
-		if (key[2] == '1' && key.length() == 3) {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_AXE));
-		} else if (key[2] == '2') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_MACE));
-		} else if (key[2] == '3') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_SWORD));
-		} else if (key[2] == '4') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_DAGGER));
-		} else if (key[2] == '5') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_THROWING));
-		} else if (key[2] == '6') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_JAVELIN));
-		} else if (key[2] == '7') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_SPEAR));
-		} else if (key[2] == '8') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_POLEARM));
-		} else if (key[2] == '9') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_BOW));
-		} else if (key[2] == '1' && key[3] == '0') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_CROSSBOW));
-		} else if (key[2] == '1' && key[3] == '1') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_STAFF));
-		} else if (key[2] == '1' && key[3] == '2') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_WAND));
-		} else if (key[2] == '1' && key[3] == '3') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_SCEPTER));
+		if (key.length() == 3) {
+			if (key[2] == '1') {
+				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_AXE));
+			} else if (key[2] == '2') {
+				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_MACE));
+			} else if (key[2] == '3') {
+				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_SWORD));
+			} else if (key[2] == '4') {
+				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_DAGGER));
+			} else if (key[2] == '5') {
+				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_THROWING));
+			} else if (key[2] == '6') {
+				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_JAVELIN));
+			} else if (key[2] == '7') {
+				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_SPEAR));
+			} else if (key[2] == '8') {
+				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_POLEARM));
+			} else if (key[2] == '9') {
+				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_BOW));
+			}
+		} else if (key.length() == 4) {
+			if (key[2] == '1' && key[3] == '0') {
+				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_CROSSBOW));
+			} else if (key[2] == '1' && key[3] == '1') {
+				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_STAFF));
+			} else if (key[2] == '1' && key[3] == '2') {
+				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_WAND));
+			} else if (key[2] == '1' && key[3] == '3') {
+				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_SCEPTER));
+			}
 		}
 	} else if (key.compare(0, 2, "SK") == 0) {
-		int num = atoi(key.substr(2).c_str());
-		conditions.push_back(new ItemStatCondition(negate, STAT_SINGLESKILL, num, operation, atoi(value.c_str())));
+		int num = -1;
+		stringstream ss(key.substr(2));
+		if ((ss >> num).fail() || num < 0 || num > SKILL_MAX) {
+			return;
+		}
+		conditions.push_back(new ItemStatCondition(negate, STAT_SINGLESKILL, num, operation, value));
 	} else if (key.compare(0, 4, "CLSK") == 0) {
-		int num = atoi(key.substr(4).c_str());
-		conditions.push_back(new ItemStatCondition(negate, STAT_CLASSSKILLS, num, operation, atoi(value.c_str())));
+		int num = -1;
+		stringstream ss(key.substr(4));
+		if ((ss >> num).fail() || num < 0 || num >= CLASS_NA) {
+			return;
+		}
+		conditions.push_back(new ItemStatCondition(negate, STAT_CLASSSKILLS, num, operation, value));
 	} else if (key.compare(0, 4, "STAT") == 0) {
-		int num = atoi(key.substr(4).c_str());
-		conditions.push_back(new ItemStatCondition(negate, num, 0, operation, atoi(value.c_str())));
+		int num = -1;
+		stringstream ss(key.substr(4));
+		if ((ss >> num).fail() || num < 0 || num > STAT_MAX) {
+			return;
+		}
+		conditions.push_back(new ItemStatCondition(negate, num, 0, operation, value));
 	}
 }
 
