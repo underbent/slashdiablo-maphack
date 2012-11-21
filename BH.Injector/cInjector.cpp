@@ -25,19 +25,20 @@ BOOL cInjector::EnableDebugPriv(VOID) // Abin's function.
 	LUID sedebugnameValue;
 	TOKEN_PRIVILEGES tkp;
 
-	if(OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken ))
-		if(LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &sedebugnameValue )) 
+	if(OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
+		if(LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &sedebugnameValue)) 
 		{
- 			tkp.PrivilegeCount=1;
- 			tkp.Privileges[0].Luid = sedebugnameValue;
- 			tkp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+			tkp.PrivilegeCount = 1;
+			tkp.Privileges[0].Luid = sedebugnameValue;
+			tkp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 
- 			if(AdjustTokenPrivileges(hToken, FALSE, &tkp, sizeof tkp, NULL, NULL )) 
+			if(AdjustTokenPrivileges(hToken, FALSE, &tkp, sizeof tkp, NULL, NULL)) 
 			{
 				CloseHandle(hToken);
 				return TRUE;
- 			}
+			}
 		}
+	}
 
 	CloseHandle(hToken);
 
@@ -80,15 +81,27 @@ BOOL cInjector::InjectDLL(DWORD dwPid, wstring wDllName)
 					WriteProcessMemory(hProc, lpRemoteString, wPath.c_str(), wPath.size() * 2, NULL);
 
 					hThread = CreateRemoteThread(hProc, NULL, NULL, reinterpret_cast<LPTHREAD_START_ROUTINE>(lpLoadLibraryW), lpRemoteString, NULL, NULL);
-					
+
 					WaitForSingleObject(hThread, INFINITE);
 
 					VirtualFreeEx(hProc, lpRemoteString, 0, MEM_RELEASE);
-					
+
 					FreeLibrary(hKernel32);
 					CloseHandle(hProc);
 					CloseHandle(hThread);
-					return true;
+
+					// If we're injecting into the wrong version of the D2 client, all the offsets
+					// will be wrong and we'll silently fail on the first call into a D2 function
+					// (generally D2GFX_GetHwnd in BH::Startup). BH::Startup still returns success
+					// however, so check for failed injection by looking for "BH.dll" the game process.
+					if (FindInjectedModule(dwPid)) {
+						return true;
+					}
+
+					printf("WARNING: this maphack will only work with Diablo II client version 1.13C!\n");
+					printf("You appear to have a different client version. To learn how to downgrade your\n");
+					printf("client, see the Guides & Resources section of the slashdiablo subreddit.\n");
+					return false;
 				}
 			}
 
@@ -126,7 +139,7 @@ BOOL cInjector::UnloadDLL(DWORD dwPid, HMODULE hDll)
 			if(lpFreeLibrary)
 			{
 				hThread = CreateRemoteThread(hProc, NULL, NULL, reinterpret_cast<LPTHREAD_START_ROUTINE>(lpFreeLibrary), hDll, NULL, NULL);
-				
+
 				WaitForSingleObject(hThread, INFINITE);
 
 				CloseHandle(hThread);
@@ -152,7 +165,7 @@ HMODULE cInjector::GetRemoteDll(HWND hwnd, wstring wDllName) {
 HMODULE cInjector::GetRemoteDll(DWORD dwPid, wstring wDllName)
 {
 	MODULEENTRY32W ModEntry;
-	
+
 	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, dwPid);
 
 	ModEntry.dwSize = sizeof(MODULEENTRY32W);
@@ -197,7 +210,7 @@ INT cInjector::InjectToProcessByDLL(wstring wProcessDll, wstring wDllName)
 
 					nCount++;
 				}
-			
+
 				ProcessEntry.dwSize = sizeof(PROCESSENTRY32);
 			} while(Process32Next(hSnapshot, &ProcessEntry));
 	}
@@ -231,7 +244,7 @@ INT cInjector::InjectToProcess(wstring wProcName, wstring wDllName)
 
 					nCount++;
 				}
-			
+
 				ProcessEntry.dwSize = sizeof(PROCESSENTRY32);
 			} while(Process32Next(hSnapshot, &ProcessEntry));
 	}
@@ -240,6 +253,7 @@ INT cInjector::InjectToProcess(wstring wProcName, wstring wDllName)
 
 	return nCount;
 }
+
 BOOL IsUserAdmin(VOID) {
 	BOOL b;
 	SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
@@ -255,9 +269,38 @@ BOOL IsUserAdmin(VOID) {
 	{
 		if (!CheckTokenMembership( NULL, AdministratorsGroup, &b)) 
 		{
-			 b = FALSE;
+			b = FALSE;
 		} 
 		FreeSid(AdministratorsGroup); 
 	}
 	return(b);
+}
+
+bool FindInjectedModule(DWORD processID)
+{
+	HMODULE hMods[1024];
+	HANDLE hProcess;
+	DWORD cbNeeded;
+
+	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processID);
+	if (hProcess == NULL)
+		return false;
+
+	if(EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded))
+	{
+		for (unsigned int i = 0; i < (cbNeeded / sizeof(HMODULE)); i++)
+		{
+			TCHAR szModName[MAX_PATH];
+			if (GetModuleFileNameEx(hProcess, hMods[i], szModName, sizeof(szModName) / sizeof(TCHAR))) {
+				char buf[MAX_PATH];
+				WideCharToMultiByte(CP_ACP, 0, szModName, -1, buf, MAX_PATH, "?", NULL);
+				string s(buf);
+				if (s.compare(s.length() - 6, 6, "BH.dll") == 0) {
+					return true;
+				}
+			}
+		}
+	}
+	CloseHandle(hProcess);
+	return false;
 }

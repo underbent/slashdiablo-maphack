@@ -18,6 +18,8 @@
 */
 #pragma once
 #include <string>
+#include <Windows.h>
+#include <psapi.h>
 
 using namespace std;
 
@@ -38,3 +40,4 @@ class cInjector
 		static HMODULE GetRemoteDll(HWND hwnd, wstring wDllName);
 };
 BOOL IsUserAdmin(VOID);
+bool FindInjectedModule(DWORD processID);
