@@ -296,15 +296,3 @@ bool UI::RightClick(bool up, unsigned int mouseX, unsigned int mouseY) {
 	}
 	return false;
 }
-
-void UI::PrintText(DWORD Color, char *szText, ...)
-{	
-	char szBuffer[152] = {0};
-	va_list Args;
-	va_start(Args, szText);
-	vsprintf_s(szBuffer,152, szText, Args);
-	va_end(Args); 
-	wchar_t Buffer[0x130];
-	MultiByteToWideChar(0, 1, szBuffer, 152, Buffer, 304);
-	D2CLIENT_PrintGameString(Buffer, Color);		
-}

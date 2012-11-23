@@ -25,8 +25,6 @@ namespace Drawing {
 			std::string name;//Name of the UI
 			UITab* currentTab;//Current tab open at the time.
 			CRITICAL_SECTION crit;//Critical section
-
-			void PrintText(DWORD Color, char *szText, ...);
 		public:
 			std::list<UITab*> Tabs;
 

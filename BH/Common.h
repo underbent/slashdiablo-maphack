@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include "D2Ptrs.h"
 
 void Tokenize(const std::string& str, std::vector<std::string>& tokens, const std::string& delimiters);
 wchar_t* AnsiToUnicode(const char* str);
@@ -21,6 +22,8 @@ template< class type> std::string to_string( const type & value)
 bool StringToBool(std::string str);
 
 std::string Trim(std::string source);
+
+void PrintText(DWORD Color, char *szText, ...);
 
 struct KeyCode {
 	std::string name;
