@@ -73,6 +73,7 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 	new SpamFilter();
 	new AutoTele();
 	new Party();
+	new ItemMover();
 
 	moduleManager->LoadModules();
 

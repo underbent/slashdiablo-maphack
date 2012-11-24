@@ -112,6 +112,9 @@
     <Filter Include="BH\Modules\Party">
       <UniqueIdentifier>{a3450bb5-084b-42dd-b29d-0ef11e7a976d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="BH\Modules\ItemMover">
+      <UniqueIdentifier>{f0228985-25bf-47bc-8e7e-2d5bec1a7586}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DllMain.cpp">
@@ -218,6 +221,9 @@
     </ClCompile>
     <ClCompile Include="Modules\Party\Party.cpp">
       <Filter>BH\Modules\Party</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\ItemMover\ItemMover.cpp">
+      <Filter>BH\Modules\ItemMover</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -358,6 +364,9 @@
     </ClInclude>
     <ClInclude Include="Constants.h">
       <Filter>BH</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\ItemMover\ItemMover.h">
+      <Filter>BH\Modules\ItemMover</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

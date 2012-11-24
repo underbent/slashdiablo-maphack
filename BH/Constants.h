@@ -502,6 +502,20 @@ enum TextColor {
 #define NODEPAGE_EQUIP		3
 
 ///////////////////////////////////////////////////
+// Item Actions
+///////////////////////////////////////////////////
+#define ITEM_ACTION_NEW_GROUND			0x00
+#define ITEM_ACTION_PICK_UP				0x01
+#define ITEM_ACTION_DROP				0x02
+#define ITEM_ACTION_OLD_GROUND			0x03
+#define ITEM_ACTION_PLACE_UNKNOWN		0x04 // cube? or inventory
+#define ITEM_ACTION_TO_STORAGE			0x04
+#define ITEM_ACTION_FROM_STORAGE		0x05
+#define ITEM_ACTION_TO_STORE			0x0B
+#define ITEM_ACTION_FROM_STORE			0x0C
+#define ITEM_ACTION_PLACE_BELT			0x0E
+
+///////////////////////////////////////////////////
 // Body Locations
 ///////////////////////////////////////////////////
 enum BodyLocation {
