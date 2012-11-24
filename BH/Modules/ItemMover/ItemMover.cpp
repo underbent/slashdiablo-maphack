@@ -257,3 +257,11 @@ void ItemMover::OnGamePacketRecv(BYTE* packet, bool* block) {
 	}
 	return;
 }
+
+void ItemMover::OnGameExit() {
+	ActivePacket.itemId = 0;
+	ActivePacket.x = 0;
+	ActivePacket.y = 0;
+	ActivePacket.startTicks = 0;
+	ActivePacket.destination = 0;
+}

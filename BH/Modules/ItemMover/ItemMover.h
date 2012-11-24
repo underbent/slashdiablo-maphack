@@ -55,4 +55,5 @@ public:
 
 	void OnRightClick(bool up, int x, int y, bool* block);
 	void OnGamePacketRecv(BYTE* packet, bool *block);
+	void OnGameExit();
 };
