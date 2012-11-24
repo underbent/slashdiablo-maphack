@@ -81,12 +81,12 @@ bool ItemMover::FindDestination(int xpac, int destination, unsigned int itemId, 
 	bool found = false;
 	int destX = 0, destY = 0;
 	if (width) {
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
 				bool abort = false;
 				int vacancies = 0;
-				for (int testy = y; testy < y + ySize && testy < height; testy++) {
-					for (int testx = x; testx < x + xSize && testx < width; testx++) {
+				for (int testx = x; testx < x + xSize && testx < width; testx++) {
+					for (int testy = y; testy < y + ySize && testy < height; testy++) {
 						if (p[testy*width + testx]) {
 							abort = true;
 							break;
