@@ -11,13 +11,15 @@
 class Party : public Module {
 	private:
 		map<std::string, Toggle> Toggles;
+		map<std::string, bool> LootingPermission;
 		void CheckParty();
 		int c;
-
+		bool doCheckParty;
 	public:
-		Party() : Module("Party") {};
+		Party() : Module("Party"), doCheckParty(false) {};
 		void OnLoad();
 		void OnUnload();
 		void OnLoop();
 		void OnKey(bool up, BYTE key, LPARAM lParam, bool* block);
+		void OnGameExit();
 };
