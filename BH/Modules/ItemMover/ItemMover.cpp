@@ -6,7 +6,7 @@
 // This module was inspired by the RedVex plugin "Item Mover", written by kaiks.
 // Thanks to kaiks for sharing his code.
 
-bool ItemMover::LoadInventory(UnitAny *unit, int xpac, int source, int sourceX, int sourceY, int destination) {
+bool ItemMover::LoadInventory(UnitAny *unit, int xpac, int source, int sourceX, int sourceY, bool shiftState, bool ctrlState, int stashUI, int invUI) {
 	bool returnValue = false;
 	memset(InventoryItemIds, 0, INVENTORY_WIDTH * INVENTORY_HEIGHT * sizeof(int));
 	memset(StashItemIds, 0, STASH_WIDTH * LOD_STASH_HEIGHT * sizeof(int));
@@ -22,6 +22,7 @@ bool ItemMover::LoadInventory(UnitAny *unit, int xpac, int source, int sourceX, 
 
 	unsigned int itemId = 0;
 	BYTE itemXSize, itemYSize;
+	bool cubeInInventory = false, cubeAnywhere = false;
 	for (UnitAny *pItem = unit->pInventory->pFirstItem; pItem; pItem = pItem->pItemData->pNextInvItem) {
 		int *p, width;
 		if (pItem->pItemData->ItemLocation == STORAGE_INVENTORY) {
@@ -36,6 +37,18 @@ bool ItemMover::LoadInventory(UnitAny *unit, int xpac, int source, int sourceX, 
 		} else {
 			continue;
 		}
+
+		char *code = D2COMMON_GetItemText(pItem->dwTxtFileNo)->szCode;
+		if (code[0] == 'b' && code[1] == 'o' && code[2] == 'x') {
+			if (pItem->pItemData->ItemLocation == STORAGE_INVENTORY) {
+				cubeInInventory = true;
+				cubeAnywhere = true;
+			}
+			if (pItem->pItemData->ItemLocation == STORAGE_STASH) {
+				cubeAnywhere = true;
+			}
+		}
+
 		int xStart = pItem->pObjectPath->dwPosX;
 		int yStart = pItem->pObjectPath->dwPosY;
 		BYTE xSize = D2COMMON_GetItemText(pItem->dwTxtFileNo)->xSize;
@@ -51,6 +64,21 @@ bool ItemMover::LoadInventory(UnitAny *unit, int xpac, int source, int sourceX, 
 				}
 			}
 		}
+	}
+
+	int destination;
+	if (ctrlState && shiftState && ((stashUI && cubeAnywhere) || (invUI && cubeInInventory)) && source != STORAGE_CUBE) {
+		destination = STORAGE_CUBE;
+	} else if (ctrlState) {
+		destination = STORAGE_NULL;  // i.e. the ground
+	} else if (source == STORAGE_STASH || source == STORAGE_CUBE) {
+		destination = STORAGE_INVENTORY;
+	} else if (source == STORAGE_INVENTORY && D2CLIENT_GetUIState(UI_STASH)) {
+		destination = STORAGE_STASH;
+	} else if (source == STORAGE_INVENTORY && D2CLIENT_GetUIState(UI_CUBE)) {
+		destination = STORAGE_CUBE;
+	} else {
+		return false;
 	}
 
 	// Find a spot for the item in the destination container
@@ -190,25 +218,11 @@ void ItemMover::OnRightClick(bool up, int x, int y, bool* block) {
 		return;
 	}
 
-	int destination;
-	if (ctrlState) {
-		destination = STORAGE_NULL;  // this means the ground
-	} else if (source == STORAGE_STASH || source == STORAGE_CUBE) {
-		destination = STORAGE_INVENTORY;
-	} else if (source == STORAGE_INVENTORY && D2CLIENT_GetUIState(UI_STASH)) {
-		destination = STORAGE_STASH;
-	} else if (source == STORAGE_INVENTORY && D2CLIENT_GetUIState(UI_CUBE)) {
-		destination = STORAGE_CUBE;
-	} else {
-		return;
-	}
-
-	bool moveItem = LoadInventory(unit, xpac, source, sourceX, sourceY, destination);
-
+	bool moveItem = LoadInventory(unit, xpac, source, sourceX, sourceY, shiftState, ctrlState, stashUI, invUI);
 	if (moveItem) {
-		*block = true;
 		PickUpItem();
 	}
+	*block = true;
 }
 
 void ItemMover::OnGamePacketRecv(BYTE* packet, bool* block) {

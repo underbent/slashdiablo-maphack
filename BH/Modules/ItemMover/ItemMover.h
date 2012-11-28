@@ -47,7 +47,7 @@ public:
 	void Lock() { EnterCriticalSection(&crit); };
 	void Unlock() { LeaveCriticalSection(&crit); };
 
-	bool LoadInventory(UnitAny *unit, int xpac, int source, int sourceX, int sourceY, int destination);
+	bool LoadInventory(UnitAny *unit, int xpac, int source, int sourceX, int sourceY, bool shiftState, bool ctrlState, int stashUI, int invUI);
 	bool FindDestination(int xpac, int destination, unsigned int itemId, BYTE xSize, BYTE ySize);
 	void PickUpItem();
 	void PutItemInContainer();
