@@ -30,6 +30,7 @@ class AutoTele : public Module {
 		DWORD LastArea;
 		POINT Vectors[4];
 		CArrayEx <POINT, POINT> TPath;
+		HANDLE LoadHandle;
 
 		//functions
 		DWORD GetPlayerArea();
@@ -42,17 +43,18 @@ class AutoTele : public Module {
 		bool CastOnMap(WORD x, WORD y, bool Left);
 		bool Interact(DWORD UnitId, DWORD UnitType);
 		DWORD GetUnitByXY(DWORD X, DWORD Y, Room2* pRoom);
-		void GetVectors();
-				
+		bool WaitingForMapData();
+
 	public:
-		AutoTele() : Module("AutoTele") {};
+		AutoTele() : Module("AutoTele"), LoadHandle(NULL) {};
 		void OnLoad();
 		void OnLoop();
 		void OnAutomapDraw();
 		void OnKey(bool up, BYTE key, LPARAM lParam, bool* block);
 		void OnGamePacketRecv(BYTE* packet, bool* block);
-		
+
 		std::map<string, Toggle>* GetToggles() { return &Toggles; }
+		void GetVectors();
 
 		static Level* GetLevel(Act* pAct, int level);
 		static DWORD GetDistanceSquared(DWORD x1, DWORD y1, DWORD x2, DWORD y2);
@@ -64,3 +66,5 @@ enum TeleType {
 	WP,
 	Prev
 };
+
+DWORD WINAPI LoadNewArea(VOID* lpvoid);

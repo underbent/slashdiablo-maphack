@@ -56,6 +56,9 @@ void AutoTele::OnLoad() {
 }
 
 void AutoTele::OnAutomapDraw() {
+	if (WaitingForMapData()) {
+		return;
+	}
 
 	POINT MyPos, Pos;
 	Drawing::Hook::ScreenToAutomap(&MyPos, D2CLIENT_GetUnitX(D2CLIENT_GetPlayerUnit()), D2CLIENT_GetUnitY(D2CLIENT_GetPlayerUnit()));
@@ -86,12 +89,17 @@ void AutoTele::OnAutomapDraw() {
 }
 
 void AutoTele::OnLoop() {
+	if (WaitingForMapData()) {
+		return;
+	}
 
-	if(GetPlayerArea() && LastArea != GetPlayerArea() && D2CLIENT_GetPlayerUnit()) {
-		LastArea = GetPlayerArea();
+	DWORD playerArea = GetPlayerArea();
+	if(playerArea && LastArea != playerArea && D2CLIENT_GetPlayerUnit()) {
+		LastArea = playerArea;
 		if(LastArea != MAP_A4_THE_CHAOS_SANCTUARY)
 			CSID = 0;
-		GetVectors();
+		// Loading the new area can cause noticeable hangs, so run in a background thread
+		LoadHandle = CreateThread(0, 0, LoadNewArea, this, 0, 0);
 	}
 
 	if(LastArea == MAP_A4_THE_CHAOS_SANCTUARY)
@@ -191,7 +199,8 @@ void AutoTele::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
 	} 
 	else if (key == WPKey) 
 	{
-	} else if (key == PrevKey) 
+	}
+	else if (key == PrevKey) 
 	{
 	}
 }
@@ -220,9 +229,31 @@ void AutoTele::OnGamePacketRecv(BYTE* packet, bool* block) {
 }
 
 void AutoTele::GetVectors() {
+	DWORD MyArea = GetPlayerArea();
+	DWORD Areas[2] = {MyArea, 0};
+	DWORD AreaCount = 1;
+	BOOL buildCollisionMap = false;
+
+	// Usually all markers/paths are in the current area (exceptions include River of Flame,
+	// which has its destination marker in the Chaos Sanctuary). First scan the vectors to see
+	// which areas we need to load.
+	for (int i = 0; i < 4; i++) {
+		Vector V = vVector[MyArea*4+i];
+		if (V.dwType == EXIT || (MyArea == MAP_A2_CANYON_OF_THE_MAGI && V.dwType == 0 && V.Id == 0)) {
+			if (V.Area) {
+				Areas[1] = V.Area;
+				AreaCount = 2;
+			}
+			buildCollisionMap = true;
+		}
+	}
+
+	CCollisionMap g_collisionMap;
+	if (buildCollisionMap) {
+		buildCollisionMap = g_collisionMap.CreateMap(Areas, AreaCount);  //create a cmap for the current area
+	}
 
 	for(int i = 0;i<4;i++) {
-		DWORD MyArea = GetPlayerArea();
 		Vectors[i].x = 0;
 		Vectors[i].y = 0;
 		Vector V = vVector[MyArea*4+i];
@@ -246,23 +277,13 @@ void AutoTele::GetVectors() {
 			if(V.Area)
 				Vectors[i] = FindPresetLocation(V.dwType, V.Id, V.Area);
 			else
-				Vectors[i] = FindPresetLocation(V.dwType, V.Id, GetPlayerArea());
+				Vectors[i] = FindPresetLocation(V.dwType, V.Id, MyArea);
 		}
 
 		if(V.dwType == EXIT) {
-			CCollisionMap g_collisionMap; //init the collisionmap
-
-			DWORD Areas[2];
-			DWORD AreaCount = 1;
-			Areas[0] = GetPlayerArea();
-
-			if(V.Area) {
-				Areas[1] = V.Area;
-				AreaCount = 2;
-			}
-
-			if(!g_collisionMap.CreateMap(Areas, AreaCount))//create a cmap for the current area
+			if (!buildCollisionMap) {
 				continue;
+			}
 
 			LPLevelExit ExitArray[0x40];//declare an array of exits to store the exits in later
 
@@ -649,5 +670,23 @@ DWORD AutoTele::GetUnitByXY(DWORD X, DWORD Y, Room2* pRoom) {
 					return pUnit->dwUnitId;
 		pUnit=pUnit->pListNext;
 	}
+	return 0;
+}
+
+bool AutoTele::WaitingForMapData() {
+	if (LoadHandle) {
+		DWORD wait = WaitForSingleObject(LoadHandle, 0);
+		if (wait == WAIT_TIMEOUT) {
+			return true;
+		}
+		CloseHandle(LoadHandle);
+		LoadHandle = NULL;
+	}
+	return false;
+}
+
+DWORD WINAPI LoadNewArea(VOID* lpvoid) {
+	AutoTele *at = (AutoTele*)lpvoid;
+	at->GetVectors();
 	return 0;
 }
