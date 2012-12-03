@@ -111,13 +111,16 @@ void ScreenInfo::OnDraw() {
 		int doneMephisto = D2COMMON_GetQuestFlag2(quests, THE_GUARDIAN, QFLAG_REWARD_GRANTED);
 		int doneDiablo = D2COMMON_GetQuestFlag2(quests, TERRORS_END, QFLAG_REWARD_GRANTED);
 		int doneBaal = D2COMMON_GetQuestFlag2(quests, EVE_OF_DESTRUCTION, QFLAG_REWARD_GRANTED);
+		int startedMephisto = D2COMMON_GetQuestFlag2(quests, THE_GUARDIAN, QFLAG_QUEST_STARTED);
+		int startedDiablo = D2COMMON_GetQuestFlag2(quests, TERRORS_END, QFLAG_QUEST_STARTED);
+		int startedBaal = D2COMMON_GetQuestFlag2(quests, EVE_OF_DESTRUCTION, QFLAG_QUEST_STARTED);
 
 		int warning = -1;
-		if (doneDuriel && !doneMephisto && !MephistoBlocked) {
+		if (doneDuriel && startedMephisto && !doneMephisto && !MephistoBlocked) {
 			warning = 0;
-		} else if (doneMephisto && !doneDiablo && !DiabloBlocked) {
+		} else if (doneMephisto && startedDiablo && !doneDiablo && !DiabloBlocked) {
 			warning = 1;
-		} else if (xpac && doneDiablo && !doneBaal && !BaalBlocked) {
+		} else if (xpac && doneDiablo && startedBaal && !doneBaal && !BaalBlocked) {
 			warning = 2;
 		}
 		if (warning >= 0) {
@@ -193,11 +196,12 @@ void ScreenInfo::OnGamePacketRecv(BYTE* packet, bool* block) {
 			// (corresponding to QFLAG_QUEST_COMPLETED_BEFORE) is always set when the
 			// quest was previously completed. QFLAG_PRIMARY_GOAL_ACHIEVED is often
 			// set as well.
+			// Packet sent at game start, and upon talking to quest NPCs.
 			int packetLen = 97;
 			MephistoBlocked = (packet[2 + (THE_GUARDIAN * 2)] & 0x80) > 0;
 			DiabloBlocked = (packet[2 + (TERRORS_END * 2)] & 0x80) > 0;
 			BaalBlocked = (packet[2 + (EVE_OF_DESTRUCTION * 2)] & 0x80) > 0;
-			ReceivedQuestPacket = true;
+			ReceivedQuestPacket = true;  // fixme: want this here?
 			break;
 
 			// TODO: does it get cleared when quest completed while we are in game in different act?
@@ -206,6 +210,7 @@ void ScreenInfo::OnGamePacketRecv(BYTE* packet, bool* block) {
 		{
 			// We have one byte for each of the 41 quests: zero if the quest is blocked,
 			// and nonzero if we can complete it.
+			// Packet sent upon opening quest log, and after sending 0x40 to server.
 			int packetLen = 42;
 			MephistoBlocked = packet[1 + THE_GUARDIAN] == 0;
 			DiabloBlocked = packet[1 + TERRORS_END] == 0;
