@@ -56,9 +56,9 @@ void AutoTele::OnLoad() {
 }
 
 void AutoTele::OnAutomapDraw() {
-	if (WaitingForMapData()) {
-		return;
-	}
+	//if (WaitingForMapData()) {
+	//	return;
+	//}
 
 	POINT MyPos, Pos;
 	Drawing::Hook::ScreenToAutomap(&MyPos, D2CLIENT_GetUnitX(D2CLIENT_GetPlayerUnit()), D2CLIENT_GetUnitY(D2CLIENT_GetPlayerUnit()));
@@ -89,17 +89,18 @@ void AutoTele::OnAutomapDraw() {
 }
 
 void AutoTele::OnLoop() {
-	if (WaitingForMapData()) {
-		return;
-	}
+	//if (WaitingForMapData()) {
+	//	return;
+	//}
 
 	DWORD playerArea = GetPlayerArea();
 	if(playerArea && LastArea != playerArea && D2CLIENT_GetPlayerUnit()) {
 		LastArea = playerArea;
 		if(LastArea != MAP_A4_THE_CHAOS_SANCTUARY)
 			CSID = 0;
-		// Loading the new area can cause noticeable hangs, so run in a background thread
-		LoadHandle = CreateThread(0, 0, LoadNewArea, this, 0, 0);
+		GetVectors();
+		//LoadHandle = CreateThread(0, 0, LoadNewArea, this, 0, 0);
+		//return;
 	}
 
 	if(LastArea == MAP_A4_THE_CHAOS_SANCTUARY)
@@ -298,6 +299,7 @@ void AutoTele::GetVectors() {
 					continue;
 				}
 			}
+			// fixme: should free the ExitArray entries after
 		}
 	}
 }
