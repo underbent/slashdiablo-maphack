@@ -38,6 +38,7 @@ bool ItemMover::LoadInventory(UnitAny *unit, int xpac, int source, int sourceX, 
 			continue;
 		}
 
+		bool box = false;
 		char *code = D2COMMON_GetItemText(pItem->dwTxtFileNo)->szCode;
 		if (code[0] == 'b' && code[1] == 'o' && code[2] == 'x') {
 			if (pItem->pItemData->ItemLocation == STORAGE_INVENTORY) {
@@ -47,6 +48,7 @@ bool ItemMover::LoadInventory(UnitAny *unit, int xpac, int source, int sourceX, 
 			if (pItem->pItemData->ItemLocation == STORAGE_STASH) {
 				cubeAnywhere = true;
 			}
+			box = true;
 		}
 
 		int xStart = pItem->pObjectPath->dwPosX;
@@ -56,7 +58,12 @@ bool ItemMover::LoadInventory(UnitAny *unit, int xpac, int source, int sourceX, 
 		for (int x = xStart; x < xStart + xSize; x++) {
 			for (int y = yStart; y < yStart + ySize; y++) {
 				p[y*width + x] = pItem->dwUnitId;
-				if (x == sourceX && y == sourceY && pItem->pItemData->ItemLocation == source) {
+
+				// If you click to move the cube into itself, your character ends up in
+				// the amusing (and apparently permanent) state where he has no visible
+				// cube and yet is unable to pick one up. Logging out does not fix it.
+				// So we disable all cube movements to be on the safe side.
+				if (x == sourceX && y == sourceY && pItem->pItemData->ItemLocation == source && !box) {
 					// This is the item we want to move
 					itemId = pItem->dwUnitId;
 					itemXSize = xSize;
