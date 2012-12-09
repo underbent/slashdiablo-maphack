@@ -99,15 +99,7 @@ int Config::ReadInt(std::string key, int value) {
 	//Check if configuration value exists
 	if (contents[key].length() == 0)
 		return value;
-	//Use a string stream to convert values
-	stringstream convert;
-	int ret;
-	//Hack todo hex conversion
-	if (!contents[key].find("0x"))
-		from_string<int>(ret,contents[key],std::hex);
-	else
-		from_string<int>(ret,contents[key],std::dec);
-	return ret;
+	return StringToNumber(contents[key]);
 }
 
 /* ReadToggle(std::string key, std::string toggle, bool state)

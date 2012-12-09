@@ -25,6 +25,7 @@ class Maphack : public Module {
 		unsigned int revealType;
 		bool revealedGame, revealedAct[6], revealedLevel[255];
 		std::map<string, unsigned int> automapColors;
+		std::map<int, unsigned int> automapMonsterColors;
 		std::list<LevelList*> automapLevels;
 		map<std::string, Toggle> Toggles;
 		Drawing::UITab* settingsTab;

@@ -19,7 +19,6 @@ Maphack::Maphack() : Module("Maphack") {
 	revealType = MaphackRevealAct;
 	ResetRevealed();
 	ReadConfig();
-
 }
 
 void Maphack::ReadConfig() {
@@ -31,10 +30,24 @@ void Maphack::ReadConfig() {
 	automapColors["Partied Missile"] = automap.ReadInt("Partied", 0x84);
 	automapColors["Hostile Missile"] = automap.ReadInt("Hostile", 0x5B);
 
-	Config monster(BH::config->ReadAssoc("Monster Color"));
+	map<string, string> MonsterColors = BH::config->ReadAssoc("Monster Color");
+	for (auto it = MonsterColors.cbegin(); it != MonsterColors.cend(); ) {
+		// If the key is a number, it means a monster we've assigned a specific color
+		int monsterId = -1;
+		stringstream ss((*it).first);
+		if ((ss >> monsterId).fail()) {
+			++it;
+		} else {
+			int monsterColor = StringToNumber((*it).second);
+			automapMonsterColors[monsterId] = monsterColor;
+			MonsterColors.erase(it++);
+		}
+	}
+
+	Config monster(MonsterColors);
 	automapColors["Normal Monster"] = monster.ReadInt("Normal", 0x5B);
 	automapColors["Minion Monster"] = monster.ReadInt("Minion", 0x60);
-	automapColors["Champion Monster"] = monster.ReadInt("Championr", 0x91);
+	automapColors["Champion Monster"] = monster.ReadInt("Champion", 0x91);
 	automapColors["Boss Monster"] = monster.ReadInt("Boss", 0x84);
 
 	Toggles["Auto Reveal"] = BH::config->ReadToggle("Reveal Map", "None", true);
@@ -192,6 +205,11 @@ void Maphack::OnAutomapDraw() {
 				if (unit->pMonsterData->fMinion)
 					color = automapColors["Minion Monster"];
 
+				// User can override colors of non-boss monsters
+				if (automapMonsterColors.find(unit->dwTxtFileNo) != automapMonsterColors.end() && !unit->pMonsterData->fBoss) {
+					color = automapMonsterColors[unit->dwTxtFileNo];
+				}
+
 				//Determine immunities
 				string szImmunities[] = {"ÿc7i", "ÿc8i", "ÿc1i", "ÿc9i", "ÿc3i", "ÿc2i"};
 				DWORD dwImmunities[] = {36,37,39,41,43,45};
@@ -201,7 +219,7 @@ void Maphack::OnAutomapDraw() {
 					if (nImm >= 100)
 						immunityText += szImmunities[n];
 				}
-				
+
 				Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pPath->xPos, unit->pPath->yPos);
 				if (immunityText.length() > 0)
 					Drawing::Texthook::Draw(automapLoc.x, automapLoc.y - 8, Drawing::Center, 6, White, immunityText);

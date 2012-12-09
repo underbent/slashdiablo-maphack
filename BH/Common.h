@@ -20,6 +20,7 @@ template< class type> std::string to_string( const type & value)
 { std::stringstream ss; ss << value; return ss.str(); }
 
 bool StringToBool(std::string str);
+int StringToNumber(std::string str);
 
 std::string Trim(std::string source);
 

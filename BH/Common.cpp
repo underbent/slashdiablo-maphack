@@ -57,6 +57,16 @@ bool StringToBool(std::string str) {
 	return false;
 }
 
+int StringToNumber(std::string str) {
+	int ret;
+	if (!str.find("0x")) {
+		from_string<int>(ret, str, std::hex);
+	} else {
+		from_string<int>(ret, str, std::dec);
+	}
+	return ret;
+}
+
 void PrintText(DWORD Color, char *szText, ...) {
 	char szBuffer[152] = {0};
 	va_list Args;
