@@ -284,7 +284,7 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 	} else if (key.compare(0, 2, "SK") == 0) {
 		int num = -1;
 		stringstream ss(key.substr(2));
-		if ((ss >> num).fail() || num < 0 || num > SKILL_MAX) {
+		if ((ss >> num).fail() || num < 0 || num > STAT_MAX) {
 			return;
 		}
 		conditions.push_back(new ItemStatCondition(negate, STAT_SINGLESKILL, num, operation, value));
