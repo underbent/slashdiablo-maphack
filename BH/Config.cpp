@@ -139,7 +139,7 @@ unsigned int Config::ReadKey(std::string key, std::string toggle) {
 	if (contents[key].length() == 0)
 		return GetKeyCode(toggle.c_str()).value;
 
-	//Grab the proper key code and make s ure it's valid
+	//Grab the proper key code and make sure it's valid
 	KeyCode ret = GetKeyCode(contents[key].c_str());
 	if (ret.value == 0)
 		return GetKeyCode(toggle.c_str()).value;

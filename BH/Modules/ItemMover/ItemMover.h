@@ -35,6 +35,8 @@ private:
 	int InventoryItemIds[INVENTORY_WIDTH * INVENTORY_HEIGHT];
 	int StashItemIds[STASH_WIDTH * LOD_STASH_HEIGHT];
 	int CubeItemIds[CUBE_WIDTH * CUBE_HEIGHT];
+	unsigned int HealKey;
+	unsigned int ManaKey;
 	ItemPacketData ActivePacket;
 	CRITICAL_SECTION crit;
 public:
@@ -53,6 +55,8 @@ public:
 	void PutItemInContainer();
 	void PutItemOnGround();
 
+	void OnLoad();
+	void OnKey(bool up, BYTE key, LPARAM lParam, bool* block);
 	void OnRightClick(bool up, int x, int y, bool* block);
 	void OnGamePacketRecv(BYTE* packet, bool *block);
 	void OnGameExit();
