@@ -43,6 +43,15 @@ char* UnicodeToAnsi(const wchar_t* str)
 	return buf;
 }
 
+wchar_t* GetColorCode(int ColNo)
+{
+	static wchar_t Result[4];
+	wchar_t* pCol = D2LANG_GetLocaleText(3994);
+	if (!pCol) return L"";
+	swprintf_s(Result, 4, L"%s%c", pCol, (char)(ColNo + '0'));
+	return Result;
+}
+
 std::string Trim(std::string source) {
 	source = source.erase(0, source.find_first_not_of(" "));
 	source = source.erase(source.find_last_not_of(" ") + 1);

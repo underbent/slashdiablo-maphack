@@ -7,6 +7,7 @@
 void Tokenize(const std::string& str, std::vector<std::string>& tokens, const std::string& delimiters);
 wchar_t* AnsiToUnicode(const char* str);
 char* UnicodeToAnsi(const wchar_t* str);
+wchar_t* GetColorCode(int ColNo);
 template <class T>
 bool from_string(T& t, 
                  const std::string& s, 
