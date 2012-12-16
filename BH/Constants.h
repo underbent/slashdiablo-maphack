@@ -493,6 +493,32 @@ enum TextColor {
 #define STAT_MAX					358
 
 ///////////////////////////////////////////////////
+// Skill Tab Definitions
+// (for GetUnitStat with STAT_SKILLTAB)
+///////////////////////////////////////////////////
+#define SKILLTAB_AMAZON_BOW				0
+#define SKILLTAB_AMAZON_PASSIVE			1
+#define SKILLTAB_AMAZON_JAVELIN			2
+#define SKILLTAB_SORCERESS_FIRE			8
+#define SKILLTAB_SORCERESS_LIGHTNING	9
+#define SKILLTAB_SORCERESS_COLD			10
+#define SKILLTAB_NECROMANCER_CURSES		16
+#define SKILLTAB_NECROMANCER_POISON		17
+#define SKILLTAB_NECROMANCER_SUMMON		18
+#define SKILLTAB_PALADIN_COMBAT			24
+#define SKILLTAB_PALADIN_OFFENSIVE		25
+#define SKILLTAB_PALADIN_DEFENSIVE		26
+#define SKILLTAB_BARBARIAN_COMBAT		32
+#define SKILLTAB_BARBARIAN_MASTERIES	33
+#define SKILLTAB_BARBARIAN_WARCRIES		34
+#define SKILLTAB_DRUID_SUMMONING		40
+#define SKILLTAB_DRUID_SHAPESHIFTING	41
+#define SKILLTAB_DRUID_ELEMENTAL		42
+#define SKILLTAB_ASSASSIN_TRAPS			48
+#define SKILLTAB_ASSASSIN_SHADOWDISC	49
+#define SKILLTAB_ASSASSIN_MARTIALARTS	50
+
+///////////////////////////////////////////////////
 // NodePages
 ///////////////////////////////////////////////////
 #define NODEPAGE_STORAGE	1
