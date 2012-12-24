@@ -936,6 +936,33 @@ enum QuestFlags {
 };
 
 ///////////////////////////////////////////////////
+// Town NPC Class ID's
+///////////////////////////////////////////////////
+#define NPCID_Cain1                             265                        //Act 1
+#define NPCID_Kashya                            150                        //Act 1
+#define NPCID_Akara                             148                        //Act 1
+#define NPCID_Warriv1                           155                        //Act 1
+#define NPCID_Gheed                             147                        //Act 1
+#define NPCID_Charsi                            154                        //Act 1
+#define NPCID_Greiz                             198                        //Act 2
+#define NPCID_Drognan                           177                        //Act 2
+#define NPCID_Fara                              178                        //Act 2
+#define NPCID_Cain2                             244                        //Act 2
+#define NPCID_Meshif1                           210                        //Act 2
+#define NPCID_Cain3                             245                        //Act 3
+#define NPCID_Ormus                             255                        //Act 3
+#define NPCID_Asheara                           252                        //Act 3
+#define NPCID_Cain4                             246                        //Act 4
+#define NPCID_Tyrael                            367                        //Act 4
+#define NPCID_Jamella                           405                        //Act 4
+#define NPCID_Halbu                             257                        //Act 4
+#define NPCID_Larzuk                            511                        //Act 5
+#define NPCID_Cain5                             520                        //Act 5
+#define NPCID_QualKehk                          515                        //Act 5
+#define NPCID_Malah                             513                        //Act 5
+#define NPCID_Anya                              512                        //Act 5
+
+///////////////////////////////////////////////////
 // Item Attributes (From D2jsp scripting document)
 ///////////////////////////////////////////////////
 #define ITEM_IDENTIFIED			0x00000010 // Identified
