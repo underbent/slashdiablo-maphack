@@ -14,9 +14,8 @@ class Party : public Module {
 		map<std::string, bool> LootingPermission;
 		void CheckParty();
 		int c;
-		bool doCheckParty;
 	public:
-		Party() : Module("Party"), doCheckParty(false) {};
+		Party() : Module("Party") {};
 		void OnLoad();
 		void OnUnload();
 		void OnLoop();
