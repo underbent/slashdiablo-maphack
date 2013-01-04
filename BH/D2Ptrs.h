@@ -323,6 +323,9 @@ ASMPTR(D2COMMON, GetLevelIdFromRoom_I, 0x3C000)
 FUNCPTR(D2NET, SendPacket, void __stdcall, (size_t aLen, DWORD arg1, BYTE* aPacket), -10024)
 FUNCPTR(D2NET, ReceivePacket_I, void __stdcall, (BYTE *aPacket, DWORD aLen), -10033)
 
+// See http://www.blizzhackers.cc/viewtopic.php?f=182&t=449390&p=4498608&hilit=receivepacket#p4498608
+FUNCPTR(D2NET, ReceivePacket_II, void __fastcall, (DWORD* pExpectedSize, void *_1, BYTE *aPacket, DWORD aLen), 0x6BD0)
+FUNCPTR(D2NET, ReceivePacket_III, BOOL __fastcall, (DWORD* pExpectedSize, BYTE *aPacket, DWORD aLen), 0x63C0)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // D2Net Globals
