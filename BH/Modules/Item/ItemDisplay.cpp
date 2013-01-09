@@ -564,6 +564,7 @@ void CreateItemTable() {
 	ItemLookup[28][28][29] = 68157440;  //sst
 	ItemLookup[21][28][29] = 68157440;  //lst
 	ItemLookup[16][28][29] = 68157440;  //gst
+	ItemLookup[12][28][29] = 68157440;  //cst (gnarled staff is actually cst not gst in my tests)
 	ItemLookup[11][28][29] = 68157440;  //bst
 	ItemLookup[32][28][29] = 68157440;  //wst
 	ItemLookup[32][23][13] = 69206016;  //wnd
