@@ -133,15 +133,16 @@ void StatsDisplay::OnDraw() {
 		Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4Faster Hit Recovery:ÿc0 %d", (int)D2COMMON_GetUnitStat(unit, STAT_FASTERHITRECOVERY, 0));
 		Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4Faster Run/Walk:ÿc0 %d", (int)D2COMMON_GetUnitStat(unit, STAT_FASTERRUNWALK, 0));
 		Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4Increased Attack Speed:ÿc0 %d", (int)D2COMMON_GetUnitStat(unit, STAT_IAS, 0));
+		y += 8;
+
+		Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4Crushing Blow:ÿc0 %d", (int)D2COMMON_GetUnitStat(unit, STAT_CRUSHINGBLOW, 0));
 		Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4Life Leech:ÿc0 %d", (int)D2COMMON_GetUnitStat(unit, STAT_LIFELEECH, 0));
 		Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4Mana Leech:ÿc0 %d", (int)D2COMMON_GetUnitStat(unit, STAT_MANALEECH, 0));
 		y += 8;
 
+		int cowKingKilled = D2COMMON_GetQuestFlag(D2CLIENT_GetQuestInfo(), 4, 10);
 		Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4Magic Find:ÿc0 %d", (int)D2COMMON_GetUnitStat(unit, STAT_MAGICFIND, 0));
 		Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4Gold Find:ÿc0 %d", (int)D2COMMON_GetUnitStat(unit, STAT_GOLDFIND, 0));
-		y += 8;
-
-		int cowKingKilled = D2COMMON_GetQuestFlag(D2CLIENT_GetQuestInfo(), 4, 10);
 		Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4Stash Gold:ÿc0 %d", (int)D2COMMON_GetUnitStat(unit, STAT_GOLDBANK, 0));
 		Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4Cow King:ÿc0 %s", cowKingKilled ? "killed" : "alive");
 	}
