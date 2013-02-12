@@ -30,6 +30,18 @@ void Maphack::ReadConfig() {
 	automapColors["Partied Missile"] = automap.ReadInt("Partied", 0x84);
 	automapColors["Hostile Missile"] = automap.ReadInt("Hostile", 0x5B);
 
+	TextColorMap["ÿc0"] = 0x20;  // white
+	TextColorMap["ÿc1"] = 0x0A;  // red
+	TextColorMap["ÿc2"] = 0x84;  // green
+	TextColorMap["ÿc3"] = 0x97;  // blue
+	TextColorMap["ÿc4"] = 0x0D;  // gold
+	TextColorMap["ÿc5"] = 0xD0;  // gray
+	TextColorMap["ÿc6"] = 0x00;  // black
+	TextColorMap["ÿc7"] = 0x5A;  // tan
+	TextColorMap["ÿc8"] = 0x60;  // orange
+	TextColorMap["ÿc9"] = 0x0C;  // yellow
+	TextColorMap["ÿc;"] = 0x9B;  // purple
+
 	map<string, string> MonsterColors = BH::config->ReadAssoc("Monster Color");
 	for (auto it = MonsterColors.cbegin(); it != MonsterColors.cend(); ) {
 		// If the key is a number, it means a monster we've assigned a specific color
@@ -257,7 +269,7 @@ void Maphack::OnAutomapDraw() {
 					}
 					if (match) {
 						Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pItemPath->dwPosX, unit->pItemPath->dwPosY);
-						Drawing::Boxhook::Draw(automapLoc.x - 4, automapLoc.y - 4, 8, 8, 0x60, Drawing::BTHighlight);
+						Drawing::Boxhook::Draw(automapLoc.x - 4, automapLoc.y - 4, 8, 8, TextColorMap[(*it)->action.colorOnMap], Drawing::BTHighlight);
 						break;
 					}
 				}

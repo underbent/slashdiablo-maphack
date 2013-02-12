@@ -197,10 +197,10 @@ struct ActionReplace {
 };
 
 struct Action {
-	bool displayOnMap;
 	bool stopProcessing;
 	string name;
-	Action() : displayOnMap(false), stopProcessing(true), name("") {}
+	string colorOnMap;
+	Action() : colorOnMap(""), stopProcessing(true), name("") {}
 };
 
 struct Rule {

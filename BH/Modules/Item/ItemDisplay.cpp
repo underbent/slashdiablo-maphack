@@ -1,5 +1,19 @@
 #include "ItemDisplay.h"
 
+// All colors here must also be defined in TextColorMap
+#define COLOR_REPLACEMENTS	\
+	{"WHITE", "ÿc0"},		\
+	{"RED", "ÿc1"},			\
+	{"GREEN", "ÿc2"},		\
+	{"BLUE", "ÿc3"},		\
+	{"GOLD", "ÿc4"},		\
+	{"GRAY", "ÿc5"},		\
+	{"BLACK", "ÿc6"},		\
+	{"TAN", "ÿc7"},			\
+	{"ORANGE", "ÿc8"},		\
+	{"YELLOW", "ÿc9"},		\
+	{"PURPLE", "ÿc;"}
+
 enum Operation {
 	EQUAL,
 	GREATER_THAN,
@@ -52,17 +66,7 @@ void SubstituteNameVariables(UnitAny *item, string &name, Action *action) {
 		{"RUNENUM", runenum},
 		{"RUNENAME", runename},
 		{"ILVL", ilvl},
-		{"WHITE", "ÿc0"},
-		{"RED", "ÿc1"},
-		{"GREEN", "ÿc2"},
-		{"BLUE", "ÿc3"},
-		{"GOLD", "ÿc4"},
-		{"GRAY", "ÿc5"},
-		{"BLACK", "ÿc6"},
-		{"TAN", "ÿc7"},
-		{"ORANGE", "ÿc8"},
-		{"YELLOW", "ÿc9"},
-		{"PURPLE", "ÿc;"}
+		COLOR_REPLACEMENTS
 	};
 	name.assign(action->name);
 	for (int n = 0; n < sizeof(replacements) / sizeof(replacements[0]); n++) {
@@ -131,7 +135,7 @@ void InitializeItemRules() {
 		}
 
 		RuleList.push_back(r);
-		if (r->action.displayOnMap) {
+		if (r->action.colorOnMap.length() > 0) {
 			MapRuleList.push_back(r);
 		}
 	}
@@ -139,10 +143,24 @@ void InitializeItemRules() {
 
 void BuildAction(string *str, Action *act) {
 	act->name = string(str->c_str());
+
 	size_t map = act->name.find("%MAP%");
 	if (map != string::npos) {
+		string mapColor = "ÿc0";
+		size_t lastColorPos = 0;
+		ActionReplace colors[] = {
+			COLOR_REPLACEMENTS
+		};
+		for (int n = 0; n < sizeof(colors) / sizeof(colors[0]); n++) {
+			size_t pos = act->name.find("%" + colors[n].key + "%");
+			if (pos != string::npos && pos < map && pos >= lastColorPos) {
+				mapColor = colors[n].value;
+				lastColorPos = pos;
+			}
+		}
+
 		act->name.replace(map, 5, "");
-		act->displayOnMap = true;
+		act->colorOnMap = mapColor;
 	}
 	size_t done = act->name.find("%CONTINUE%");
 	if (done != string::npos) {
