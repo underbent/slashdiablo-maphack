@@ -102,13 +102,21 @@ BOOL cInjector::InjectDLL(DWORD dwPid, wstring wDllName)
 					printf("You appear to have a different client version. To learn how to downgrade your\n");
 					printf("client, see the Guides & Resources section of the slashdiablo subreddit.\n");
 					return false;
+				} else {
+					printf("VirtualAllocEx() failed with error code %d\n", GetLastError());
 				}
+			} else {
+				printf("GetProcAddress() failed with error code %d\n", GetLastError());
 			}
 
 			FreeLibrary(hKernel32);
+		} else {
+			printf("LoadLibrary() failed with error code %d\n", GetLastError());
 		}
 
 		CloseHandle(hProc);
+	} else {
+		printf("OpenProcess() failed with error code %d\n", GetLastError());
 	}
 
 	return FALSE;

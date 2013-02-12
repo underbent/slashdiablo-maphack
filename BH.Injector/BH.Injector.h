@@ -44,8 +44,26 @@ class DiabloWindow {
 
 		BOOL IsInjected() { return !(pDll == NULL); };
 
-		VOID Inject() { if (IsInjected()) { return; } if (cInjector::InjectDLL(pHwnd, DLL_NAME)) { wprintf(L"Injected BH into %s(HWND: %X)\n", szTitle, pHwnd); } else { wprintf(L"Failed to inject %s into %s(HWND: %X)\n", DLL_NAME, szTitle, pHwnd); } };
-		VOID Unload() { if (!IsInjected()) { return; } if (cInjector::UnloadDLL(pHwnd, pDll)) { wprintf(L"Unloaded BH from %s(HWND: %X)\n", szTitle, pHwnd); } else { wprintf(L"Failed to unload %s from %s(HWND: %X)\n", DLL_NAME, szTitle, pHwnd); } };
+		VOID Inject() {
+			if (IsInjected()) {
+				return;
+			}
+			if (cInjector::InjectDLL(pHwnd, DLL_NAME)) {
+				wprintf(L"Injected BH into %s(HWND: %X)\n", szTitle, pHwnd);
+			} else {
+				wprintf(L"Failed to inject %s into %s(HWND: %X)\n", DLL_NAME, szTitle, pHwnd);
+			}
+		};
+		VOID Unload() {
+			if (!IsInjected()) {
+				return;
+			}
+			if (cInjector::UnloadDLL(pHwnd, pDll)) {
+				wprintf(L"Unloaded BH from %s(HWND: %X)\n", szTitle, pHwnd);
+			} else {
+				wprintf(L"Failed to unload %s from %s(HWND: %X)\n", DLL_NAME, szTitle, pHwnd);
+			}
+		};
 
 		VOID MenuMessage(INT nOpt) {
 			RECT windowRect;
