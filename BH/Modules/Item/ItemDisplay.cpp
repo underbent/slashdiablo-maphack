@@ -111,6 +111,7 @@ bool IntegerCompare(unsigned int Lvalue, BYTE operation, unsigned int Rvalue) {
 }
 
 void InitializeItemRules() {
+	bool foundFirstComplexRule = false;
 	vector<pair<string, string>> rules = BH::config->ReadMapList("ItemDisplay");
 	for (unsigned int i = 0; i < rules.size(); i++) {
 		string buf;
@@ -126,13 +127,14 @@ void InitializeItemRules() {
 		}
 		BuildAction(&(rules[i].second), &(r->action));
 
-		if (r->conditions.size() == 1) {
+		if (r->conditions.size() == 1 && !foundFirstComplexRule) {
 			int idx = r->conditions[0]->InsertLookup();
 			if (idx >= 0) {
 				RuleCache.push_back(r);
 				continue;
 			}
 		}
+		foundFirstComplexRule = true;
 
 		RuleList.push_back(r);
 		if (r->action.colorOnMap.length() > 0) {
