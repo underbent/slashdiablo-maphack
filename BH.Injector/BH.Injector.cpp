@@ -49,7 +49,7 @@ int main(int argc, const char* argv[]) {
 	vector<DiabloWindow*> Windows;
 
 	//Print intro and the beginning of the menu.
-	printf("BH v0.1.3 By McGod\n");
+	printf("BH v0.1.4 By McGod\n");
 	printf("SlashDiablo Branch: Edited By Deadlock\n" );
 	printf("Visit http://www.reddit.com/r/slashdiablo for updates!\n");
 	printf("Please choose an option to inject.\n");
