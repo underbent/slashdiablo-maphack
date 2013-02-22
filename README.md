@@ -14,9 +14,9 @@ Major features include:
 * Full maphack
  * Monsters, missiles displayed on map
  * Infinite light radius
+ * Configurable colors for different monsters (see wiki for details)
  * Indicators of current level's exits
- * Configurable colors for different monsters
-* Configurable item display features
+* Configurable item display features (see wiki for details)
  * Modify item names and add sockets, item levels, ethereality
  * Change item name colors
  * Display certain items on the map
