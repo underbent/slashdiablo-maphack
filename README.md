@@ -29,3 +29,6 @@ Major features include:
 * Display gear of other players
 * Screen showing secondary character attributes such as IAS and FHR
 
+Github no longer offers binary downloads, so to get the latest release
+(currently v0.1.4) or any older release go to
+http://bitly.com/bundles/underbent/1.
