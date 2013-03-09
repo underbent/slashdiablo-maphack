@@ -25,7 +25,7 @@ class ScreenInfo : public Module {
 		bool ReceivedQuestPacket;
 	public:
 		ScreenInfo() :
-			Module("Screen Info"), warningTicks(GetTickCount64()), packetRequests(0),
+			Module("Screen Info"), warningTicks(BHGetTickCount()), packetRequests(0),
 			MephistoBlocked(false), DiabloBlocked(false), BaalBlocked(false), ReceivedQuestPacket(false) {};
 
 		void OnLoad();

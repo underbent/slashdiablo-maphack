@@ -157,3 +157,18 @@ KeyCode GetKeyCode(const char* name) {
 			return pCodes[n];
 	return pCodes[0];
 }
+
+ULONGLONG BHGetTickCount(void) {
+    static bool first = true;
+    static ULONGLONG (*pGetTickCount64)(void);
+
+    if (first) {
+        HMODULE hlib = LoadLibraryA("KERNEL32.DLL");
+        pGetTickCount64 = (ULONGLONG(*)())GetProcAddress(hlib, "GetTickCount64");
+        first = false;
+    }
+    if (pGetTickCount64) {
+        return pGetTickCount64();
+	}
+    return (ULONGLONG)GetTickCount();
+}

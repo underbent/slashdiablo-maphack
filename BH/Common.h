@@ -35,3 +35,4 @@ struct KeyCode {
 
 KeyCode GetKeyCode(unsigned int nKey);
 KeyCode GetKeyCode(const char* name);
+ULONGLONG BHGetTickCount(void);

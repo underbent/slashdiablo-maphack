@@ -155,7 +155,7 @@ bool ItemMover::FindDestination(int xpac, int destination, unsigned int itemId, 
 			ActivePacket.itemId = itemId;
 			ActivePacket.x = destX;
 			ActivePacket.y = destY;
-			ActivePacket.startTicks = GetTickCount64();
+			ActivePacket.startTicks = BHGetTickCount();
 			ActivePacket.destination = destination;
 		}
 		Unlock();

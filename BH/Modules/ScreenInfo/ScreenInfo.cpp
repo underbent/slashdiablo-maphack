@@ -91,7 +91,7 @@ void ScreenInfo::OnDraw() {
 		return;
 	}
 
-	ULONGLONG ticks = GetTickCount64();
+	ULONGLONG ticks = BHGetTickCount();
 	ULONGLONG ms = ticks - packetTicks;
 	if (!ReceivedQuestPacket && packetRequests < 6 && ms > 5000) {
 		// Ask for quest information from the server; server will respond with packet 0x52.
