@@ -35,6 +35,19 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam) {
 	return true;
 }
 
+char* getCmdOption(char** begin, char** end, const std::string& option) {
+	char** itr = std::find(begin, end, option);
+	if (itr != end && ++itr != end)
+	{
+		return *itr;
+	}
+	return 0;
+}
+
+bool cmdOptionExists(char** begin, char** end, const std::string& option)
+{
+	return std::find(begin, end, option) != end;
+}
 
 //Main Function
 int main(int argc, const char* argv[]) {
@@ -50,12 +63,12 @@ int main(int argc, const char* argv[]) {
 
 	//Print intro and the beginning of the menu.
 	printf("BH v0.1.4 By McGod\n");
-	printf("SlashDiablo Branch: Edited By Deadlock\n" );
+	printf("SlashDiablo Branch: Edited By Deadlock, underbent\n" );
 	printf("Visit http://www.reddit.com/r/slashdiablo for updates!\n");
 	printf("Please choose an option to inject.\n");
 
 	if (!cInjector::EnableDebugPriv()) {
-		printf("\tYou must run this injector as an adminstrator!\nIf your using Windows Vista or Windows 7, right click and choose \'Run as Adminstrator\'");
+		printf("\tYou must run this injector as an adminstrator!\nIf you're using Windows Vista or Windows 7, right click and choose \'Run as Adminstrator\'");
 		system("PAUSE");
 		return 1;
 	}
@@ -76,8 +89,20 @@ int main(int argc, const char* argv[]) {
 	for (vector<DiabloWindow*>::iterator window = Windows.begin(); window < Windows.end(); window++)
 		(*window)->MenuMessage(nCount++);
 
-	int nOpt =  _getch() - 48;
-	
+	int nOpt;
+	char *numOpt = getCmdOption((char**)argv, (char**)argv + argc, "-o");
+	if (numOpt) {
+		string str(numOpt);
+		stringstream ss(str);
+		if ((ss >> nOpt).fail()) {
+			printf("\tCannot convert -o argument to an integer!\n");
+			system("PAUSE");
+			return 1;
+		}
+	} else {
+		nOpt = _getch() - 48;
+	}
+
 	switch(nOpt) 
 	{
 		case 0://Inject into all

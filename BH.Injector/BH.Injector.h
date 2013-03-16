@@ -22,6 +22,8 @@
 
 #include <Windows.h>
 #include <iostream>
+#include <sstream>
+#include <algorithm>
 #include <string>
 #include <wchar.h>
 #include <conio.h>
