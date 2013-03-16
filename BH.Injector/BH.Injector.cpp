@@ -89,6 +89,8 @@ int main(int argc, const char* argv[]) {
 	for (vector<DiabloWindow*>::iterator window = Windows.begin(); window < Windows.end(); window++)
 		(*window)->MenuMessage(nCount++);
 
+	bool noPause = cmdOptionExists((char**)argv, (char**)argv + argc, "-p");
+
 	int nOpt;
 	char *numOpt = getCmdOption((char**)argv, (char**)argv + argc, "-o");
 	if (numOpt) {
@@ -125,5 +127,7 @@ int main(int argc, const char* argv[]) {
 		break;
 	}
 	
-	system("PAUSE");
+	if (!noPause) {
+		system("PAUSE");
+	}
 }
