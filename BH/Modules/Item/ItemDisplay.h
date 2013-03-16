@@ -295,6 +295,10 @@ struct Rule {
 
 	// Evaluate conditions which are in Reverse Polish Notation
 	bool Evaluate(UnitAny *item, char *itemCode) {
+		if (conditions.size() == 0) {
+			return true;  // a rule with no conditions always matches
+		}
+
 		vector<Condition*> conditionStack;
 		for (unsigned int i = 0; i < conditions.size(); i++) {
 			Condition *input = conditions[i];
