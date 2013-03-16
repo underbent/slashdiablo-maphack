@@ -260,14 +260,7 @@ void Maphack::OnAutomapDraw() {
 			} else if (unit->dwType == UNIT_ITEM) {
 				char *code = D2COMMON_GetItemText(unit->dwTxtFileNo)->szCode;
 				for (vector<Rule*>::iterator it = MapRuleList.begin(); it != MapRuleList.end(); it++) {
-					bool match = true;
-					for (unsigned int i = 0; i < (*it)->conditions.size(); i++) {
-						if (!(*it)->conditions[i]->Match(unit, code)) {
-							match = false;
-							break;
-						}
-					}
-					if (match) {
+					if ((*it)->Evaluate(unit, code)) {
 						Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pItemPath->dwPosX, unit->pItemPath->dwPosY);
 						Drawing::Boxhook::Draw(automapLoc.x - 4, automapLoc.y - 4, 8, 8, TextColorMap[(*it)->action.colorOnMap], Drawing::BTHighlight);
 						break;

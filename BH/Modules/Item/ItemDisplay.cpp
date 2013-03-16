@@ -26,6 +26,7 @@ unsigned int ItemLookup[36][36][36] = {};
 vector<Rule*> RuleList;
 vector<Rule*> MapRuleList;
 vector<Rule*> RuleCache;
+BYTE LastConditionType;
 
 void GetItemName(UnitAny *item, string &name, char *itemCode) {
 	unsigned int itemVal = ItemLookup[GetItemCodeIndex(itemCode[0])][GetItemCodeIndex(itemCode[1])][GetItemCodeIndex(itemCode[2])];
@@ -34,14 +35,7 @@ void GetItemName(UnitAny *item, string &name, char *itemCode) {
 		SubstituteNameVariables(item, name, &RuleCache[idx]->action);
 	} else {
 		for (vector<Rule*>::iterator it = RuleList.begin(); it != RuleList.end(); it++) {
-			bool match = true;
-			for (unsigned int i = 0; i < (*it)->conditions.size(); i++) {
-				if (!(*it)->conditions[i]->Match(item, itemCode)) {
-					match = false;
-					break;
-				}
-			}
-			if (match) {
+			if ((*it)->Evaluate(item, itemCode)) {
 				SubstituteNameVariables(item, name, &(*it)->action);
 				if ((*it)->action.stopProcessing) {
 					break;
@@ -121,10 +115,13 @@ void InitializeItemRules() {
 			tokens.push_back(buf);
 		}
 
+		LastConditionType = CT_None;
 		Rule *r = new Rule();
+		vector<Condition*> RawConditions;
 		for (vector<string>::iterator tok = tokens.begin(); tok < tokens.end(); tok++) {
-			Condition::BuildConditions(r->conditions, (*tok));
+			Condition::BuildConditions(RawConditions, (*tok));
 		}
+		Condition::ProcessConditions(RawConditions, r->conditions);
 		BuildAction(&(rules[i].second), &(r->action));
 
 		if (r->conditions.size() == 1 && !foundFirstComplexRule) {
@@ -173,6 +170,64 @@ void BuildAction(string *str, Action *act) {
 
 const string Condition::tokenDelims = "<=>";
 
+// Implements the shunting-yard algorithm to evaluate condition expressions
+// Returns a vector of conditions in Reverse Polish Notation
+void Condition::ProcessConditions(vector<Condition*> &inputConditions, vector<Condition*> &processedConditions) {
+	vector<Condition*> conditionStack;
+	unsigned int size = inputConditions.size();
+	for (unsigned int c = 0; c < size; c++) {
+		Condition *input = inputConditions[c];
+		if (input->conditionType == CT_Operand) {
+			processedConditions.push_back(input);
+		} else if (input->conditionType == CT_BinaryOperator || input->conditionType == CT_NegationOperator) {
+			bool go = true;
+			while (go) {
+				if (conditionStack.size() > 0) {
+					Condition *stack = conditionStack.back();
+					if ((stack->conditionType == CT_NegationOperator || stack->conditionType == CT_BinaryOperator) &&
+						input->conditionType == CT_BinaryOperator) {
+						conditionStack.pop_back();
+						processedConditions.push_back(stack);
+					} else {
+						go = false;
+					}
+				} else {
+					go = false;
+				}
+			}
+			conditionStack.push_back(input);
+		} else if (input->conditionType == CT_LeftParen) {
+			conditionStack.push_back(input);
+		} else if (input->conditionType == CT_RightParen) {
+			bool foundLeftParen = false;
+			while (conditionStack.size() > 0 && !foundLeftParen) {
+				Condition *stack = conditionStack.back();
+				conditionStack.pop_back();
+				if (stack->conditionType == CT_LeftParen) {
+					foundLeftParen = true;
+					break;
+				} else {
+					processedConditions.push_back(stack);
+				}
+			}
+			if (!foundLeftParen) {
+				// TODO: find a way to report error
+				return;
+			}
+		}
+	}
+	while (conditionStack.size() > 0) {
+		Condition *next = conditionStack.back();
+		conditionStack.pop_back();
+		if (next->conditionType == CT_LeftParen || next->conditionType == CT_RightParen) {
+			// TODO: find a way to report error
+			break;
+		} else {
+			processedConditions.push_back(next);
+		}
+	}
+}
+
 void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 	size_t delPos = token.find_first_of(tokenDelims);
 	string key;
@@ -185,7 +240,7 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		if (valueStr.length() > 0) {
 			stringstream ss(valueStr);
 			if ((ss >> value).fail()) {
-				return;
+				return;  // TODO: returning errors
 			}
 		}
 	} else {
@@ -193,112 +248,125 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 	}
 	BYTE operation = GetOperation(&delim);
 
-	bool negate = false;
-	if (key[0] == '!') {
-		key.erase(0, 1);
-		negate = true;
-	}
-
-	if (key.length() == 3 && !(isupper(key[0]) || isupper(key[1]) || isupper(key[2]))) {
-		conditions.push_back(new ItemCodeCondition(negate, key.c_str()));
-	} else if (key.compare(0, 3, "ETH") == 0) {
-		conditions.push_back(new FlagsCondition(negate, ITEM_ETHEREAL));
-	} else if (key.compare(0, 4, "SOCK") == 0) {
-		conditions.push_back(new ItemStatCondition(negate, STAT_SOCKETS, 0, operation, value));
-	} else if (key.compare(0, 3, "SET") == 0) {
-		conditions.push_back(new QualityCondition(negate, ITEM_QUALITY_SET));
-	} else if (key.compare(0, 3, "MAG") == 0) {
-		conditions.push_back(new QualityCondition(negate, ITEM_QUALITY_MAGIC));
-	} else if (key.compare(0, 4, "RARE") == 0) {
-		conditions.push_back(new QualityCondition(negate, ITEM_QUALITY_RARE));
-	} else if (key.compare(0, 3, "UNI") == 0) {
-		conditions.push_back(new QualityCondition(negate, ITEM_QUALITY_UNIQUE));
-	} else if (key.compare(0, 4, "NMAG") == 0) {
-		conditions.push_back(new NonMagicalCondition(negate));
-	} else if (key.compare(0, 3, "SUP") == 0) {
-		conditions.push_back(new QualityCondition(negate, ITEM_QUALITY_SUPERIOR));
-	} else if (key.compare(0, 3, "INF") == 0) {
-		conditions.push_back(new QualityCondition(negate, ITEM_QUALITY_INFERIOR));
-	} else if (key.compare(0, 4, "NORM") == 0) {
-		conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_NORMAL));
-	} else if (key.compare(0, 3, "EXC") == 0) {
-		conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_EXCEPTIONAL));
-	} else if (key.compare(0, 3, "ELT") == 0) {
-		conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_ELITE));
-	} else if (key.compare(0, 2, "ID") == 0) {
-		conditions.push_back(new FlagsCondition(negate, ITEM_IDENTIFIED));
-	} else if (key.compare(0, 4, "ILVL") == 0) {
-		conditions.push_back(new ItemLevelCondition(negate, operation, value));
-	} else if (key.compare(0, 4, "RUNE") == 0) {
-		conditions.push_back(new RuneCondition(negate, operation, value));
-	} else if (key.compare(0, 3, "GEM") == 0) {
-		conditions.push_back(new GemCondition(negate, operation, value));
-	} else if (key.compare(0, 2, "ED") == 0) {
-		conditions.push_back(new EDCondition(negate, operation, value));
-	} else if (key.compare(0, 3, "DEF") == 0) {
-		conditions.push_back(new ItemStatCondition(negate, STAT_DEFENSE, 0, operation, value));
-	} else if (key.compare(0, 3, "RES") == 0) {
-		conditions.push_back(new ResistAllCondition(negate, operation, value));
-	} else if (key.compare(0, 2, "EQ") == 0 && key.length() == 3) {
-		if (key[2] == '1') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_HELM));
-		} else if (key[2] == '2') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_ARMOR));
-		} else if (key[2] == '3') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_SHIELD));
-		} else if (key[2] == '4') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_GLOVES));
-		} else if (key[2] == '5') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_BOOTS));
-		} else if (key[2] == '6') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_BELT));
+	int i;
+	for (i = 0; i < (int)key.length(); i++) {
+		if (key[i] == '!') {
+			Condition::AddNonOperand(conditions, new NegationOperator());
+		} else if (key[i] == '(') {
+			Condition::AddNonOperand(conditions, new LeftParen());
+		} else if (key[i] == ')') {
+			Condition::AddNonOperand(conditions, new RightParen());
+		} else {
+			break;
 		}
-	} else if (key.compare(0, 2, "CL") == 0 && key.length() == 3) {
+	}
+	key.erase(0, i);
+
+	unsigned int keylen = key.length();
+	if (key.compare(0, 3, "AND") == 0) {
+		Condition::AddNonOperand(conditions, new AndOperator());
+	} else if (key.compare(0, 2, "OR") == 0) {
+		Condition::AddNonOperand(conditions, new OrOperator());
+	} else if (keylen >= 3 && !(isupper(key[0]) || isupper(key[1]) || isupper(key[2]))) {
+		Condition::AddOperand(conditions, new ItemCodeCondition(key.substr(0, 3).c_str()));
+	} else if (key.compare(0, 3, "ETH") == 0) {
+		Condition::AddOperand(conditions, new FlagsCondition(ITEM_ETHEREAL));
+	} else if (key.compare(0, 4, "SOCK") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_SOCKETS, 0, operation, value));
+	} else if (key.compare(0, 3, "SET") == 0) {
+		Condition::AddOperand(conditions, new QualityCondition(ITEM_QUALITY_SET));
+	} else if (key.compare(0, 3, "MAG") == 0) {
+		Condition::AddOperand(conditions, new QualityCondition(ITEM_QUALITY_MAGIC));
+	} else if (key.compare(0, 4, "RARE") == 0) {
+		Condition::AddOperand(conditions, new QualityCondition(ITEM_QUALITY_RARE));
+	} else if (key.compare(0, 3, "UNI") == 0) {
+		Condition::AddOperand(conditions, new QualityCondition(ITEM_QUALITY_UNIQUE));
+	} else if (key.compare(0, 4, "NMAG") == 0) {
+		Condition::AddOperand(conditions, new NonMagicalCondition());
+	} else if (key.compare(0, 3, "SUP") == 0) {
+		Condition::AddOperand(conditions, new QualityCondition(ITEM_QUALITY_SUPERIOR));
+	} else if (key.compare(0, 3, "INF") == 0) {
+		Condition::AddOperand(conditions, new QualityCondition(ITEM_QUALITY_INFERIOR));
+	} else if (key.compare(0, 4, "NORM") == 0) {
+		Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_NORMAL));
+	} else if (key.compare(0, 3, "EXC") == 0) {
+		Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_EXCEPTIONAL));
+	} else if (key.compare(0, 3, "ELT") == 0) {
+		Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_ELITE));
+	} else if (key.compare(0, 2, "ID") == 0) {
+		Condition::AddOperand(conditions, new FlagsCondition(ITEM_IDENTIFIED));
+	} else if (key.compare(0, 4, "ILVL") == 0) {
+		Condition::AddOperand(conditions, new ItemLevelCondition(operation, value));
+	} else if (key.compare(0, 4, "RUNE") == 0) {
+		Condition::AddOperand(conditions, new RuneCondition(operation, value));
+	} else if (key.compare(0, 3, "GEM") == 0) {
+		Condition::AddOperand(conditions, new GemCondition(operation, value));
+	} else if (key.compare(0, 2, "ED") == 0) {
+		Condition::AddOperand(conditions, new EDCondition(operation, value));
+	} else if (key.compare(0, 3, "DEF") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_DEFENSE, 0, operation, value));
+	} else if (key.compare(0, 3, "RES") == 0) {
+		Condition::AddOperand(conditions, new ResistAllCondition(operation, value));
+	} else if (key.compare(0, 2, "EQ") == 0 && keylen >= 3) {
 		if (key[2] == '1') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_DRUID_PELT));
+			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_HELM));
 		} else if (key[2] == '2') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_BARBARIAN_HELM));
+			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_ARMOR));
 		} else if (key[2] == '3') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_PALADIN_SHIELD));
+			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_SHIELD));
 		} else if (key[2] == '4') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_NECROMANCER_SHIELD));
+			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_GLOVES));
 		} else if (key[2] == '5') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_ASSASSIN_KATAR));
+			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_BOOTS));
 		} else if (key[2] == '6') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_SORCERESS_ORB));
+			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_BELT));
+		}
+	} else if (key.compare(0, 2, "CL") == 0 && keylen >= 3) {
+		if (key[2] == '1') {
+			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_DRUID_PELT));
+		} else if (key[2] == '2') {
+			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_BARBARIAN_HELM));
+		} else if (key[2] == '3') {
+			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_PALADIN_SHIELD));
+		} else if (key[2] == '4') {
+			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_NECROMANCER_SHIELD));
+		} else if (key[2] == '5') {
+			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_ASSASSIN_KATAR));
+		} else if (key[2] == '6') {
+			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_SORCERESS_ORB));
 		} else if (key[2] == '7') {
-			conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_AMAZON_WEAPON));
+			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_AMAZON_WEAPON));
 		}
 	} else if (key.compare(0, 2, "WP") == 0) {
-		if (key.length() == 3) {
+		if (keylen >= 3) {
 			if (key[2] == '1') {
-				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_AXE));
+				if (keylen >= 4 && key[3] == '0') {
+					Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_CROSSBOW));
+				} else if (keylen >= 4 && key[3] == '1') {
+					Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_STAFF));
+				} else if (keylen >= 4 && key[3] == '2') {
+					Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_WAND));
+				} else if (keylen >= 4 && key[3] == '3') {
+					Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_SCEPTER));
+				} else {
+					Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_AXE));
+				}
 			} else if (key[2] == '2') {
-				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_MACE));
+				Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_MACE));
 			} else if (key[2] == '3') {
-				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_SWORD));
+				Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_SWORD));
 			} else if (key[2] == '4') {
-				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_DAGGER));
+				Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_DAGGER));
 			} else if (key[2] == '5') {
-				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_THROWING));
+				Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_THROWING));
 			} else if (key[2] == '6') {
-				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_JAVELIN));
+				Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_JAVELIN));
 			} else if (key[2] == '7') {
-				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_SPEAR));
+				Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_SPEAR));
 			} else if (key[2] == '8') {
-				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_POLEARM));
+				Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_POLEARM));
 			} else if (key[2] == '9') {
-				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_BOW));
-			}
-		} else if (key.length() == 4) {
-			if (key[2] == '1' && key[3] == '0') {
-				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_CROSSBOW));
-			} else if (key[2] == '1' && key[3] == '1') {
-				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_STAFF));
-			} else if (key[2] == '1' && key[3] == '2') {
-				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_WAND));
-			} else if (key[2] == '1' && key[3] == '3') {
-				conditions.push_back(new ItemGroupCondition(negate, ITEM_GROUP_SCEPTER));
+				Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_BOW));
 			}
 		}
 	} else if (key.compare(0, 2, "SK") == 0) {
@@ -307,47 +375,106 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		if ((ss >> num).fail() || num < 0 || num > STAT_MAX) {
 			return;
 		}
-		conditions.push_back(new ItemStatCondition(negate, STAT_SINGLESKILL, num, operation, value));
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_SINGLESKILL, num, operation, value));
 	} else if (key.compare(0, 4, "CLSK") == 0) {
 		int num = -1;
 		stringstream ss(key.substr(4));
 		if ((ss >> num).fail() || num < 0 || num >= CLASS_NA) {
 			return;
 		}
-		conditions.push_back(new ItemStatCondition(negate, STAT_CLASSSKILLS, num, operation, value));
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_CLASSSKILLS, num, operation, value));
 	} else if (key.compare(0, 4, "STAT") == 0) {
 		int num = -1;
 		stringstream ss(key.substr(4));
 		if ((ss >> num).fail() || num < 0 || num > STAT_MAX) {
 			return;
 		}
-		conditions.push_back(new ItemStatCondition(negate, num, 0, operation, value));
+		Condition::AddOperand(conditions, new ItemStatCondition(num, 0, operation, value));
+	}
+
+	for (i = token.length() - 1; i >= 0; i--) {
+		if (token[i] == '!') {
+			Condition::AddNonOperand(conditions, new NegationOperator());
+		} else if (token[i] == '(') {
+			Condition::AddNonOperand(conditions, new LeftParen());
+		} else if (token[i] == ')') {
+			Condition::AddNonOperand(conditions, new RightParen());
+		} else {
+			break;
+		}
 	}
 }
 
-bool Condition::Match(UnitAny *item, char *itemCode) {
-	return MatchInternal(item, itemCode);
+// Insert extra AND operators to stay backwards compatible with old config
+// that implicitly ANDed all conditions
+void Condition::AddOperand(vector<Condition*> &conditions, Condition *cond) {
+	if (LastConditionType == CT_Operand || LastConditionType == CT_RightParen) {
+		conditions.push_back(new AndOperator());
+	}
+	conditions.push_back(cond);
+	LastConditionType = CT_Operand;
 }
 
-bool ItemCodeCondition::MatchInternal(UnitAny *item, char *itemCode) {
-	return (targetCode[0] == itemCode[0] && targetCode[1] == itemCode[1] && targetCode[2] == itemCode[2]) != negate;
+void Condition::AddNonOperand(vector<Condition*> &conditions, Condition *cond) {
+	if ((cond->conditionType == CT_NegationOperator || cond->conditionType == CT_LeftParen) &&
+		(LastConditionType == CT_Operand || LastConditionType == CT_RightParen)) {
+		conditions.push_back(new AndOperator());
+	}
+	conditions.push_back(cond);
+	LastConditionType = cond->conditionType;
 }
 
-bool FlagsCondition::MatchInternal(UnitAny *item, char *itemCode) {
-	return ((item->pItemData->dwFlags & flag) > 0) != negate;
+bool Condition::Evaluate(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
+	return EvaluateInternal(item, itemCode, arg1, arg2);
 }
 
-bool QualityCondition::MatchInternal(UnitAny *item, char *itemCode) {
-	return (item->pItemData->dwQuality == quality) != negate;
+bool TrueCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
+	return true;
 }
 
-bool NonMagicalCondition::MatchInternal(UnitAny *item, char *itemCode) {
+bool FalseCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
+	return false;
+}
+
+bool NegationOperator::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
+	return !arg1->Evaluate(item, itemCode, arg1, arg2);
+}
+
+bool LeftParen::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
+	return false;
+}
+
+bool RightParen::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
+	return false;
+}
+
+bool AndOperator::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
+	return arg1->Evaluate(item, itemCode, NULL, NULL) && arg2->Evaluate(item, itemCode, NULL, NULL);
+}
+
+bool OrOperator::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
+	return arg1->Evaluate(item, itemCode, NULL, NULL) || arg2->Evaluate(item, itemCode, NULL, NULL);
+}
+
+bool ItemCodeCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
+	return (targetCode[0] == itemCode[0] && targetCode[1] == itemCode[1] && targetCode[2] == itemCode[2]);
+}
+
+bool FlagsCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
+	return ((item->pItemData->dwFlags & flag) > 0);
+}
+
+bool QualityCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
+	return (item->pItemData->dwQuality == quality);
+}
+
+bool NonMagicalCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
 	return (item->pItemData->dwQuality == ITEM_QUALITY_INFERIOR ||
 			item->pItemData->dwQuality == ITEM_QUALITY_NORMAL ||
-			item->pItemData->dwQuality == ITEM_QUALITY_SUPERIOR) != negate;
+			item->pItemData->dwQuality == ITEM_QUALITY_SUPERIOR);
 }
 
-bool GemCondition::MatchInternal(UnitAny *item, char *itemCode) {
+bool GemCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
 	BYTE nType = D2COMMON_GetItemText(item->dwTxtFileNo)->nType;
 	if (nType >= 96 && nType <= 102) {
 		BYTE c1 = itemCode[1];
@@ -362,28 +489,28 @@ bool GemCondition::MatchInternal(UnitAny *item, char *itemCode) {
 		} else if (c1 == 'p' || c2 == 'z') {
 			gLevel = 5;
 		}
-		return IntegerCompare(gLevel, operation, gemNumber) != negate;
+		return IntegerCompare(gLevel, operation, gemNumber);
 	}
 	return false;
 }
 
-bool RuneCondition::MatchInternal(UnitAny *item, char *itemCode) {
+bool RuneCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
 	if (D2COMMON_GetItemText(item->dwTxtFileNo)->nType == 74) {
-		return IntegerCompare(item->dwTxtFileNo - 609, operation, runeNumber) != negate;
+		return IntegerCompare(item->dwTxtFileNo - 609, operation, runeNumber);
 	}
 	return false;
 }
 
-bool ItemLevelCondition::MatchInternal(UnitAny *item, char *itemCode) {
-	return IntegerCompare(item->pItemData->dwItemLevel, operation, itemLevel) != negate;
+bool ItemLevelCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
+	return IntegerCompare(item->pItemData->dwItemLevel, operation, itemLevel);
 }
 
-bool ItemGroupCondition::MatchInternal(UnitAny *item, char *itemCode) {
+bool ItemGroupCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
 	unsigned int itemVal = ItemLookup[GetItemCodeIndex(itemCode[0])][GetItemCodeIndex(itemCode[1])][GetItemCodeIndex(itemCode[2])];
-	return ((itemVal & itemGroup) > 0) != negate;
+	return ((itemVal & itemGroup) > 0);
 }
 
-bool EDCondition::MatchInternal(UnitAny *item, char *itemCode) {
+bool EDCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
 	// Either enhanced defense or enhanced damage depending on item type
 	unsigned int itemVal = ItemLookup[GetItemCodeIndex(itemCode[0])][GetItemCodeIndex(itemCode[1])][GetItemCodeIndex(itemCode[2])];
 	unsigned int armorMask =
@@ -413,18 +540,18 @@ bool EDCondition::MatchInternal(UnitAny *item, char *itemCode) {
 		DWORD dwStats = D2COMMON_CopyStatList(pStatList, (Stat*)aStatList, 256);
 		for (UINT i = 0; i < dwStats; i++) {
 			if (aStatList[i].wStatIndex == stat && aStatList[i].wSubIndex == 0) {
-				return IntegerCompare(aStatList[i].dwStatValue, operation, targetED) != negate;
+				return IntegerCompare(aStatList[i].dwStatValue, operation, targetED);
 			}
 		}
 	}
 	return false;
 }
 
-bool ItemStatCondition::MatchInternal(UnitAny *item, char *itemCode) {
-	return IntegerCompare(D2COMMON_GetUnitStat(item, itemStat, itemStat2), operation, targetStat) != negate;
+bool ItemStatCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
+	return IntegerCompare(D2COMMON_GetUnitStat(item, itemStat, itemStat2), operation, targetStat);
 }
 
-bool ResistAllCondition::MatchInternal(UnitAny *item, char *itemCode) {
+bool ResistAllCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
 	int fRes = D2COMMON_GetUnitStat(item, STAT_FIRERESIST, 0);
 	int lRes = D2COMMON_GetUnitStat(item, STAT_LIGHTNINGRESIST, 0);
 	int cRes = D2COMMON_GetUnitStat(item, STAT_COLDRESIST, 0);
@@ -432,7 +559,7 @@ bool ResistAllCondition::MatchInternal(UnitAny *item, char *itemCode) {
 	return (IntegerCompare(fRes, operation, targetStat) &&
 			IntegerCompare(lRes, operation, targetStat) &&
 			IntegerCompare(cRes, operation, targetStat) &&
-			IntegerCompare(pRes, operation, targetStat)) != negate;
+			IntegerCompare(pRes, operation, targetStat));
 }
 
 void CreateItemTable() {

@@ -38,6 +38,15 @@
 #define ITEM_GROUP_UNUSED2				0x40000000
 #define ITEM_GROUP_COMMON				0x80000000
 
+enum ConditionType {
+	CT_None,
+	CT_LeftParen,
+	CT_RightParen,
+	CT_NegationOperator,
+	CT_BinaryOperator,
+	CT_Operand
+};
+
 extern unsigned int ItemLookup[36][36][36];
 extern unsigned int RuleCacheIndex;
 
@@ -46,28 +55,95 @@ unsigned int GetItemCodeIndex(char codeChar);
 class Condition
 {
 public:
-	Condition(bool n) : negate(n) {}
+	Condition() {}
 	virtual ~Condition() {}
 
 	static const string tokenDelims;
 	static void BuildConditions(vector<Condition*> &conditions, string token);
+	static void ProcessConditions(vector<Condition*> &rawConditions, vector<Condition*> &processedConditions);
+	static void AddOperand(vector<Condition*> &conditions, Condition *cond);
+	static void AddNonOperand(vector<Condition*> &conditions, Condition *cond);
 
-	bool Match(UnitAny *item, char *itemCode);
+	bool Evaluate(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
 	virtual int InsertLookup() = 0;
-protected:
-	bool negate;
+
+	BYTE conditionType;
 private:
-	virtual bool MatchInternal(UnitAny *item, char *itemCode) { return false; }
+	virtual bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) { return false; }
+};
+
+class TrueCondition : public Condition
+{
+public:
+	TrueCondition() { conditionType = CT_Operand; };
+	int InsertLookup() { return -1; }
+private:
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+};
+
+class FalseCondition : public Condition
+{
+public:
+	FalseCondition() { conditionType = CT_Operand; };
+	int InsertLookup() { return -1; }
+private:
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+};
+
+class NegationOperator : public Condition
+{
+public:
+	NegationOperator() { conditionType = CT_NegationOperator; };
+	int InsertLookup() { return -1; }
+private:
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+};
+
+class LeftParen : public Condition
+{
+public:
+	LeftParen() { conditionType = CT_LeftParen; };
+	int InsertLookup() { return -1; }
+private:
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+};
+
+class RightParen : public Condition
+{
+public:
+	RightParen() { conditionType = CT_RightParen; };
+	int InsertLookup() { return -1; }
+private:
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+};
+
+class AndOperator : public Condition
+{
+public:
+	AndOperator() { conditionType = CT_BinaryOperator; };
+	int InsertLookup() { return -1; }
+private:
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+};
+
+class OrOperator : public Condition
+{
+public:
+	OrOperator() { conditionType = CT_BinaryOperator; };
+	int InsertLookup() { return -1; }
+private:
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
 };
 
 class ItemCodeCondition : public Condition
 {
 public:
-	ItemCodeCondition(bool negate, const char *code) : Condition(negate) {
+	ItemCodeCondition(const char *code) {
 		targetCode[0] = code[0];
 		targetCode[1] = code[1];
 		targetCode[2] = code[2];
 		targetCode[3] = 0;
+		conditionType = CT_Operand;
 	};
 	int InsertLookup() {
 		unsigned int itemVal = ItemLookup[GetItemCodeIndex(targetCode[0])][GetItemCodeIndex(targetCode[1])][GetItemCodeIndex(targetCode[2])];
@@ -79,116 +155,115 @@ public:
 	}
 private:
 	char targetCode[4];
-	bool MatchInternal(UnitAny *item, char *itemCode);
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
 };
 
 class FlagsCondition : public Condition
 {
 public:
-	FlagsCondition(bool negate, unsigned int flg) : Condition(negate), flag(flg) {};
+	FlagsCondition(unsigned int flg) : flag(flg) { conditionType = CT_Operand; };
 	int InsertLookup() { return -1; }
 private:
 	unsigned int flag;
-	bool MatchInternal(UnitAny *item, char *itemCode);
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
 };
 
 class QualityCondition : public Condition
 {
 public:
-	QualityCondition(bool negate, unsigned int qual) : Condition(negate), quality(qual) {};
+	QualityCondition(unsigned int qual) : quality(qual) { conditionType = CT_Operand; };
 	int InsertLookup() { return -1; }
 private:
 	unsigned int quality;
-	bool MatchInternal(UnitAny *item, char *itemCode);
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
 };
 
 class NonMagicalCondition : public Condition
 {
 public:
-	NonMagicalCondition(bool negate) : Condition(negate) {};
+	NonMagicalCondition() { conditionType = CT_Operand; };
 	int InsertLookup() { return -1; }
 private:
-	bool MatchInternal(UnitAny *item, char *itemCode);
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
 };
 
 class GemCondition : public Condition
 {
 public:
-	GemCondition(bool negate, BYTE op, BYTE gem) : Condition(negate), gemNumber(gem), operation(op) {};
+	GemCondition(BYTE op, BYTE gem) : gemNumber(gem), operation(op) { conditionType = CT_Operand; };
 	int InsertLookup() { return -1; }
 private:
 	BYTE operation;
 	BYTE gemNumber;
-	bool MatchInternal(UnitAny *item, char *itemCode);
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
 };
 
 class RuneCondition : public Condition
 {
 public:
-	RuneCondition(bool negate, BYTE op, BYTE rune) : Condition(negate), runeNumber(rune), operation(op) {};
+	RuneCondition(BYTE op, BYTE rune) : runeNumber(rune), operation(op) { conditionType = CT_Operand; };
 	int InsertLookup() { return -1; }
 private:
 	BYTE operation;
 	BYTE runeNumber;
-	bool MatchInternal(UnitAny *item, char *itemCode);
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
 };
 
 class ItemLevelCondition : public Condition
 {
 public:
-	ItemLevelCondition(bool negate, BYTE op, BYTE ilvl) : Condition(negate), itemLevel(ilvl), operation(op) {};
+	ItemLevelCondition(BYTE op, BYTE ilvl) : itemLevel(ilvl), operation(op) { conditionType = CT_Operand; };
 	int InsertLookup() { return -1; }
 private:
 	BYTE operation;
 	BYTE itemLevel;
-	bool MatchInternal(UnitAny *item, char *itemCode);
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
 };
 
 class ItemGroupCondition : public Condition
 {
 public:
-	ItemGroupCondition(bool negate, unsigned int group) : Condition(negate), itemGroup(group) {};
+	ItemGroupCondition(unsigned int group) : itemGroup(group) { conditionType = CT_Operand; };
 	int InsertLookup() { return -1; }
 private:
 	unsigned int itemGroup;
-	bool MatchInternal(UnitAny *item, char *itemCode);
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
 };
 
 class EDCondition : public Condition
 {
 public:
-	EDCondition(bool negate, BYTE op, unsigned int target) : Condition(negate), operation(op), targetED(target) {};
+	EDCondition(BYTE op, unsigned int target) : operation(op), targetED(target) { conditionType = CT_Operand; };
 	int InsertLookup() { return -1; }
 private:
 	BYTE operation;
 	unsigned int targetED;
-	bool MatchInternal(UnitAny *item, char *itemCode);
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
 };
 
 class ItemStatCondition : public Condition
 {
 public:
-	ItemStatCondition(bool negate, unsigned int stat, unsigned int stat2, BYTE op, unsigned int target)
-		: Condition(negate), itemStat(stat), itemStat2(stat2), operation(op), targetStat(target) {};
+	ItemStatCondition(unsigned int stat, unsigned int stat2, BYTE op, unsigned int target)
+		: itemStat(stat), itemStat2(stat2), operation(op), targetStat(target) { conditionType = CT_Operand; };
 	int InsertLookup() { return -1; }
 private:
 	unsigned int itemStat;
 	unsigned int itemStat2;
 	BYTE operation;
 	unsigned int targetStat;
-	bool MatchInternal(UnitAny *item, char *itemCode);
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
 };
 
 class ResistAllCondition : public Condition
 {
 public:
-	ResistAllCondition(bool negate, BYTE op, unsigned int target)
-		: Condition(negate), operation(op), targetStat(target) {};
+	ResistAllCondition(BYTE op, unsigned int target) : operation(op), targetStat(target) { conditionType = CT_Operand; };
 	int InsertLookup() { return -1; }
 private:
 	BYTE operation;
 	unsigned int targetStat;
-	bool MatchInternal(UnitAny *item, char *itemCode);
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
 };
 
 struct ActionReplace {
@@ -206,6 +281,42 @@ struct Action {
 struct Rule {
 	vector<Condition*> conditions;
 	Action action;
+
+	// Evaluate conditions which are in Reverse Polish Notation
+	bool Evaluate(UnitAny *item, char *itemCode) {
+		vector<Condition*> conditionStack;
+		for (unsigned int i = 0; i < conditions.size(); i++) {
+			Condition *input = conditions[i];
+			if (input->conditionType == CT_Operand) {
+				conditionStack.push_back(input);
+			} else if (input->conditionType == CT_BinaryOperator || input->conditionType == CT_NegationOperator) {
+				Condition *arg1 = NULL, *arg2 = NULL;
+				if (conditionStack.size() < 1) {
+					return false;
+				}
+				arg1 = conditionStack.back();
+				conditionStack.pop_back();
+				if (input->conditionType == CT_BinaryOperator) {
+					if (conditionStack.size() < 1) {
+						return false;
+					}
+					arg2 = conditionStack.back();
+					conditionStack.pop_back();
+				}
+				if (input->Evaluate(item, itemCode, arg1, arg2)) {
+					conditionStack.push_back(new TrueCondition());
+				} else {
+					conditionStack.push_back(new FalseCondition());
+				}
+			}
+		}
+		if (conditionStack.size() == 1) {
+			return conditionStack[0]->Evaluate(item, itemCode, NULL, NULL);
+		} else {
+			// TODO: find a way to report error
+			return false;
+		}
+	}
 };
 
 extern vector<Rule*> RuleList;
