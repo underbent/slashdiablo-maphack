@@ -28,6 +28,62 @@ vector<Rule*> MapRuleList;
 vector<Rule*> RuleCache;
 BYTE LastConditionType;
 
+char* GemLevels[] = {
+	"NONE",
+	"Chipped",
+	"Flawed",
+	"Normal",
+	"Flawless",
+	"Perfect"
+};
+
+char* GemTypes[] = {
+	"NONE",
+	"Amethyst",
+	"Diamond",
+	"Emerald",
+	"Ruby",
+	"Sapphire",
+	"Topaz",
+	"Skull"
+};
+
+bool IsGem(BYTE nType) {
+	return (nType >= 96 && nType <= 102);
+}
+
+BYTE GetGemLevel(char *itemCode) {
+	BYTE c1 = itemCode[1];
+	BYTE c2 = itemCode[2];
+	BYTE gLevel = 1;
+	if (c1 == 'f' || c2 == 'f') {
+		gLevel = 2;
+	} else if (c1 == 's' || c2 == 'u') {
+		gLevel = 3;
+	} else if (c1 == 'l' || c1 == 'z' || c2 == 'l') {
+		gLevel = 4;
+	} else if (c1 == 'p' || c2 == 'z') {
+		gLevel = 5;
+	}
+	return gLevel;
+}
+
+char *GetGemLevelString(BYTE level) {
+	return GemLevels[level];
+}
+
+BYTE GetGemType(BYTE nType) {
+	return nType - 95;
+}
+
+char *GetGemTypeString(BYTE type) {
+	return GemTypes[type];
+}
+
+bool IsRune(BYTE nType) {
+	return (nType == 74);
+}
+
 void GetItemName(UnitAny *item, string &name, char *itemCode) {
 	unsigned int itemVal = ItemLookup[GetItemCodeIndex(itemCode[0])][GetItemCodeIndex(itemCode[1])][GetItemCodeIndex(itemCode[2])];
 	if (itemVal & ITEM_GROUP_COMMON) {
@@ -47,18 +103,26 @@ void GetItemName(UnitAny *item, string &name, char *itemCode) {
 
 void SubstituteNameVariables(UnitAny *item, string &name, Action *action) {
 	char origName[128], sockets[4], ilvl[4], runename[16] = "", runenum[4] = "0";
+	char gemtype[16] = "", gemlevel[16] = "";
 	sprintf_s(sockets, "%d", D2COMMON_GetUnitStat(item, STAT_SOCKETS, 0));
 	sprintf_s(ilvl, "%d", item->pItemData->dwItemLevel);
 	sprintf_s(origName, "%s", name.c_str());
-	if (D2COMMON_GetItemText(item->dwTxtFileNo)->nType == 74) {
+	BYTE nType = D2COMMON_GetItemText(item->dwTxtFileNo)->nType;
+	if (IsRune(nType)) {
 		sprintf_s(runenum, "%d", item->dwTxtFileNo - 609);
 		sprintf_s(runename, name.substr(0, name.find(' ')).c_str());
+	} else if (IsGem(nType)) {
+		char* code = D2COMMON_GetItemText(item->dwTxtFileNo)->szCode;
+		sprintf_s(gemlevel, "%s", GetGemLevelString(GetGemLevel(code)));
+		sprintf_s(gemtype, "%s", GetGemTypeString(GetGemType(nType)));
 	}
 	ActionReplace replacements[] = {
 		{"NAME", origName},
 		{"SOCKETS", sockets},
 		{"RUNENUM", runenum},
 		{"RUNENAME", runename},
+		{"GEMLEVEL", gemlevel},
+		{"GEMTYPE", gemtype},
 		{"ILVL", ilvl},
 		COLOR_REPLACEMENTS
 	};
@@ -299,8 +363,10 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		Condition::AddOperand(conditions, new ItemLevelCondition(operation, value));
 	} else if (key.compare(0, 4, "RUNE") == 0) {
 		Condition::AddOperand(conditions, new RuneCondition(operation, value));
+	} else if (key.compare(0, 7, "GEMTYPE") == 0) {
+		Condition::AddOperand(conditions, new GemTypeCondition(operation, value));
 	} else if (key.compare(0, 3, "GEM") == 0) {
-		Condition::AddOperand(conditions, new GemCondition(operation, value));
+		Condition::AddOperand(conditions, new GemLevelCondition(operation, value));
 	} else if (key.compare(0, 2, "ED") == 0) {
 		Condition::AddOperand(conditions, new EDCondition(operation, value));
 	} else if (key.compare(0, 3, "DEF") == 0) {
@@ -474,28 +540,24 @@ bool NonMagicalCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condit
 			item->pItemData->dwQuality == ITEM_QUALITY_SUPERIOR);
 }
 
-bool GemCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
+bool GemLevelCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
 	BYTE nType = D2COMMON_GetItemText(item->dwTxtFileNo)->nType;
-	if (nType >= 96 && nType <= 102) {
-		BYTE c1 = itemCode[1];
-		BYTE c2 = itemCode[2];
-		BYTE gLevel = 1;
-		if (c1 == 'f' || c2 == 'f') {
-			gLevel = 2;
-		} else if (c1 == 's' || c2 == 'u') {
-			gLevel = 3;
-		} else if (c1 == 'l' || c1 == 'z' || c2 == 'l') {
-			gLevel = 4;
-		} else if (c1 == 'p' || c2 == 'z') {
-			gLevel = 5;
-		}
-		return IntegerCompare(gLevel, operation, gemNumber);
+	if (IsGem(nType)) {
+		return IntegerCompare(GetGemLevel(itemCode), operation, gemLevel);
+	}
+	return false;
+}
+
+bool GemTypeCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
+	BYTE nType = D2COMMON_GetItemText(item->dwTxtFileNo)->nType;
+	if (IsGem(nType)) {
+		return IntegerCompare(GetGemType(nType), operation, gemType);
 	}
 	return false;
 }
 
 bool RuneCondition::EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) {
-	if (D2COMMON_GetItemText(item->dwTxtFileNo)->nType == 74) {
+	if (IsRune(D2COMMON_GetItemText(item->dwTxtFileNo)->nType)) {
 		return IntegerCompare(item->dwTxtFileNo - 609, operation, runeNumber);
 	}
 	return false;

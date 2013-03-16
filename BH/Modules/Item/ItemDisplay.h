@@ -187,14 +187,25 @@ private:
 	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
 };
 
-class GemCondition : public Condition
+class GemLevelCondition : public Condition
 {
 public:
-	GemCondition(BYTE op, BYTE gem) : gemNumber(gem), operation(op) { conditionType = CT_Operand; };
+	GemLevelCondition(BYTE op, BYTE gem) : gemLevel(gem), operation(op) { conditionType = CT_Operand; };
 	int InsertLookup() { return -1; }
 private:
 	BYTE operation;
-	BYTE gemNumber;
+	BYTE gemLevel;
+	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+};
+
+class GemTypeCondition : public Condition
+{
+public:
+	GemTypeCondition(BYTE op, BYTE gType) : gemType(gType), operation(op) { conditionType = CT_Operand; };
+	int InsertLookup() { return -1; }
+private:
+	BYTE operation;
+	BYTE gemType;
 	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
 };
 
