@@ -517,6 +517,7 @@ enum TextColor {
 #define SKILLTAB_ASSASSIN_TRAPS			48
 #define SKILLTAB_ASSASSIN_SHADOWDISC	49
 #define SKILLTAB_ASSASSIN_MARTIALARTS	50
+#define SKILLTAB_MAX					50
 
 ///////////////////////////////////////////////////
 // NodePages

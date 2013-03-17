@@ -449,6 +449,15 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 			return;
 		}
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_CLASSSKILLS, num, operation, value));
+	} else if (key.compare(0, 5, "ALLSK") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_ALLSKILLS, 0, operation, value));
+	} else if (key.compare(0, 5, "TABSK") == 0) {
+		int num = -1;
+		stringstream ss(key.substr(5));
+		if ((ss >> num).fail() || num < 0 || num >= SKILLTAB_MAX) {
+			return;
+		}
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_SKILLTAB, num, operation, value));
 	} else if (key.compare(0, 4, "STAT") == 0) {
 		int num = -1;
 		stringstream ss(key.substr(4));
