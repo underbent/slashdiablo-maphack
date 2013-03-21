@@ -15,6 +15,21 @@ void ScreenInfo::OnLoad() {
 		cGuardText->SetAlignment(Right);
 	}
 	gameTimer = GetTickCount();
+
+	map<string, string> SkillWarnings = BH::config->ReadAssoc("Skill Warning");
+	for (auto it = SkillWarnings.cbegin(); it != SkillWarnings.cend(); ) {
+		if (StringToBool((*it).second)) {
+			// If the key is a number, it means warn when that state expires
+			DWORD stateId = 0;
+			stringstream ss((*it).first);
+			if ((ss >> stateId).fail()) {
+				++it;
+			} else {
+				SkillWarningMap[stateId] = GetStateCode(stateId).name;
+				SkillWarnings.erase(it++);
+			}
+		}
+	}
 }
 
 void ScreenInfo::OnGameJoin(const string& name, const string& pass, int diff) {
@@ -85,6 +100,7 @@ void ScreenInfo::OnRightClick(bool up, int x, int y, bool* block) {
 }
 
 void ScreenInfo::OnDraw() {
+	int yOffset = 1;
 	BnetData* pData = (*p_D2LAUNCH_BnData);
 	void *quests = D2CLIENT_GetQuestInfo();
 	if (!pData || !quests) {
@@ -100,6 +116,20 @@ void ScreenInfo::OnDraw() {
 		D2NET_SendPacket(1, 0, RequestQuestData);
 		packetTicks = ticks;
 		packetRequests++;
+	}
+
+	while (!CurrentWarnings.empty()) {
+		StateWarning *curr = CurrentWarnings.front();
+		if (ticks - curr->startTicks > 5000) {
+			CurrentWarnings.pop_front();
+			delete curr;
+		} else {
+			break;
+		}
+	}
+
+	for (std::deque<StateWarning*>::iterator it = CurrentWarnings.begin(); it != CurrentWarnings.end(); ++it) {
+		Texthook::Draw(400, 30 * (yOffset++), Center, 3, Red, "%s has expired!", (*it)->name.c_str());
 	}
 
 	// It's a kludge to peek into other modules for config info, but it just seems silly to
@@ -128,7 +158,7 @@ void ScreenInfo::OnDraw() {
 			if (ms > 2000) {
 				warningTicks = ticks;
 			} else if (ms > 500) {
-				Texthook::Draw(400, 100, Center, 3, Red, "%s Quest Active", bossNames[warning]);
+				Texthook::Draw(400, 30 * (yOffset++), Center, 3, Red, "%s Quest Active", bossNames[warning]);
 			}
 		}
 	}
@@ -183,10 +213,16 @@ void ScreenInfo::OnAutomapDraw() {
 }
 
 void ScreenInfo::OnGamePacketRecv(BYTE* packet, bool* block) {
-	// These packets tell us which quests are blocked for us because they were
+	UnitAny* pUnit = D2CLIENT_GetPlayerUnit();
+
+	// 0x29 and 0x52 tell us which quests are blocked for us because they were
 	// completed by the player who created the game. Packet 29 is sent at game
 	// startup and quest events; likewise with packet 52, but also we can trigger
 	// packet 52 by sending the server packet 40.
+
+	// 0xA8 and 0xA9 are received when effects (e.g. battle orders) begin or end
+	// on players.
+
 	switch (packet[0])
 	{
 	case 0x29:
@@ -196,7 +232,7 @@ void ScreenInfo::OnGamePacketRecv(BYTE* packet, bool* block) {
 			// (corresponding to QFLAG_QUEST_COMPLETED_BEFORE) is always set when the
 			// quest was previously completed. QFLAG_PRIMARY_GOAL_ACHIEVED is often
 			// set as well.
-			// Packet sent at game start, and upon talking to quest NPCs.
+			// Packet received at game start, and upon talking to quest NPCs.
 			int packetLen = 97;
 			MephistoBlocked = (packet[2 + (THE_GUARDIAN * 2)] & 0x80) > 0;
 			DiabloBlocked = (packet[2 + (TERRORS_END * 2)] & 0x80) > 0;
@@ -210,12 +246,36 @@ void ScreenInfo::OnGamePacketRecv(BYTE* packet, bool* block) {
 		{
 			// We have one byte for each of the 41 quests: zero if the quest is blocked,
 			// and nonzero if we can complete it.
-			// Packet sent upon opening quest log, and after sending 0x40 to server.
+			// Packet received upon opening quest log, and after sending 0x40 to server.
 			int packetLen = 42;
 			MephistoBlocked = packet[1 + THE_GUARDIAN] == 0;
 			DiabloBlocked = packet[1 + TERRORS_END] == 0;
 			BaalBlocked = packet[1 + EVE_OF_DESTRUCTION] == 0;
 			ReceivedQuestPacket = true;
+			break;
+		}
+	//case 0xA8:
+	//	{
+	//		// Packet received when the character begins a new state (i.e. buff/effect received).
+	//		BYTE unitType = packet[1];
+	//		DWORD unitId = *(DWORD*)&packet[2];
+	//		BYTE packetLen = packet[6];
+	//		DWORD state = packet[7];
+	//		DWORD me = pUnit ? pUnit->dwUnitId : 0;
+	//		break;
+	//	}
+	case 0xA9:
+		{
+			// Packet received when the character ends a state (i.e. buff runs out).
+			BYTE unitType = packet[1];
+			DWORD unitId = *(DWORD*)&packet[2];
+			DWORD state = packet[6];
+			DWORD me = pUnit ? pUnit->dwUnitId : 0;
+			if (unitType == UNIT_PLAYER && unitId == me) {
+				if (SkillWarningMap.find(state) != SkillWarningMap.end()) {
+					CurrentWarnings.push_back(new StateWarning(SkillWarningMap[state], BHGetTickCount()));
+				}
+			}
 			break;
 		}
 	default:
@@ -229,4 +289,186 @@ void ScreenInfo::OnGameExit() {
 	DiabloBlocked = false;
 	BaalBlocked = false;
 	ReceivedQuestPacket = false;
+}
+
+
+// The states players can receive via packets 0xA8/0xA9
+StateCode StateCodes[] = {
+	{"NONE", 0},
+	{"FREEZE", 1},
+	{"POISON", 2},
+	{"RESISTFIRE", 3},
+	{"RESISTCOLD", 4},
+	{"RESISTLIGHT", 5},
+	{"RESISTMAGIC", 6},
+	{"PLAYERBODY", 7},
+	{"RESISTALL", 8},
+	{"AMPLIFYDAMAGE", 9},
+	{"FROZENARMOR", 10},
+	{"COLD", 11},
+	{"INFERNO", 12},
+	{"BLAZE", 13},
+	{"BONEARMOR", 14},
+	{"CONCENTRATE", 15},
+	{"ENCHANT", 16},
+	{"INNERSIGHT", 17},
+	{"SKILL_MOVE", 18},
+	{"WEAKEN", 19},
+	{"CHILLINGARMOR", 20},
+	{"STUNNED", 21},
+	{"SPIDERLAY", 22},
+	{"DIMVISION", 23},
+	{"SLOWED", 24},
+	{"FETISHAURA", 25},
+	{"SHOUT", 26},
+	{"TAUNT", 27},
+	{"CONVICTION", 28},
+	{"CONVICTED", 29},
+	{"ENERGYSHIELD", 30},
+	{"VENOMCLAWS", 31},
+	{"BATTLEORDERS", 32},
+	{"MIGHT", 33},
+	{"PRAYER", 34},
+	{"HOLYFIRE", 35},
+	{"THORNS", 36},
+	{"DEFIANCE", 37},
+	{"THUNDERSTORM", 38},
+	{"LIGHTNINGBOLT", 39},
+	{"BLESSEDAIM", 40},
+	{"STAMINA", 41},
+	{"CONCENTRATION", 42},
+	{"HOLYWIND", 43},
+	{"HOLYWINDCOLD", 44},
+	{"CLEANSING", 45},
+	{"HOLYSHOCK", 46},
+	{"SANCTUARY", 47},
+	{"MEDITATION", 48},
+	{"FANATICISM", 49},
+	{"REDEMPTION", 50},
+	{"BATTLECOMMAND", 51},
+	{"PREVENTHEAL", 52},
+	{"CONVERSION", 53},
+	{"UNINTERRUPTABLE", 54},
+	{"IRONMAIDEN", 55},
+	{"TERROR", 56},
+	{"ATTRACT", 57},
+	{"LIFETAP", 58},
+	{"CONFUSE", 59},
+	{"DECREPIFY", 60},
+	{"LOWERRESIST", 61},
+	{"OPENWOUNDS", 62},
+	{"DOPPLEZON", 63},
+	{"CRITICALSTRIKE", 64},
+	{"DODGE", 65},
+	{"AVOID", 66},
+	{"PENETRATE", 67},
+	{"EVADE", 68},
+	{"PIERCE", 69},
+	{"WARMTH", 70},
+	{"FIREMASTERY", 71},
+	{"LIGHTNINGMASTERY", 72},
+	{"COLDMASTERY", 73},
+	{"SWORDMASTERY", 74},
+	{"AXEMASTERY", 75},
+	{"MACEMASTERY", 76},
+	{"POLEARMMASTERY", 77},
+	{"THROWINGMASTERY", 78},
+	{"SPEARMASTERY", 79},
+	{"INCREASEDSTAMINA", 80},
+	{"IRONSKIN", 81},
+	{"INCREASEDSPEED", 82},
+	{"NATURALRESISTANCE", 83},
+	{"FINGERMAGECURSE", 84},
+	{"NOMANAREGEN", 85},
+	{"JUSTHIT", 86},
+	{"SLOWMISSILES", 87},
+	{"SHIVERARMOR", 88},
+	{"BATTLECRY", 89},
+	{"BLUE", 90},
+	{"RED", 91},
+	{"DEATH_DELAY", 92},
+	{"VALKYRIE", 93},
+	{"FRENZY", 94},
+	{"BERSERK", 95},
+	{"REVIVE", 96},
+	{"ITEMFULLSET", 97},
+	{"SOURCEUNIT", 98},
+	{"REDEEMED", 99},
+	{"HEALTHPOT", 100},
+	{"HOLYSHIELD", 101},
+	{"JUST_PORTALED", 102},
+	{"MONFRENZY", 103},
+	{"CORPSE_NODRAW", 104},
+	{"ALIGNMENT", 105},
+	{"MANAPOT", 106},
+	{"SHATTER", 107},
+	{"SYNC_WARPED", 108},
+	{"CONVERSION_SAVE", 109},
+	{"PREGNANT", 110},
+	{"111", 111},
+	{"RABIES", 112},
+	{"DEFENSE_CURSE", 113},
+	{"BLOOD_MANA", 114},
+	{"BURNING", 115},
+	{"DRAGONFLIGHT", 116},
+	{"MAUL", 117},
+	{"CORPSE_NOSELECT", 118},
+	{"SHADOWWARRIOR", 119},
+	{"FERALRAGE", 120},
+	{"SKILLDELAY", 121},
+	{"PROGRESSIVE_DAMAGE", 122},
+	{"PROGRESSIVE_STEAL", 123},
+	{"PROGRESSIVE_OTHER", 124},
+	{"PROGRESSIVE_FIRE", 125},
+	{"PROGRESSIVE_COLD", 126},
+	{"PROGRESSIVE_LIGHTNING", 127},
+	{"SHRINE_ARMOR", 128},
+	{"SHRINE_COMBAT", 129},
+	{"SHRINE_RESIST_LIGHTNING", 130},
+	{"SHRINE_RESIST_FIRE", 131},
+	{"SHRINE_RESIST_COLD", 132},
+	{"SHRINE_RESIST_POISON", 133},
+	{"SHRINE_SKILL", 134},
+	{"SHRINE_MANA_REGEN", 135},
+	{"SHRINE_STAMINA", 136},
+	{"SHRINE_EXPERIENCE", 137},
+	{"FENRIS_RAGE", 138},
+	{"WOLF", 139},
+	{"BEAR", 140},
+	{"BLOODLUST", 141},
+	{"CHANGECLASS", 142},
+	{"ATTACHED", 143},
+	{"HURRICANE", 144},
+	{"ARMAGEDDON", 145},
+	{"INVIS", 146},
+	{"BARBS", 147},
+	{"WOLVERINE", 148},
+	{"OAKSAGE", 149},
+	{"VINE_BEAST", 150},
+	{"CYCLONEARMOR", 151},
+	{"CLAWMASTERY", 152},
+	{"CLOAK_OF_SHADOWS", 153},
+	{"RECYCLED", 154},
+	{"WEAPONBLOCK", 155},
+	{"CLOAKED", 156},
+	{"QUICKNESS", 157},
+	{"BLADESHIELD", 158},
+	{"FADE", 159}
+};
+
+StateCode GetStateCode(unsigned int nKey) {
+	for (int n = 0; n < (sizeof(StateCodes) / sizeof(StateCodes[0])); n++) {
+		if (nKey == StateCodes[n].value) {
+			return StateCodes[n];
+		}
+	}
+	return StateCodes[0];
+}
+StateCode GetStateCode(const char* name) {
+	for (int n = 0; n < (sizeof(StateCodes) / sizeof(StateCodes[0])); n++) {
+		if (!_stricmp(name, StateCodes[n].name.c_str())) {
+			return StateCodes[n];
+		}
+	}
+	return StateCodes[0];
 }

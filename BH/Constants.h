@@ -978,6 +978,3 @@ enum QuestFlags {
 #define ITEM_ETHEREAL			0x00400000 // Ethreal
 #define ITEM_PERSONALIZED		0x01000000 // Personalized
 #define ITEM_RUNEWORD			0x04000000 // Runeword
-
-
-#define AFFECT_JUST_PORTALED	102

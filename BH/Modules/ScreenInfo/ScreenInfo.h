@@ -3,6 +3,7 @@
 #include "../Module.h"
 #include "../../Config.h"
 #include "../../Drawing.h"
+#include <deque>
 
 
 struct AutomapReplace {
@@ -10,9 +11,22 @@ struct AutomapReplace {
 	std::string value;
 };
 
+struct StateCode {
+	std::string name;
+	unsigned int value;
+};
+
+struct StateWarning {
+	std::string name;
+	ULONGLONG startTicks;
+	StateWarning(string n, ULONGLONG ticks) : name(n), startTicks(ticks) {}
+};
+
 class ScreenInfo : public Module {
 	private:
 		std::vector<std::string> automapInfo;
+		std::map<DWORD, string> SkillWarningMap;
+		std::deque<StateWarning*> CurrentWarnings;
 		Drawing::Texthook* bhText;
 		DWORD gameTimer;
 
@@ -37,3 +51,6 @@ class ScreenInfo : public Module {
 		void OnAutomapDraw();
 		void OnGamePacketRecv(BYTE* packet, bool *block);
 };
+
+StateCode GetStateCode(unsigned int nKey);
+StateCode GetStateCode(const char* name);
