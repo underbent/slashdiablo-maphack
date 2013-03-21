@@ -86,10 +86,7 @@ bool Config::ReadBoolean(std::string key, bool value) {
 	if (contents[key].length() == 0)
 		return value;
 	//Convert string to boolean
-	const char* szValue = contents[key].c_str();
-	if ((_stricmp(szValue, "1") == 0) || (_stricmp(szValue, "y") == 0) || (_stricmp(szValue, "yes") == 0) || (_stricmp(szValue, "true") == 0))
-		return true;
-	return false;
+	return StringToBool(contents[key]);
 }
 
 /* ReadInt(std::string key, int value)
@@ -120,13 +117,9 @@ Toggle Config::ReadToggle(std::string key, std::string toggle, bool state) {
 	
 	//Pull the state from before the comma
 	string boolean = Trim(contents[key].substr(0, contents[key].find_first_of(",")));
-	const char* newState = boolean.c_str();
 	
 	//Convert state to boolean
-	if ((_stricmp(newState, "1") == 0) || (_stricmp(newState, "y") == 0) || (_stricmp(newState, "yes") == 0) || (_stricmp(newState, "true") == 0))
-		ret.state = true;
-	else
-		ret.state = false;
+	ret.state = StringToBool(boolean);
 
 	return ret;
 }

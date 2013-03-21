@@ -60,10 +60,12 @@ std::string Trim(std::string source) {
 	return source;
 }
 
+bool IsTrue(const char *str) {
+	return (_stricmp(str, "1") == 0 || _stricmp(str, "y") == 0 || _stricmp(str, "yes") == 0 || _stricmp(str, "true") == 0);
+}
+
 bool StringToBool(std::string str) {
-	if ((_stricmp(str.c_str(), "1") == 0) || (_stricmp(str.c_str(), "y") == 0) || (_stricmp(str.c_str(), "yes") == 0) || (_stricmp(str.c_str(), "true") == 0))
-		return true;
-	return false;
+	return IsTrue(str.c_str());
 }
 
 int StringToNumber(std::string str) {
