@@ -184,6 +184,8 @@ void ScreenInfo::OnAutomapDraw() {
 	localtime_s(&time, &tTime);
 	strftime(szTime, sizeof(szTime), "%I:%M:%S %p", &time);
 
+	char *level = UnicodeToAnsi(D2CLIENT_GetLevelName(pUnit->pPath->pRoom1->pRoom2->pLevel->dwLevelNo));
+
 	AutomapReplace automap[] = {
 		{"GAMENAME", pData->szGameName},
 		{"GAMEPASS", pData->szGamePass},
@@ -191,7 +193,7 @@ void ScreenInfo::OnAutomapDraw() {
 		{"GAMEDIFF", szDiff[D2CLIENT_GetDifficulty()]},
 		{"ACCOUNTNAME", pData->szAccountName},
 		{"CHARNAME", pUnit->pPlayerData->szName},
-		{"LEVEL", UnicodeToAnsi(D2CLIENT_GetLevelName(pUnit->pPath->pRoom1->pRoom2->pLevel->dwLevelNo))},
+		{"LEVEL", level},
 		{"GAMETIME", gameTime},
 		{"REALTIME", szTime}
 	};
@@ -205,11 +207,13 @@ void ScreenInfo::OnAutomapDraw() {
 			if (automap[n].value.length() == 0)
 				key = "";
 			else
-				key = key.replace(key.find("%" + automap[n].key + "%"), automap[n].key.length() + 2, automap[n].value);
+				key.replace(key.find("%" + automap[n].key + "%"), automap[n].key.length() + 2, automap[n].value);
 		}
 		if (key.length() > 0)
 			Texthook::Draw(790, (y+=16), Right,0,Gold,"%s", key.c_str());
 	}
+
+	delete [] level;
 }
 
 void ScreenInfo::OnGamePacketRecv(BYTE* packet, bool* block) {

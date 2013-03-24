@@ -296,10 +296,9 @@ void AutoTele::GetVectors() {
 			for(int j = 0;j<ExitCount;j++) {//loop over evey exit to see if it matches our target
 				if(ExitArray[j]->dwTargetLevel == V.Id) {
 					Vectors[i] = ExitArray[j]->ptPos;
-					continue;
 				}
+				delete ExitArray[j];
 			}
-			// fixme: should free the ExitArray entries after
 		}
 	}
 }

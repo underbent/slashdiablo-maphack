@@ -323,12 +323,21 @@ struct Rule {
 				} else {
 					conditionStack.push_back(new FalseCondition());
 				}
+				delete arg1;
+				if (arg2) {
+					delete arg2;
+				}
 			}
 		}
 		if (conditionStack.size() == 1) {
-			return conditionStack[0]->Evaluate(item, itemCode, NULL, NULL);
+			bool retval = conditionStack[0]->Evaluate(item, itemCode, NULL, NULL);
+			delete conditionStack[0];
+			return retval;
 		} else {
 			// TODO: find a way to report error
+			for (unsigned int i = 0; i < conditionStack.size(); i++) {
+				delete conditionStack[i];
+			}
 			return false;
 		}
 	}

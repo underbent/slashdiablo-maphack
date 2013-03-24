@@ -58,7 +58,7 @@ VOID __fastcall Bnet::NextGamePatch(Control* box, BOOL (__stdcall *FunCallBack)(
 	D2WIN_SelectEditBoxText(box);
 	// original code
 	D2WIN_SetEditBoxProc(box, FunCallBack);
-	delete wszLastGameName;
+	delete [] wszLastGameName;
 }
 
 void __declspec(naked) FailToJoin_Interception()

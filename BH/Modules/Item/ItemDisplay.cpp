@@ -130,10 +130,7 @@ void SubstituteNameVariables(UnitAny *item, string &name, Action *action) {
 	for (int n = 0; n < sizeof(replacements) / sizeof(replacements[0]); n++) {
 		if (name.find("%" + replacements[n].key + "%") == string::npos)
 			continue;
-		if (replacements[n].value.length() == 0)
-			name.assign("");
-		else
-			name.assign(name.replace(name.find("%" + replacements[n].key + "%"), replacements[n].key.length() + 2, replacements[n].value));
+		name.replace(name.find("%" + replacements[n].key + "%"), replacements[n].key.length() + 2, replacements[n].value);
 	}
 }
 
