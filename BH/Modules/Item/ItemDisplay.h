@@ -324,22 +324,19 @@ struct Rule {
 					conditionStack.push_back(new FalseCondition());
 				}
 				delete arg1;
-				if (arg2) {
-					delete arg2;
-				}
+				delete arg2;
 			}
 		}
+		bool retval;
 		if (conditionStack.size() == 1) {
-			bool retval = conditionStack[0]->Evaluate(item, itemCode, NULL, NULL);
-			delete conditionStack[0];
-			return retval;
+			retval = conditionStack[0]->Evaluate(item, itemCode, NULL, NULL);
 		} else {
-			// TODO: find a way to report error
-			for (unsigned int i = 0; i < conditionStack.size(); i++) {
-				delete conditionStack[i];
-			}
-			return false;
+			retval = false;  // TODO: find a way to report an error
 		}
+		for (unsigned int i = 0; i < conditionStack.size(); i++) {
+			delete conditionStack[i];
+		}
+		return retval;
 	}
 };
 
