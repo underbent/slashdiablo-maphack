@@ -28,6 +28,9 @@ vector<Rule*> MapRuleList;
 vector<Rule*> RuleCache;
 BYTE LastConditionType;
 
+TrueCondition *trueCondition = new TrueCondition();
+FalseCondition *falseCondition = new FalseCondition();
+
 char* GemLevels[] = {
 	"NONE",
 	"Chipped",

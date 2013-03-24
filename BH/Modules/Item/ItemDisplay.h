@@ -277,6 +277,9 @@ private:
 	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
 };
 
+extern TrueCondition *trueCondition;
+extern FalseCondition *falseCondition;
+
 struct ActionReplace {
 	string key;
 	string value;
@@ -319,12 +322,10 @@ struct Rule {
 					conditionStack.pop_back();
 				}
 				if (input->Evaluate(item, itemCode, arg1, arg2)) {
-					conditionStack.push_back(new TrueCondition());
+					conditionStack.push_back(trueCondition);
 				} else {
-					conditionStack.push_back(new FalseCondition());
+					conditionStack.push_back(falseCondition);
 				}
-				delete arg1;
-				delete arg2;
 			}
 		}
 		bool retval;
@@ -332,9 +333,6 @@ struct Rule {
 			retval = conditionStack[0]->Evaluate(item, itemCode, NULL, NULL);
 		} else {
 			retval = false;  // TODO: find a way to report an error
-		}
-		for (unsigned int i = 0; i < conditionStack.size(); i++) {
-			delete conditionStack[i];
 		}
 		return retval;
 	}
