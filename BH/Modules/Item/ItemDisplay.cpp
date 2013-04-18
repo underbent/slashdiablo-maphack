@@ -105,8 +105,13 @@ void GetItemName(UnitAny *item, string &name, char *itemCode) {
 }
 
 void SubstituteNameVariables(UnitAny *item, string &name, Action *action) {
-	char origName[128], sockets[4], ilvl[4], runename[16] = "", runenum[4] = "0";
+	char origName[128], sockets[4], code[4], ilvl[4], runename[16] = "", runenum[4] = "0";
 	char gemtype[16] = "", gemlevel[16] = "";
+	char *szCode = D2COMMON_GetItemText(item->dwTxtFileNo)->szCode;
+	code[0] = szCode[0];
+	code[1] = szCode[1];
+	code[2] = szCode[2];
+	code[3] = '\0';
 	sprintf_s(sockets, "%d", D2COMMON_GetUnitStat(item, STAT_SOCKETS, 0));
 	sprintf_s(ilvl, "%d", item->pItemData->dwItemLevel);
 	sprintf_s(origName, "%s", name.c_str());
@@ -115,7 +120,6 @@ void SubstituteNameVariables(UnitAny *item, string &name, Action *action) {
 		sprintf_s(runenum, "%d", item->dwTxtFileNo - 609);
 		sprintf_s(runename, name.substr(0, name.find(' ')).c_str());
 	} else if (IsGem(nType)) {
-		char* code = D2COMMON_GetItemText(item->dwTxtFileNo)->szCode;
 		sprintf_s(gemlevel, "%s", GetGemLevelString(GetGemLevel(code)));
 		sprintf_s(gemtype, "%s", GetGemTypeString(GetGemType(nType)));
 	}
@@ -127,6 +131,7 @@ void SubstituteNameVariables(UnitAny *item, string &name, Action *action) {
 		{"GEMLEVEL", gemlevel},
 		{"GEMTYPE", gemtype},
 		{"ILVL", ilvl},
+		{"CODE", code},
 		COLOR_REPLACEMENTS
 	};
 	name.assign(action->name);
