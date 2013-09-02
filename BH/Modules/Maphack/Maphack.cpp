@@ -258,9 +258,15 @@ void Maphack::OnAutomapDraw() {
 				Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pPath->xPos, unit->pPath->yPos);
 				Drawing::Boxhook::Draw(automapLoc.x - 1, automapLoc.y - 1, 2, 2, color, Drawing::BTHighlight);
 			} else if (unit->dwType == UNIT_ITEM) {
-				char *code = D2COMMON_GetItemText(unit->dwTxtFileNo)->szCode;
+				UnitItemInfo uInfo;
+				uInfo.item = unit;
+				uInfo.itemCode[0] = D2COMMON_GetItemText(unit->dwTxtFileNo)->szCode[0];
+				uInfo.itemCode[1] = D2COMMON_GetItemText(unit->dwTxtFileNo)->szCode[1];
+				uInfo.itemCode[2] = D2COMMON_GetItemText(unit->dwTxtFileNo)->szCode[2];
+				uInfo.itemCode[3] = 0;
+				uInfo.attrs = ItemAttributeMap[uInfo.itemCode];
 				for (vector<Rule*>::iterator it = MapRuleList.begin(); it != MapRuleList.end(); it++) {
-					if ((*it)->Evaluate(unit, code)) {
+					if ((*it)->Evaluate(&uInfo, NULL)) {
 						Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pItemPath->dwPosX, unit->pItemPath->dwPosY);
 						Drawing::Boxhook::Draw(automapLoc.x - 4, automapLoc.y - 4, 8, 8, TextColorMap[(*it)->action.colorOnMap], Drawing::BTHighlight);
 						break;

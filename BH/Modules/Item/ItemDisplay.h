@@ -4,7 +4,6 @@
 #include "../../Config.h"
 #include "../../BH.h"
 
-// Flags available for each entry in ItemLookup
 #define ITEM_GROUP_HELM					0x00000001
 #define ITEM_GROUP_ARMOR				0x00000002
 #define ITEM_GROUP_SHIELD				0x00000004
@@ -34,9 +33,136 @@
 #define ITEM_GROUP_NORMAL				0x04000000
 #define ITEM_GROUP_EXCEPTIONAL			0x08000000
 #define ITEM_GROUP_ELITE				0x10000000
-#define ITEM_GROUP_UNUSED1				0x20000000
-#define ITEM_GROUP_UNUSED2				0x40000000
-#define ITEM_GROUP_COMMON				0x80000000
+#define ITEM_GROUP_ALLARMOR				0x20000000
+#define ITEM_GROUP_ALLWEAPON			0x40000000
+#define ITEM_GROUP_CIRCLET				0x80000000
+
+
+// Item properties from incoming packets
+struct ItemPropertyBits {
+	string name;
+	unsigned int saveBits;
+	unsigned int saveParamBits;
+	unsigned int saveAdd;
+};
+
+// Static item attributes
+struct ItemAttributes {
+	string name;
+	char code[4];
+	string category;
+	BYTE width;
+	BYTE height;
+	BYTE stackable;
+	BYTE useable;
+	BYTE throwable;
+	BYTE itemLevel;
+	BYTE unusedFlags;
+	unsigned int flags;
+};
+
+// Properties that can appear on an item from incoming packets
+struct ItemProperty {
+	unsigned int stat;
+	long value;
+
+	unsigned int minimum;
+	unsigned int maximum;
+	unsigned int length;
+
+	unsigned int level;
+	unsigned int characterClass;
+	unsigned int skill;
+	unsigned int tab;
+
+	unsigned int monster;
+
+	unsigned int charges;
+	unsigned int maximumCharges;
+
+	unsigned int skillChance;
+
+	unsigned int perLevel;
+};
+
+// Collection of item data from the internal UnitAny structure
+struct UnitItemInfo {
+	UnitAny *item;
+	char itemCode[4];
+	ItemAttributes *attrs;
+};
+
+// Item data obtained from an incoming 0x9c packet
+struct ItemInfo {
+	ItemAttributes *attrs;
+	char code[4];
+	//std::string packet;
+	std::string name;
+	std::string earName;
+	std::string personalizedName;
+	unsigned int id;
+	unsigned int x;
+	unsigned int y;
+	unsigned int amount;
+	unsigned int prefix;
+	unsigned int suffix;
+	unsigned int setCode;
+	unsigned int uniqueCode;
+	unsigned int runewordId;
+	unsigned int defense;
+	unsigned int action;
+	unsigned int category;
+	unsigned int version;
+	unsigned int directory;
+	unsigned int container;
+	unsigned int earLevel;
+	unsigned int width;
+	unsigned int height;
+	unsigned int quality;
+	unsigned int graphic;
+	unsigned int color;
+	unsigned int superiority;
+	unsigned int runewordParameter;
+	unsigned int maxDurability;
+	unsigned int durability;
+	BYTE usedSockets;
+	BYTE level;
+	BYTE earClass;
+	BYTE sockets;
+	bool equipped;
+	bool inSocket;
+	bool identified;
+	bool switchedIn;
+	bool switchedOut;
+	bool broken;
+	bool potion;
+	bool hasSockets;
+	bool inStore;
+	bool notInSocket;
+	bool ear;
+	bool startItem;
+	bool simpleItem;
+	bool ethereal;
+	bool personalized;
+	bool gambling;
+	bool runeword;
+	bool ground;
+	bool unspecifiedDirectory;
+	bool isGold;
+	bool hasGraphic;
+	bool hasColor;
+	bool isArmor;
+	bool isWeapon;
+	bool indestructible;
+	std::vector<unsigned long> prefixes;
+	std::vector<unsigned long> suffixes;
+	std::vector<ItemProperty> properties;
+	bool operator<(ItemInfo const & other) const;
+};
+
+ItemAttributes ItemAttributeList[];
+ItemPropertyBits ItemPropertyBitsList[];
+extern std::map<std::string, ItemAttributes*> ItemAttributeMap;
 
 enum ConditionType {
 	CT_None,
@@ -46,11 +172,6 @@ enum ConditionType {
 	CT_BinaryOperator,
 	CT_Operand
 };
-
-extern unsigned int ItemLookup[36][36][36];
-extern unsigned int RuleCacheIndex;
-
-unsigned int GetItemCodeIndex(char codeChar);
 
 class Condition
 {
@@ -64,75 +185,75 @@ public:
 	static void AddOperand(vector<Condition*> &conditions, Condition *cond);
 	static void AddNonOperand(vector<Condition*> &conditions, Condition *cond);
 
-	bool Evaluate(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
-	virtual int InsertLookup() = 0;
+	bool Evaluate(UnitItemInfo *uInfo, ItemInfo *info, Condition *arg1, Condition *arg2);
 
 	BYTE conditionType;
 private:
-	virtual bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2) { return false; }
+	virtual bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) { return false; }
+	virtual bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) { return false; }
 };
 
 class TrueCondition : public Condition
 {
 public:
 	TrueCondition() { conditionType = CT_Operand; };
-	int InsertLookup() { return -1; }
 private:
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class FalseCondition : public Condition
 {
 public:
 	FalseCondition() { conditionType = CT_Operand; };
-	int InsertLookup() { return -1; }
 private:
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class NegationOperator : public Condition
 {
 public:
 	NegationOperator() { conditionType = CT_NegationOperator; };
-	int InsertLookup() { return -1; }
 private:
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class LeftParen : public Condition
 {
 public:
 	LeftParen() { conditionType = CT_LeftParen; };
-	int InsertLookup() { return -1; }
 private:
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class RightParen : public Condition
 {
 public:
 	RightParen() { conditionType = CT_RightParen; };
-	int InsertLookup() { return -1; }
 private:
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class AndOperator : public Condition
 {
 public:
 	AndOperator() { conditionType = CT_BinaryOperator; };
-	int InsertLookup() { return -1; }
 private:
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class OrOperator : public Condition
 {
 public:
 	OrOperator() { conditionType = CT_BinaryOperator; };
-	int InsertLookup() { return -1; }
 private:
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class ItemCodeCondition : public Condition
@@ -145,111 +266,105 @@ public:
 		targetCode[3] = 0;
 		conditionType = CT_Operand;
 	};
-	int InsertLookup() {
-		unsigned int itemVal = ItemLookup[GetItemCodeIndex(targetCode[0])][GetItemCodeIndex(targetCode[1])][GetItemCodeIndex(targetCode[2])];
-		if (itemVal == 0) {
-			ItemLookup[GetItemCodeIndex(targetCode[0])][GetItemCodeIndex(targetCode[1])][GetItemCodeIndex(targetCode[2])] = RuleCacheIndex | ITEM_GROUP_COMMON;
-			return RuleCacheIndex++;
-		}
-		return -1;
-	}
 private:
 	char targetCode[4];
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class FlagsCondition : public Condition
 {
 public:
 	FlagsCondition(unsigned int flg) : flag(flg) { conditionType = CT_Operand; };
-	int InsertLookup() { return -1; }
 private:
 	unsigned int flag;
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class QualityCondition : public Condition
 {
 public:
 	QualityCondition(unsigned int qual) : quality(qual) { conditionType = CT_Operand; };
-	int InsertLookup() { return -1; }
 private:
 	unsigned int quality;
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class NonMagicalCondition : public Condition
 {
 public:
 	NonMagicalCondition() { conditionType = CT_Operand; };
-	int InsertLookup() { return -1; }
 private:
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class GemLevelCondition : public Condition
 {
 public:
 	GemLevelCondition(BYTE op, BYTE gem) : gemLevel(gem), operation(op) { conditionType = CT_Operand; };
-	int InsertLookup() { return -1; }
 private:
 	BYTE operation;
 	BYTE gemLevel;
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class GemTypeCondition : public Condition
 {
 public:
 	GemTypeCondition(BYTE op, BYTE gType) : gemType(gType), operation(op) { conditionType = CT_Operand; };
-	int InsertLookup() { return -1; }
 private:
 	BYTE operation;
 	BYTE gemType;
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class RuneCondition : public Condition
 {
 public:
 	RuneCondition(BYTE op, BYTE rune) : runeNumber(rune), operation(op) { conditionType = CT_Operand; };
-	int InsertLookup() { return -1; }
 private:
 	BYTE operation;
 	BYTE runeNumber;
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class ItemLevelCondition : public Condition
 {
 public:
 	ItemLevelCondition(BYTE op, BYTE ilvl) : itemLevel(ilvl), operation(op) { conditionType = CT_Operand; };
-	int InsertLookup() { return -1; }
 private:
 	BYTE operation;
 	BYTE itemLevel;
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class ItemGroupCondition : public Condition
 {
 public:
 	ItemGroupCondition(unsigned int group) : itemGroup(group) { conditionType = CT_Operand; };
-	int InsertLookup() { return -1; }
 private:
 	unsigned int itemGroup;
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class EDCondition : public Condition
 {
 public:
 	EDCondition(BYTE op, unsigned int target) : operation(op), targetED(target) { conditionType = CT_Operand; };
-	int InsertLookup() { return -1; }
 private:
 	BYTE operation;
 	unsigned int targetED;
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
+	bool EvaluateED(unsigned int flags);
 };
 
 class ItemStatCondition : public Condition
@@ -257,24 +372,24 @@ class ItemStatCondition : public Condition
 public:
 	ItemStatCondition(unsigned int stat, unsigned int stat2, BYTE op, unsigned int target)
 		: itemStat(stat), itemStat2(stat2), operation(op), targetStat(target) { conditionType = CT_Operand; };
-	int InsertLookup() { return -1; }
 private:
 	unsigned int itemStat;
 	unsigned int itemStat2;
 	BYTE operation;
 	unsigned int targetStat;
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class ResistAllCondition : public Condition
 {
 public:
 	ResistAllCondition(BYTE op, unsigned int target) : operation(op), targetStat(target) { conditionType = CT_Operand; };
-	int InsertLookup() { return -1; }
 private:
 	BYTE operation;
 	unsigned int targetStat;
-	bool EvaluateInternal(UnitAny *item, char *itemCode, Condition *arg1, Condition *arg2);
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 extern TrueCondition *trueCondition;
@@ -297,7 +412,7 @@ struct Rule {
 	Action action;
 
 	// Evaluate conditions which are in Reverse Polish Notation
-	bool Evaluate(UnitAny *item, char *itemCode) {
+	bool Evaluate(UnitItemInfo *uInfo, ItemInfo *info) {
 		if (conditions.size() == 0) {
 			return true;  // a rule with no conditions always matches
 		}
@@ -321,7 +436,7 @@ struct Rule {
 					arg2 = conditionStack.back();
 					conditionStack.pop_back();
 				}
-				if (input->Evaluate(item, itemCode, arg1, arg2)) {
+				if (input->Evaluate(uInfo, info, arg1, arg2)) {
 					conditionStack.push_back(trueCondition);
 				} else {
 					conditionStack.push_back(falseCondition);
@@ -330,7 +445,7 @@ struct Rule {
 		}
 		bool retval;
 		if (conditionStack.size() == 1) {
-			retval = conditionStack[0]->Evaluate(item, itemCode, NULL, NULL);
+			retval = conditionStack[0]->Evaluate(uInfo, info, NULL, NULL);
 		} else {
 			retval = false;  // TODO: find a way to report an error
 		}
@@ -340,12 +455,13 @@ struct Rule {
 
 extern vector<Rule*> RuleList;
 extern vector<Rule*> MapRuleList;
-extern vector<Rule*> RuleCache;
+extern vector<Rule*> IgnoreRuleList;
 
 void CreateItemTable();
 void InitializeItemRules();
 void BuildAction(string *str, Action *act);
 BYTE GetOperation(string *op);
 inline bool IntegerCompare(unsigned int Lvalue, int operation, unsigned int Rvalue);
-void GetItemName(UnitAny *item, string &name, char *itemCode);
+void GetItemName(UnitItemInfo *uInfo, string &name);
 void SubstituteNameVariables(UnitAny *item, string &name, Action *action);
+int GetDefense(ItemInfo *item);

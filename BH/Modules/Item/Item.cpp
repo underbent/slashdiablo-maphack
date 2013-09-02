@@ -126,11 +126,13 @@ void __fastcall Item::ItemNamePatch(wchar_t *name, UnitAny *item)
 	char* szName = UnicodeToAnsi(name);
 	string itemName = szName;
 	char* code = D2COMMON_GetItemText(item->dwTxtFileNo)->szCode;
-	char test_code[4];
-	test_code[0] = code[0]; test_code[1] = code[1]; test_code[2] = code[2]; test_code[3] = 0;
 
 	if (Toggles["Advanced Item Display"].state) {
-		GetItemName(item, itemName, code);
+		UnitItemInfo uInfo;
+		uInfo.itemCode[0] = code[0]; uInfo.itemCode[1] = code[1]; uInfo.itemCode[2] = code[2]; uInfo.itemCode[3] = 0;
+		uInfo.item = item;
+		uInfo.attrs = ItemAttributeMap[uInfo.itemCode];
+		GetItemName(&uInfo, itemName);
 	} else {
 		OrigGetItemName(item, itemName, code);
 	}

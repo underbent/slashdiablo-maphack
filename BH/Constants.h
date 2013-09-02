@@ -533,12 +533,40 @@ enum TextColor {
 #define ITEM_ACTION_PICK_UP				0x01
 #define ITEM_ACTION_DROP				0x02
 #define ITEM_ACTION_OLD_GROUND			0x03
-#define ITEM_ACTION_PLACE_UNKNOWN		0x04 // cube? or inventory
 #define ITEM_ACTION_TO_STORAGE			0x04
 #define ITEM_ACTION_FROM_STORAGE		0x05
+#define ITEM_ACTION_EQUIP				0x06
+#define ITEM_ACTION_INDIRECT_SWAP_BODY	0x07
+#define ITEM_ACTION_UNEQUIP				0x08
+#define ITEM_ACTION_SWAP_BODY			0x09
+#define ITEM_ACTION_ADD_QUANTITY		0x0A
 #define ITEM_ACTION_TO_STORE			0x0B
 #define ITEM_ACTION_FROM_STORE			0x0C
+#define ITEM_ACTION_SWAP_IN_CONTAINER	0x0D
 #define ITEM_ACTION_PLACE_BELT			0x0E
+#define ITEM_ACTION_REMOVE_BELT			0x0F
+#define ITEM_ACTION_SWAP_BELT			0x10
+#define ITEM_ACTION_AUTO_UNEQUIP		0x11
+#define ITEM_ACTION_TO_CURSOR			0x12
+#define ITEM_ACTION_ITEM_IN_SOCKET		0x13
+#define ITEM_ACTION_UPDATE_STATS		0x15
+#define ITEM_ACTION_WEAPON_SWITCH		0x17
+
+///////////////////////////////////////////////////
+// Item Containers
+///////////////////////////////////////////////////
+#define CONTAINER_UNSPECIFIED			0x00
+#define CONTAINER_INVENTORY				0x02
+#define CONTAINER_TRADER_OFFER			0x04
+#define CONTAINER_FOR_TRADE				0x06
+#define CONTAINER_CUBE					0x08
+#define CONTAINER_STASH					0x0A
+#define CONTAINER_BELT					0x20
+#define CONTAINER_ITEM					0x40
+#define CONTAINER_ARMOR_TAB				0x82
+#define CONTAINER_WEAPON_TAB_1			0x84
+#define CONTAINER_WEAPON_TAB_2			0x86
+#define CONTAINER_MISC_TAB				0x88
 
 ///////////////////////////////////////////////////
 // Body Locations
@@ -574,6 +602,7 @@ enum StorageBuffer {
 ///////////////////////////////////////////////////
 // Item Quality
 ///////////////////////////////////////////////////
+#define	ITEM_QUALITY_NONE				0x00
 #define	ITEM_QUALITY_INFERIOR			0x01
 #define	ITEM_QUALITY_NORMAL				0x02
 #define	ITEM_QUALITY_SUPERIOR			0x03

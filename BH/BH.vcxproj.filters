@@ -225,6 +225,9 @@
     <ClCompile Include="Modules\ItemMover\ItemMover.cpp">
       <Filter>BH\Modules\ItemMover</Filter>
     </ClCompile>
+    <ClCompile Include="BitReader.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D2Structs.h">
@@ -367,6 +370,9 @@
     </ClInclude>
     <ClInclude Include="Modules\ItemMover\ItemMover.h">
       <Filter>BH\Modules\ItemMover</Filter>
+    </ClInclude>
+    <ClInclude Include="BitReader.h">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

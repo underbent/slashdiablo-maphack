@@ -2,6 +2,9 @@
 #include "../../D2Structs.h"
 #include "../Module.h"
 #include "../../Config.h"
+#include "../../Common.h"
+#include "../../BitReader.h"
+#include "../Item/ItemDisplay.h"
 
 #define INVENTORY_WIDTH 10
 #define INVENTORY_HEIGHT 4
@@ -61,3 +64,7 @@ public:
 	void OnGamePacketRecv(BYTE* packet, bool *block);
 	void OnGameExit();
 };
+
+
+void ParseItem(const unsigned char *data, ItemInfo *ii);
+void ProcessStat(unsigned int statId, BitReader &reader, ItemProperty &itemProp);
