@@ -378,6 +378,8 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_BOOTS));
 		} else if (key[2] == '6') {
 			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_BELT));
+		} else if (key[2] == '7') {
+			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_CIRCLET));
 		}
 	} else if (key.compare(0, 2, "CL") == 0 && keylen >= 3) {
 		if (key[2] == '1') {
