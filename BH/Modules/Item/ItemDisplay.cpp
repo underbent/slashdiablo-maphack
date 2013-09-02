@@ -355,6 +355,8 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		Condition::AddOperand(conditions, new ItemLevelCondition(operation, value));
 	} else if (key.compare(0, 4, "RUNE") == 0) {
 		Condition::AddOperand(conditions, new RuneCondition(operation, value));
+	} else if (key.compare(0, 4, "GOLD") == 0) {
+		Condition::AddOperand(conditions, new GoldCondition(operation, value));
 	} else if (key.compare(0, 7, "GEMTYPE") == 0) {
 		Condition::AddOperand(conditions, new GemTypeCondition(operation, value));
 	} else if (key.compare(0, 3, "GEM") == 0) {
@@ -635,6 +637,16 @@ bool RuneCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, 
 		info->code[1] >= '0' && info->code[1] <= '9' &&
 		info->code[2] >= '0' && info->code[2] <= '9') {
 		return IntegerCompare(((info->code[1] - '0') * 10) + info->code[2] - '0', operation, runeNumber);
+	}
+	return false;
+}
+
+bool GoldCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
+	return false; // can only evaluate this from packet data
+}
+bool GoldCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
+	if (info->code[0] == 'g' && info->code[1] == 'l' && info->code[2] == 'd') {
+		return IntegerCompare(info->amount, operation, goldAmount);
 	}
 	return false;
 }
