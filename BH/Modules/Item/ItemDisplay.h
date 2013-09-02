@@ -4,6 +4,13 @@
 #include "../../Config.h"
 #include "../../BH.h"
 
+#define EXCEPTION_INVALID_STAT			1
+#define EXCEPTION_INVALID_OPERATION		2
+#define EXCEPTION_INVALID_OPERATOR		3
+#define EXCEPTION_INVALID_FLAG			4
+#define EXCEPTION_INVALID_ITEM_TYPE		5
+#define EXCEPTION_INVALID_GOLD_TYPE		6
+
 #define ITEM_GROUP_HELM					0x00000001
 #define ITEM_GROUP_ARMOR				0x00000002
 #define ITEM_GROUP_SHIELD				0x00000004
@@ -428,37 +435,41 @@ struct Rule {
 			return true;  // a rule with no conditions always matches
 		}
 
-		vector<Condition*> conditionStack;
-		for (unsigned int i = 0; i < conditions.size(); i++) {
-			Condition *input = conditions[i];
-			if (input->conditionType == CT_Operand) {
-				conditionStack.push_back(input);
-			} else if (input->conditionType == CT_BinaryOperator || input->conditionType == CT_NegationOperator) {
-				Condition *arg1 = NULL, *arg2 = NULL;
-				if (conditionStack.size() < 1) {
-					return false;
-				}
-				arg1 = conditionStack.back();
-				conditionStack.pop_back();
-				if (input->conditionType == CT_BinaryOperator) {
+		bool retval;
+		try {
+			vector<Condition*> conditionStack;
+			for (unsigned int i = 0; i < conditions.size(); i++) {
+				Condition *input = conditions[i];
+				if (input->conditionType == CT_Operand) {
+					conditionStack.push_back(input);
+				} else if (input->conditionType == CT_BinaryOperator || input->conditionType == CT_NegationOperator) {
+					Condition *arg1 = NULL, *arg2 = NULL;
 					if (conditionStack.size() < 1) {
 						return false;
 					}
-					arg2 = conditionStack.back();
+					arg1 = conditionStack.back();
 					conditionStack.pop_back();
-				}
-				if (input->Evaluate(uInfo, info, arg1, arg2)) {
-					conditionStack.push_back(trueCondition);
-				} else {
-					conditionStack.push_back(falseCondition);
+					if (input->conditionType == CT_BinaryOperator) {
+						if (conditionStack.size() < 1) {
+							return false;
+						}
+						arg2 = conditionStack.back();
+						conditionStack.pop_back();
+					}
+					if (input->Evaluate(uInfo, info, arg1, arg2)) {
+						conditionStack.push_back(trueCondition);
+					} else {
+						conditionStack.push_back(falseCondition);
+					}
 				}
 			}
-		}
-		bool retval;
-		if (conditionStack.size() == 1) {
-			retval = conditionStack[0]->Evaluate(uInfo, info, NULL, NULL);
-		} else {
-			retval = false;  // TODO: find a way to report an error
+			if (conditionStack.size() == 1) {
+				retval = conditionStack[0]->Evaluate(uInfo, info, NULL, NULL);
+			} else {
+				retval = false;
+			}
+		} catch (...) {
+			retval = false;
 		}
 		return retval;
 	}

@@ -162,7 +162,7 @@ bool IntegerCompare(unsigned int Lvalue, BYTE operation, unsigned int Rvalue) {
 	case LESS_THAN:
 		return Lvalue < Rvalue;
 	default:
-		return false;
+		throw EXCEPTION_INVALID_OPERATION;
 	}
 }
 
@@ -527,17 +527,17 @@ bool NegationOperator::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg
 }
 
 bool LeftParen::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
-	return false;
+	throw EXCEPTION_INVALID_OPERATOR;
 }
 bool LeftParen::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
-	return false;
+	throw EXCEPTION_INVALID_OPERATOR;
 }
 
 bool RightParen::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
-	return false;
+	throw EXCEPTION_INVALID_OPERATOR;
 }
 bool RightParen::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
-	return false;
+	throw EXCEPTION_INVALID_OPERATOR;
 }
 
 bool AndOperator::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
@@ -573,7 +573,7 @@ bool FlagsCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1,
 	case ITEM_RUNEWORD:
 		return info->runeword;
 	}
-	return false;
+	throw EXCEPTION_INVALID_FLAG;
 }
 
 bool QualityCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
@@ -599,13 +599,13 @@ bool GemLevelCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, C
 	if (IsGem(nType)) {
 		return IntegerCompare(GetGemLevel(uInfo->itemCode), operation, gemLevel);
 	}
-	return false;
+	throw EXCEPTION_INVALID_ITEM_TYPE;
 }
 bool GemLevelCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
 	if (info->attrs->category.compare(0, 3, "Gem") == 0) {
 		return IntegerCompare(GetGemLevel(info->code), operation, gemLevel);
 	}
-	return false;
+	throw EXCEPTION_INVALID_ITEM_TYPE;
 }
 
 bool GemTypeCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
@@ -613,7 +613,7 @@ bool GemTypeCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Co
 	if (IsGem(nType)) {
 		return IntegerCompare(GetGemType(nType), operation, gemType);
 	}
-	return false;
+	throw EXCEPTION_INVALID_ITEM_TYPE;
 }
 bool GemTypeCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
 	if (info->attrs->category.compare(0, 3, "Gem") == 0) {
@@ -623,14 +623,14 @@ bool GemTypeCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg
 			}
 		}
 	}
-	return false;
+	throw EXCEPTION_INVALID_ITEM_TYPE;
 }
 
 bool RuneCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
 	if (IsRune(D2COMMON_GetItemText(uInfo->item->dwTxtFileNo)->nType)) {
 		return IntegerCompare(uInfo->item->dwTxtFileNo - 609, operation, runeNumber);
 	}
-	return false;
+	throw EXCEPTION_INVALID_ITEM_TYPE;
 }
 bool RuneCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
 	if (info->code[0] == 'r' &&
@@ -638,17 +638,17 @@ bool RuneCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, 
 		info->code[2] >= '0' && info->code[2] <= '9') {
 		return IntegerCompare(((info->code[1] - '0') * 10) + info->code[2] - '0', operation, runeNumber);
 	}
-	return false;
+	throw EXCEPTION_INVALID_ITEM_TYPE;
 }
 
 bool GoldCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
-	return false; // can only evaluate this from packet data
+	throw EXCEPTION_INVALID_GOLD_TYPE; // can only evaluate this from packet data
 }
 bool GoldCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
 	if (info->code[0] == 'g' && info->code[1] == 'l' && info->code[2] == 'd') {
 		return IntegerCompare(info->amount, operation, goldAmount);
 	}
-	return false;
+	throw EXCEPTION_INVALID_GOLD_TYPE;
 }
 
 bool ItemLevelCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
@@ -747,7 +747,7 @@ bool ItemStatCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *ar
 		}
 		return IntegerCompare(num, operation, targetStat);
 	}
-	return false;
+	throw EXCEPTION_INVALID_STAT;
 }
 
 bool ResistAllCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
