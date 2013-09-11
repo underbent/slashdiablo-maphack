@@ -288,10 +288,11 @@ void ItemMover::OnGamePacketRecv(BYTE* packet, bool* block) {
 				Unlock();
 			}
 
+			bool success = true;
 			ItemInfo item = {};
-			ParseItem((unsigned char*)packet, &item);
+			ParseItem((unsigned char*)packet, &item, &success);
 			//PrintText(1, "Item packet: %s, %s, %X, %d, %d", item.name.c_str(), item.code, item.attrs->flags, item.sockets, GetDefense(&item));
-			if (item.ground) {
+			if (item.ground && success) {
 				//PrintText(1, "Item on ground: %s, %s, %s, %X", item.name.c_str(), item.code, item.attrs->category.c_str(), item.attrs->flags);
 				for (vector<Rule*>::iterator it = IgnoreRuleList.begin(); it != IgnoreRuleList.end(); it++) {
 					if ((*it)->Evaluate(NULL, &item)) {
@@ -337,7 +338,8 @@ void ItemMover::OnGameExit() {
 }
 
 // Code for reading the 0x9c bitstream (borrowed from heroin_glands)
-void ParseItem(const unsigned char *data, ItemInfo *item) {
+void ParseItem(const unsigned char *data, ItemInfo *item, bool *success) {
+	*success = true;
 	//try {
 		BitReader reader(data);
 		unsigned long packet = reader.read(8);
@@ -452,6 +454,11 @@ void ParseItem(const unsigned char *data, ItemInfo *item) {
 		}
 		item->code[3] = 0;
 
+		if (ItemAttributeMap.find(item->code) == ItemAttributeMap.end()) {
+			PrintText(1, "Unknown item code: %c%c%c\n", item->code[0], item->code[1], item->code[2]);
+			*success = false;
+			return;
+		}
 		item->attrs = ItemAttributeMap[item->code];
 		item->name = item->attrs->name;
 		item->width = item->attrs->width;

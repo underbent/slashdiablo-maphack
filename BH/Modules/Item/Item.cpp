@@ -131,8 +131,12 @@ void __fastcall Item::ItemNamePatch(wchar_t *name, UnitAny *item)
 		UnitItemInfo uInfo;
 		uInfo.itemCode[0] = code[0]; uInfo.itemCode[1] = code[1]; uInfo.itemCode[2] = code[2]; uInfo.itemCode[3] = 0;
 		uInfo.item = item;
-		uInfo.attrs = ItemAttributeMap[uInfo.itemCode];
-		GetItemName(&uInfo, itemName);
+		if (ItemAttributeMap.find(uInfo.itemCode) != ItemAttributeMap.end()) {
+			uInfo.attrs = ItemAttributeMap[uInfo.itemCode];
+			GetItemName(&uInfo, itemName);
+		} else {
+			PrintText(1, "Unknown item code: %c%c%c\n", uInfo.itemCode[0], uInfo.itemCode[1], uInfo.itemCode[2]);
+		}
 	} else {
 		OrigGetItemName(item, itemName, code);
 	}
