@@ -1830,7 +1830,7 @@ void CreateItemTable() {
 			ItemAttributeList[n].flags |= ITEM_GROUP_CIRCLET | ITEM_GROUP_ALLARMOR;
 		} else if (ItemAttributeList[n].category.compare("Axe") == 0) {
 			ItemAttributeList[n].flags |= ITEM_GROUP_AXE | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare("Mace") == 0) {
+		} else if (ItemAttributeList[n].category.compare("Mace") == 0 || ItemAttributeList[n].category.compare("Hammer") == 0 || ItemAttributeList[n].category.compare("Club") == 0) {
 			ItemAttributeList[n].flags |= ITEM_GROUP_MACE | ITEM_GROUP_ALLWEAPON;
 		} else if (ItemAttributeList[n].category.compare("Sword") == 0) {
 			ItemAttributeList[n].flags |= ITEM_GROUP_SWORD | ITEM_GROUP_ALLWEAPON;
