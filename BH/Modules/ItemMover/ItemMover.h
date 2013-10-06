@@ -67,4 +67,4 @@ public:
 
 
 void ParseItem(const unsigned char *data, ItemInfo *ii, bool *success);
-void ProcessStat(unsigned int statId, BitReader &reader, ItemProperty &itemProp);
+bool ProcessStat(unsigned int statId, BitReader &reader, ItemProperty &itemProp);

@@ -340,7 +340,7 @@ void ItemMover::OnGameExit() {
 // Code for reading the 0x9c bitstream (borrowed from heroin_glands)
 void ParseItem(const unsigned char *data, ItemInfo *item, bool *success) {
 	*success = true;
-	//try {
+	try {
 		BitReader reader(data);
 		unsigned long packet = reader.read(8);
 		item->action = reader.read(8);
@@ -607,21 +607,25 @@ void ParseItem(const unsigned char *data, ItemInfo *item, bool *success) {
 				break;
 			}
 			ItemProperty prop = {};
-			ProcessStat(stat_id, reader, prop);
+			if (!ProcessStat(stat_id, reader, prop)) {
+				PrintText(1, "Invalid stat: %d, %c%c%c", stat_id, item->code[0], item->code[1], item->code[2]);
+				*success = false;
+				break;
+			}
 			item->properties.push_back(prop);
 		}
-	//} catch(nil::exception & exception) {
-		//std::cout << "Error occured: " << exception.get_message() << std::endl;
-		//std::cout << get_item_string(item) << std::endl;
-		//print_data(data);
-		//std::cout << get_char_array_string(data) << std::endl;
-		//std::cin.get();
-	//}
-	//std::cout << get_item_string(item) << std::endl;
+	} catch(...) {
+		PrintText(1, "Exception parsing item: %c%c%c", item->code[0], item->code[1], item->code[2]);
+		*success = false;
+	}
 	return;
 }
 
-void ProcessStat(unsigned int stat, BitReader &reader, ItemProperty &itemProp) {
+bool ProcessStat(unsigned int stat, BitReader &reader, ItemProperty &itemProp) {
+	if (stat > STAT_MAX) {
+		return false;
+	}
+
 	unsigned int saveBits = ItemPropertyBitsList[stat].saveBits;
 	unsigned int saveParamBits = ItemPropertyBitsList[stat].saveParamBits;
 	unsigned int saveAdd = ItemPropertyBitsList[stat].saveAdd;
@@ -633,32 +637,32 @@ void ProcessStat(unsigned int stat, BitReader &reader, ItemProperty &itemProp) {
 			{
 				itemProp.monster = reader.read(saveParamBits);
 				itemProp.value = reader.read(saveBits);
-				return;
+				return true;
 			}
 			case STAT_ELEMENTALSKILLS:
 			{
 				ulong element = reader.read(saveParamBits);
 				itemProp.value = reader.read(saveBits);
-				return;
+				return true;
 			}
 			case STAT_CLASSSKILLS:
 			{
 				itemProp.characterClass = reader.read(saveParamBits);
 				itemProp.value = reader.read(saveBits);
-				return;
+				return true;
 			}
 			case STAT_AURA:
 			{
 				itemProp.skill = reader.read(saveParamBits);
 				itemProp.value = reader.read(saveBits);
-				return;
+				return true;
 			}
 			case STAT_SINGLESKILL:
 			case STAT_NONCLASSSKILL:
 			{
 				itemProp.skill = reader.read(saveParamBits);
 				itemProp.value = reader.read(saveBits);
-				return;
+				return true;
 			}
 			case STAT_CHARGED:
 			{
@@ -666,7 +670,7 @@ void ProcessStat(unsigned int stat, BitReader &reader, ItemProperty &itemProp) {
 				itemProp.skill = reader.read(10);
 				itemProp.charges = reader.read(8);
 				itemProp.maximumCharges = reader.read(8);
-				return;
+				return true;
 			}
 			case STAT_SKILLONDEATH:
 			case STAT_SKILLONHIT:
@@ -678,7 +682,7 @@ void ProcessStat(unsigned int stat, BitReader &reader, ItemProperty &itemProp) {
 				itemProp.level = reader.read(6);
 				itemProp.skill = reader.read(10);
 				itemProp.skillChance = reader.read(saveBits);
-				return;
+				return true;
 			}
 			case STAT_SKILLTAB:
 			{
@@ -686,16 +690,16 @@ void ProcessStat(unsigned int stat, BitReader &reader, ItemProperty &itemProp) {
 				itemProp.characterClass = reader.read(3);
 				ulong unknown = reader.read(10);
 				itemProp.value = reader.read(saveBits);
-				return;
+				return true;
 			}
 			default:
-				return;
+				return true;
 		}
 	}
 
 	if (stat >= STAT_DEFENSEPERLEVEL && stat <= STAT_FINDGEMSPERLEVEL) {
 		itemProp.perLevel = reader.read(saveBits);
-		return;
+		return true;
 	}
 
 	switch (stat) {
@@ -704,50 +708,50 @@ void ProcessStat(unsigned int stat, BitReader &reader, ItemProperty &itemProp) {
 		{
 			itemProp.minimum = reader.read(saveBits);
 			itemProp.maximum = reader.read(saveBits);
-			return;
+			return true;
 		}
 		case STAT_MINIMUMFIREDAMAGE:
 		{
 			itemProp.minimum = reader.read(saveBits);
 			itemProp.maximum = reader.read(ItemPropertyBitsList[STAT_MAXIMUMFIREDAMAGE].saveBits);
-			return;
+			return true;
 		}
 		case STAT_MINIMUMLIGHTNINGDAMAGE:
 		{
 			itemProp.minimum = reader.read(saveBits);
 			itemProp.maximum = reader.read(ItemPropertyBitsList[STAT_MAXIMUMLIGHTNINGDAMAGE].saveBits);
-			return;
+			return true;
 		}
 		case STAT_MINIMUMMAGICALDAMAGE:
 		{
 			itemProp.minimum = reader.read(saveBits);
 			itemProp.maximum = reader.read(ItemPropertyBitsList[STAT_MAXIMUMMAGICALDAMAGE].saveBits);
-			return;
+			return true;
 		}
 		case STAT_MINIMUMCOLDDAMAGE:
 		{
 			itemProp.minimum = reader.read(saveBits);
 			itemProp.maximum = reader.read(ItemPropertyBitsList[STAT_MAXIMUMCOLDDAMAGE].saveBits);
 			itemProp.length = reader.read(ItemPropertyBitsList[STAT_COLDDAMAGELENGTH].saveBits);
-			return;
+			return true;
 		}
 		case STAT_MINIMUMPOISONDAMAGE:
 		{
 			itemProp.minimum = reader.read(saveBits);
 			itemProp.maximum = reader.read(ItemPropertyBitsList[STAT_MAXIMUMPOISONDAMAGE].saveBits);
 			itemProp.length = reader.read(ItemPropertyBitsList[STAT_POISONDAMAGELENGTH].saveBits);
-			return;
+			return true;
 		}
 		case STAT_REPAIRSDURABILITY:
 		case STAT_REPLENISHESQUANTITY:
 		{
 			itemProp.value = reader.read(saveBits);
-			return;
+			return true;
 		}
 		default:
 		{
 			itemProp.value = reader.read(saveBits) - saveAdd;
-			return;
+			return true;
 		}
 	}
 }
