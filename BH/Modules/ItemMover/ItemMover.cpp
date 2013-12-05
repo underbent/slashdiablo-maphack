@@ -297,7 +297,7 @@ void ItemMover::OnGamePacketRecv(BYTE* packet, bool* block) {
 				for (vector<Rule*>::iterator it = IgnoreRuleList.begin(); it != IgnoreRuleList.end(); it++) {
 					if ((*it)->Evaluate(NULL, &item)) {
 						*block = true;
-						PrintText(1, "Blocking item: %s, %s, %d", item.name.c_str(), item.code, item.amount);
+						//PrintText(1, "Blocking item: %s, %s, %d", item.name.c_str(), item.code, item.amount);
 						break;
 					}
 				}
