@@ -58,40 +58,18 @@ int main(int argc, const char* argv[]) {
 	BH::wPath = wtPath;
 	BH::wPath += L"\\";
 	
-	//Create a vector to hold all the Diablo II Windows
-	vector<DiabloWindow*> Windows;
-
-	//Print intro and the beginning of the menu.
-	printf("BH v0.1.4 By McGod\n");
-	printf("SlashDiablo Branch: Edited By Deadlock, underbent\n" );
-	printf("Visit http://www.reddit.com/r/slashdiablo for updates!\n");
-	printf("Please choose an option to inject.\n");
-
 	if (!cInjector::EnableDebugPriv()) {
 		printf("\tYou must run this injector as an adminstrator!\nIf you're using Windows Vista or Windows 7, right click and choose \'Run as Adminstrator\'");
 		system("PAUSE");
 		return 1;
 	}
 
-	//Call EnumWindows to push all Diablo windows into vector.
-	EnumWindows(EnumWindowsProc, (LPARAM)&Windows);
-
-	if (Windows.size() == 0) {
-		printf("\tNo Windows Found!\n");
-		system("PAUSE");
-		return 1;
-	}
- 
-	printf("\t0) Inject into All\n");
-	printf("\t1) Uninject from All\n");
-	
-	int nCount = 2;
-	for (vector<DiabloWindow*>::iterator window = Windows.begin(); window < Windows.end(); window++)
-		(*window)->MenuMessage(nCount++);
+	//Create a vector to hold all the Diablo II Windows
+	vector<DiabloWindow*> Windows;
 
 	bool noPause = cmdOptionExists((char**)argv, (char**)argv + argc, "-p");
 
-	int nOpt;
+	int nOpt = -1;
 	char *numOpt = getCmdOption((char**)argv, (char**)argv + argc, "-o");
 	if (numOpt) {
 		string str(numOpt);
@@ -101,7 +79,38 @@ int main(int argc, const char* argv[]) {
 			system("PAUSE");
 			return 1;
 		}
-	} else {
+	}
+
+	//Print intro and the beginning of the menu.
+	printf("BH v0.1.4 By McGod\n");
+	printf("SlashDiablo Branch: Edited By Deadlock, underbent\n");
+	printf("Visit http://www.reddit.com/r/slashdiablo for updates!\n");
+	printf("\n");
+	printf("Command-line parameters:\n");
+	printf("\t-o <option number>: set injection option (0 for inject all, etc)\n");
+	printf("\t-p: don't pause after injection\n");
+	printf("\n");
+
+	//Call EnumWindows to push all Diablo windows into vector.
+	EnumWindows(EnumWindowsProc, (LPARAM)&Windows);
+
+	if (Windows.size() == 0) {
+		printf("\tNo Windows Found!\n");
+		system("PAUSE");
+		return 1;
+	}
+
+	if (nOpt < 0) {
+		printf("Please choose an option to inject.\n");
+		printf("\t0) Inject into All\n");
+		printf("\t1) Uninject from All\n");
+
+		int nCount = 2;
+		for (vector<DiabloWindow*>::iterator window = Windows.begin(); window < Windows.end(); window++) {
+			(*window)->MenuMessage(nCount++);
+		}
+		printf("\n");
+
 		nOpt = _getch() - 48;
 	}
 
