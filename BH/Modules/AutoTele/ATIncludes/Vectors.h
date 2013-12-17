@@ -670,18 +670,18 @@ Vector vVector[] = {
 
 	{0}, {0}, {0}, {0},										//0x84 -> worldstone keep
 
-	{UNIT_MONSTER, 707},									//0x85
-	{UNIT_MONSTER, 707},									//lilith
+	{0},													//0x85
+	{0},													//lilith
 	{0},
 	{0},
 
-	{UNIT_MONSTER, 708},									//0x86 -> forgotton sands
-	{UNIT_MONSTER, 708},									//uber duriel
+	{0},													//0x86 -> forgotton sands
+	{0},													//uber duriel
 	{0},
 	{0},
 
-	{UNIT_MONSTER, 706},									//0x87
-	{UNIT_MONSTER, 706},									//uber izual
+	{0},													//0x87
+	{0},													//uber izual
 	{0},
 	{0}
 };
