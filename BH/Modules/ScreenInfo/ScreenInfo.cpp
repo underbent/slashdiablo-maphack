@@ -17,16 +17,13 @@ void ScreenInfo::OnLoad() {
 	gameTimer = GetTickCount();
 
 	map<string, string> SkillWarnings = BH::config->ReadAssoc("Skill Warning");
-	for (auto it = SkillWarnings.cbegin(); it != SkillWarnings.cend(); ) {
+	for (auto it = SkillWarnings.cbegin(); it != SkillWarnings.cend(); it++) {
 		if (StringToBool((*it).second)) {
 			// If the key is a number, it means warn when that state expires
 			DWORD stateId = 0;
 			stringstream ss((*it).first);
-			if ((ss >> stateId).fail()) {
-				++it;
-			} else {
+			if (!(ss >> stateId).fail()) {
 				SkillWarningMap[stateId] = GetStateCode(stateId).name;
-				SkillWarnings.erase(it++);
 			}
 		}
 	}
