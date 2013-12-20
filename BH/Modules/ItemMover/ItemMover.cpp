@@ -288,17 +288,19 @@ void ItemMover::OnGamePacketRecv(BYTE* packet, bool* block) {
 				Unlock();
 			}
 
-			bool success = true;
-			ItemInfo item = {};
-			ParseItem((unsigned char*)packet, &item, &success);
-			//PrintText(1, "Item packet: %s, %s, %X, %d, %d", item.name.c_str(), item.code, item.attrs->flags, item.sockets, GetDefense(&item));
-			if (item.ground && success) {
-				//PrintText(1, "Item on ground: %s, %s, %s, %X", item.name.c_str(), item.code, item.attrs->category.c_str(), item.attrs->flags);
-				for (vector<Rule*>::iterator it = IgnoreRuleList.begin(); it != IgnoreRuleList.end(); it++) {
-					if ((*it)->Evaluate(NULL, &item)) {
-						*block = true;
-						//PrintText(1, "Blocking item: %s, %s, %d", item.name.c_str(), item.code, item.amount);
-						break;
+			if ((*BH::MiscToggles2)["Advanced Item Display"].state) {
+				bool success = true;
+				ItemInfo item = {};
+				ParseItem((unsigned char*)packet, &item, &success);
+				//PrintText(1, "Item packet: %s, %s, %X, %d, %d", item.name.c_str(), item.code, item.attrs->flags, item.sockets, GetDefense(&item));
+				if ((item.action == ITEM_ACTION_NEW_GROUND || item.action == ITEM_ACTION_OLD_GROUND) && success) {
+					//PrintText(1, "Item on ground: %s, %s, %s, %X", item.name.c_str(), item.code, item.attrs->category.c_str(), item.attrs->flags);
+					for (vector<Rule*>::iterator it = IgnoreRuleList.begin(); it != IgnoreRuleList.end(); it++) {
+						if ((*it)->Evaluate(NULL, &item)) {
+							*block = true;
+							//PrintText(1, "Blocking item: %s, %s, %d", item.name.c_str(), item.code, item.amount);
+							break;
+						}
 					}
 				}
 			}
@@ -455,7 +457,7 @@ void ParseItem(const unsigned char *data, ItemInfo *item, bool *success) {
 		item->code[3] = 0;
 
 		if (ItemAttributeMap.find(item->code) == ItemAttributeMap.end()) {
-			PrintText(1, "Unknown item code: %c%c%c\n", item->code[0], item->code[1], item->code[2]);
+			PrintText(1, "Unknown item code from packet: %c%c%c\n", item->code[0], item->code[1], item->code[2]);
 			*success = false;
 			return;
 		}

@@ -274,7 +274,7 @@ void Maphack::OnAutomapDraw() {
 						}
 					}
 				} else {
-					PrintText(1, "Unknown item code: %c%c%c\n", uInfo.itemCode[0], uInfo.itemCode[1], uInfo.itemCode[2]);
+					PrintText(1, "Unknown item code on map: %c%c%c\n", uInfo.itemCode[0], uInfo.itemCode[1], uInfo.itemCode[2]);
 				}
 			}
 		}
