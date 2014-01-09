@@ -99,8 +99,10 @@ void GetItemName(UnitItemInfo *uInfo, string &name) {
 
 void SubstituteNameVariables(UnitAny *item, string &name, Action *action) {
 	char origName[128], sockets[4], code[4], ilvl[4], runename[16] = "", runenum[4] = "0";
-	char gemtype[16] = "", gemlevel[16] = "";
-	char *szCode = D2COMMON_GetItemText(item->dwTxtFileNo)->szCode;
+	char gemtype[16] = "", gemlevel[16] = "", sellValue[16] = "";
+
+	ItemText *txt = D2COMMON_GetItemText(item->dwTxtFileNo);
+	char *szCode = txt->szCode;
 	code[0] = szCode[0];
 	code[1] = szCode[1];
 	code[2] = szCode[2];
@@ -108,6 +110,12 @@ void SubstituteNameVariables(UnitAny *item, string &name, Action *action) {
 	sprintf_s(sockets, "%d", D2COMMON_GetUnitStat(item, STAT_SOCKETS, 0));
 	sprintf_s(ilvl, "%d", item->pItemData->dwItemLevel);
 	sprintf_s(origName, "%s", name.c_str());
+
+	UnitAny* pUnit = D2CLIENT_GetPlayerUnit();
+	if (pUnit && txt->fQuest == 0) {
+		sprintf_s(sellValue, "%d", D2COMMON_GetItemPrice(pUnit, item, D2CLIENT_GetDifficulty(), (DWORD)D2CLIENT_GetQuestInfo(), 0x201, 1));
+	}
+
 	BYTE nType = D2COMMON_GetItemText(item->dwTxtFileNo)->nType;
 	if (IsRune(nType)) {
 		sprintf_s(runenum, "%d", item->dwTxtFileNo - 609);
@@ -125,6 +133,7 @@ void SubstituteNameVariables(UnitAny *item, string &name, Action *action) {
 		{"GEMTYPE", gemtype},
 		{"ILVL", ilvl},
 		{"CODE", code},
+		{"SELL", sellValue},
 		COLOR_REPLACEMENTS
 	};
 	name.assign(action->name);
