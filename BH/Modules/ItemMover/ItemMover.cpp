@@ -254,6 +254,14 @@ void ItemMover::OnKey(bool up, BYTE key, LPARAM lParam, bool* block)  {
 					minItemId = pItem->dwUnitId;
 				}
 			}
+			//char *code = D2COMMON_GetItemText(pItem->dwTxtFileNo)->szCode;
+			//if (code[0] == 'b' && code[1] == 'o' && code[2] == 'x') {
+			//	// Hack to pick up cube to fix cube-in-cube problem
+			//	BYTE PacketDataCube[5] = {0x19,0,0,0,0};
+			//	*reinterpret_cast<int*>(PacketDataCube + 1) = pItem->dwUnitId;
+			//	D2NET_SendPacket(5, 1, PacketDataCube);
+			//	break;
+			//}
 		}
 		if (minItemId > 0) {
 			//PrintText(1, "Sending packet %d, %d, %d", minItemId, unit->pPath->xPos, unit->pPath->yPos);
