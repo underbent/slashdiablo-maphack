@@ -315,7 +315,6 @@ void Squelch(DWORD Id, BYTE button) {
 void Maphack::OnGamePacketRecv(BYTE *packet, bool *block) {
 	switch (packet[0]) {
 
-
 	case 0x9c: {
 		INT64 icode   = 0;
         char code[5]  = "";
@@ -351,11 +350,10 @@ void Maphack::OnGamePacketRecv(BYTE *packet, bool *block) {
 
         //PrintText(1, "%s", code);
 
-
-		if(mode == 0x0 || mode == 0x2 || mode == 0x3) {
-			BYTE ear = packet[10] & 0x01;
-			if(ear) *block = true;
-		}
+		//if(mode == 0x0 || mode == 0x2 || mode == 0x3) {
+		//	BYTE ear = packet[10] & 0x01;
+		//	if(ear) *block = true;
+		//}
 		break;
 		}
 
