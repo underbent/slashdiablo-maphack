@@ -110,6 +110,13 @@ void Party::OnKey(bool up, BYTE key, LPARAM lParam, bool* block)  {
 	if(!D2CLIENT_GetPlayerUnit())
 		return;
 
+	if (D2CLIENT_GetUIState(UI_INVENTORY) || D2CLIENT_GetUIState(UI_STASH) || D2CLIENT_GetUIState(UI_CUBE)) {
+		// Avoid toggling state when pressing number keys to drop/withdraw/deposit gold.
+		// There is no UI state for the gold dialogs, so we have to disable whenever
+		// stash/inventory are open.
+		return;
+	}
+
 	for (map<string,Toggle>::iterator it = Toggles.begin(); it != Toggles.end(); it++) {
 		if (key == (*it).second.toggle) {
 			*block = true;
