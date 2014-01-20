@@ -29,7 +29,7 @@ void Item::OnLoad() {
 		InitializeItemRules();
 	}
 
-	showPlayer = BH::config->ReadKey("Show Player", "VK_0");
+	showPlayer = BH::config->ReadKey("Show Players Gear", "VK_0");
 
 	viewInvPatch1->Install();
 	viewInvPatch2->Install();
