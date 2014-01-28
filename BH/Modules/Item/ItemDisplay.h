@@ -63,9 +63,10 @@ struct ItemAttributes {
 	BYTE stackable;
 	BYTE useable;
 	BYTE throwable;
-	BYTE itemLevel;
+	BYTE itemLevel;		// 1=normal, 2=exceptional, 3=elite
 	BYTE unusedFlags;
 	unsigned int flags;
+	BYTE qualityLevel;
 };
 
 // Properties that can appear on an item from incoming packets
@@ -363,6 +364,17 @@ private:
 	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
+class AffixLevelCondition : public Condition
+{
+public:
+	AffixLevelCondition(BYTE op, BYTE alvl) : affixLevel(alvl), operation(op) { conditionType = CT_Operand; };
+private:
+	BYTE operation;
+	BYTE affixLevel;
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
+};
+
 class ItemGroupCondition : public Condition
 {
 public:
@@ -485,5 +497,6 @@ void BuildAction(string *str, Action *act);
 BYTE GetOperation(string *op);
 inline bool IntegerCompare(unsigned int Lvalue, int operation, unsigned int Rvalue);
 void GetItemName(UnitItemInfo *uInfo, string &name);
-void SubstituteNameVariables(UnitAny *item, string &name, Action *action);
+void SubstituteNameVariables(UnitItemInfo *uInfo, string &name, Action *action);
 int GetDefense(ItemInfo *item);
+BYTE GetAffixLevel(BYTE ilvl, BYTE qlvl, unsigned int flags, char *code);
