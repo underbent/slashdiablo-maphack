@@ -325,6 +325,42 @@ void Condition::ProcessConditions(vector<Condition*> &inputConditions, vector<Co
 }
 
 void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
+	vector<Condition*> endConditions;
+	int i;
+
+	// Since we don't have a real parser, things will break if [!()] appear in
+	// the middle of a token (e.g. "(X AND Y)(A AND B)")
+
+	// Look for syntax characters at the beginning of the token
+	for (i = 0; i < (int)token.length(); i++) {
+		if (token[i] == '!') {
+			Condition::AddNonOperand(conditions, new NegationOperator());
+		} else if (token[i] == '(') {
+			Condition::AddNonOperand(conditions, new LeftParen());
+		} else if (token[i] == ')') {
+			Condition::AddNonOperand(conditions, new RightParen());
+		} else {
+			break;
+		}
+	}
+	token.erase(0, i);
+
+	// Look for syntax characters at the end of the token
+	for (i = token.length() - 1; i >= 0; i--) {
+		if (token[i] == '!') {
+			endConditions.insert(endConditions.begin(), new NegationOperator());
+		} else if (token[i] == '(') {
+			endConditions.insert(endConditions.begin(), new LeftParen());
+		} else if (token[i] == ')') {
+			endConditions.insert(endConditions.begin(), new RightParen());
+		} else {
+			break;
+		}
+	}
+	if (i < (int)(token.length() - 1)) {
+		token.erase(i + 1, string::npos);
+	}
+
 	size_t delPos = token.find_first_of(tokenDelims);
 	string key;
 	string delim = "";
@@ -343,20 +379,6 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		key = token;
 	}
 	BYTE operation = GetOperation(&delim);
-
-	int i;
-	for (i = 0; i < (int)key.length(); i++) {
-		if (key[i] == '!') {
-			Condition::AddNonOperand(conditions, new NegationOperator());
-		} else if (key[i] == '(') {
-			Condition::AddNonOperand(conditions, new LeftParen());
-		} else if (key[i] == ')') {
-			Condition::AddNonOperand(conditions, new RightParen());
-		} else {
-			break;
-		}
-	}
-	key.erase(0, i);
 
 	unsigned int keylen = key.length();
 	if (key.compare(0, 3, "AND") == 0) {
@@ -507,16 +529,8 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		Condition::AddOperand(conditions, new ItemStatCondition(num, 0, operation, value));
 	}
 
-	for (i = token.length() - 1; i >= 0; i--) {
-		if (token[i] == '!') {
-			Condition::AddNonOperand(conditions, new NegationOperator());
-		} else if (token[i] == '(') {
-			Condition::AddNonOperand(conditions, new LeftParen());
-		} else if (token[i] == ')') {
-			Condition::AddNonOperand(conditions, new RightParen());
-		} else {
-			break;
-		}
+	for (vector<Condition*>::iterator it = endConditions.begin(); it != endConditions.end(); it++) {
+		Condition::AddNonOperand(conditions, (*it));
 	}
 }
 
