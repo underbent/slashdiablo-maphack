@@ -433,6 +433,8 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_DEFENSE, 0, operation, value));
 	} else if (key.compare(0, 3, "RES") == 0) {
 		Condition::AddOperand(conditions, new ResistAllCondition(operation, value));
+	} else if (key.compare(0, 5, "ARMOR") == 0) {
+		Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_ALLARMOR));
 	} else if (key.compare(0, 2, "EQ") == 0 && keylen == 3) {
 		if (key[2] == '1') {
 			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_HELM));
@@ -465,6 +467,8 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		} else if (key[2] == '7') {
 			Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_AMAZON_WEAPON));
 		}
+	} else if (key.compare(0, 6, "WEAPON") == 0) {
+		Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_ALLWEAPON));
 	} else if (key.compare(0, 2, "WP") == 0) {
 		if (keylen >= 3) {
 			if (key[2] == '1') {
