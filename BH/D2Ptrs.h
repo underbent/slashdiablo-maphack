@@ -130,6 +130,8 @@ VARPTR(D2CLIENT, MouseOffsetX, int, 0x119960)
 VARPTR(D2CLIENT, AutomapOn, DWORD, 0xFADA8)
 VARPTR(D2CLIENT, AutomapMode, int, 0xF16B0)
 VARPTR(D2CLIENT, Offset, POINT, 0x11C1F8)
+VARPTR(D2CLIENT, xShake, int, 0x11BF00) //ScreenShake	
+VARPTR(D2CLIENT, yShake, int, 0x10B9DC) //ScreenShake
 VARPTR(D2CLIENT, AutomapLayer, AutomapLayer*, 0x11C1C4)
 
 VARPTR(D2CLIENT, MercStrIndex, WORD, 0xF23E8)
@@ -455,3 +457,5 @@ FUNCPTR(D2MCPCLIENT, ParseGameListPacket, VOID __fastcall, (BYTE* pPacket), 0x6E
 #define D2CLIENT_GetLevelName(LevelId) (wchar_t*)D2CLIENT_GetLevelName_STUB(LevelId)
 #define D2CLIENT_GetUIState(dwVarNo)					(D2CLIENT_GetUIVar_STUB(dwVarNo))
 #define D2CLIENT_ClickParty(RosterUnit, Mode)		(D2CLIENT_ClickParty_ASM(RosterUnit, Mode))
+#define D2CLIENT_xShake (*p_D2CLIENT_xShake)	//GameShake
+#define D2CLIENT_yShake (*p_D2CLIENT_yShake)	//GameShake

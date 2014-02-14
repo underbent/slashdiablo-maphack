@@ -14,6 +14,7 @@ using namespace Drawing;
 Patch* weatherPatch = new Patch(Jump, D2COMMON, 0x6CC56, (int)Weather_Interception, 5);
 Patch* lightingPatch = new Patch(Call, D2CLIENT, 0xA9A37, (int)Lighting_Interception, 6);
 Patch* infraPatch = new Patch(Call, D2CLIENT, 0x66623, (int)Infravision_Interception, 7);
+Patch* shakePatch = new Patch(Call, D2CLIENT, 0x442A2,(int)Shake_Interception, 5);
 
 Maphack::Maphack() : Module("Maphack") {
 	revealType = MaphackRevealAct;
@@ -68,6 +69,7 @@ void Maphack::ReadConfig() {
 	Toggles["Force Light Radius"] = BH::config->ReadToggle("Force Light Radius", "None", true);
 	Toggles["Remove Weather"] = BH::config->ReadToggle("Remove Weather", "None", true);
 	Toggles["Infravision"] = BH::config->ReadToggle("Infravision", "None", true);
+	Toggles["Remove Shake"] = BH::config->ReadToggle("Remove Shake", "None", true);
 	Toggles["Display Level Names"] = BH::config->ReadToggle("Display Level Names", "None", true);
 }
 
@@ -97,6 +99,12 @@ void Maphack::ResetPatches() {
 		infraPatch->Install();
 	else
 		infraPatch->Remove();
+		//GameShake Patch
+	if (Toggles["Remove Shake"].state)
+		shakePatch->Install();
+	else
+		shakePatch->Remove();
+
 }
 
 void Maphack::OnLoad() {
@@ -126,8 +134,11 @@ void Maphack::OnLoad() {
 	new Checkhook(settingsTab, 4, 90, &Toggles["Infravision"].state, "Infravision");
 	new Keyhook(settingsTab, 130, 92, &Toggles["Infravision"].toggle, "");
 
-	new Checkhook(settingsTab, 4, 105, &Toggles["Display Level Names"].state, "Level Names");
-	new Keyhook(settingsTab, 130, 107, &Toggles["Display Level Names"].toggle, "");
+	new Checkhook(settingsTab, 4, 105, &Toggles["Remove Shake"].state, "Remove Shake");
+	new Keyhook(settingsTab, 130, 107, &Toggles["Remove Shake"].toggle, "");
+
+	new Checkhook(settingsTab, 4, 120, &Toggles["Display Level Names"].state, "Level Names");
+	new Keyhook(settingsTab, 130, 122, &Toggles["Display Level Names"].toggle, "");
 
 	new Texthook(settingsTab, 215, 3, "Missile Colors");
 
@@ -143,13 +154,13 @@ void Maphack::OnLoad() {
 	new Colorhook(settingsTab, 210, 122, &automapColors["Champion Monster"], "Champion");
 	new Colorhook(settingsTab, 210, 137, &automapColors["Boss Monster"], "Boss");
 
-	new Texthook(settingsTab, 3, 122, "Reveal Type:");
+	new Texthook(settingsTab, 3, 137, "Reveal Type:");
 
 	vector<string> options;
 	options.push_back("Game");
 	options.push_back("Act");
 	options.push_back("Level");
-	new Combohook(settingsTab, 100, 122, 70, &revealType, options);
+	new Combohook(settingsTab, 100, 137, 70, &revealType, options);
 
 }
 
@@ -171,6 +182,7 @@ void Maphack::OnUnload() {
 	lightingPatch->Remove();
 	weatherPatch->Remove();
 	infraPatch->Remove();
+	shakePatch->Remove();
 }
 
 void Maphack::OnLoop() {
@@ -639,4 +651,12 @@ void __declspec(naked) Infravision_Interception()
 		add dword ptr [esp], 0x72
 		ret
 	}
+}
+
+VOID __stdcall Shake_Interception(LPDWORD lpX, LPDWORD lpY)
+{
+
+	*p_D2CLIENT_xShake = 0;
+	*p_D2CLIENT_yShake = 0;
+
 }
