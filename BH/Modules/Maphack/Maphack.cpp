@@ -69,7 +69,7 @@ void Maphack::ReadConfig() {
 	Toggles["Force Light Radius"] = BH::config->ReadToggle("Force Light Radius", "None", true);
 	Toggles["Remove Weather"] = BH::config->ReadToggle("Remove Weather", "None", true);
 	Toggles["Infravision"] = BH::config->ReadToggle("Infravision", "None", true);
-	Toggles["Remove Shake"] = BH::config->ReadToggle("Remove Shake", "None", true);
+	Toggles["Remove Shake"] = BH::config->ReadToggle("Remove Shake", "None", false);
 	Toggles["Display Level Names"] = BH::config->ReadToggle("Display Level Names", "None", true);
 }
 
