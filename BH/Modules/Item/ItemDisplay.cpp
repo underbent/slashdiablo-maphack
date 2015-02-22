@@ -433,6 +433,10 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_DEFENSE, 0, operation, value));
 	} else if (key.compare(0, 3, "RES") == 0) {
 		Condition::AddOperand(conditions, new ResistAllCondition(operation, value));
+	} else if (key.compare(0, 3, "IAS") == 0) {
+		Condition::AddOperand(conditions, new IASCondition(operation, value));
+	} else if (key.compare(0, 4, "LIFE") == 0) {
+		Condition::AddOperand(conditions, new MaxHPCondition(operation, value));
 	} else if (key.compare(0, 5, "ARMOR") == 0) {
 		Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_ALLARMOR));
 	} else if (key.compare(0, 2, "EQ") == 0 && keylen == 3) {
@@ -852,6 +856,35 @@ bool ResistAllCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *a
 			IntegerCompare(pRes, operation, targetStat));
 }
 
+bool IASCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
+	int ias = D2COMMON_GetUnitStat(uInfo->item, STAT_IAS, 0);
+	return (IntegerCompare(ias, operation, targetStat));
+}
+bool IASCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
+	int ias = 0;
+	for (vector<ItemProperty>::iterator prop = info->properties.begin(); prop < info->properties.end(); prop++) {
+		if (prop->stat == STAT_IAS) {
+			ias += prop->value;
+		}
+	}
+	return (IntegerCompare(ias, operation, targetStat));
+}
+
+bool MaxHPCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
+	// The game internally represents each "+1 Life" on the item as "+256 STAT_MXHP"
+	int maxhp = D2COMMON_GetUnitStat(uInfo->item, STAT_MAXHP, 0) / 256;
+	return (IntegerCompare(maxhp, operation, targetStat));
+}
+bool MaxHPCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
+	int maxhp = 0;
+	for (vector<ItemProperty>::iterator prop = info->properties.begin(); prop < info->properties.end(); prop++) {
+		if (prop->stat == STAT_MAXHP) {
+			// The game internally represents each "+1 Life" on the item as "+256 STAT_MXHP"
+			maxhp += prop->value / 256;
+		}
+	}
+	return (IntegerCompare(maxhp, operation, targetStat));
+}
 
 ItemAttributes ItemAttributeList[] = {
 	{"Cap", "cap", "Helm", 2, 2, 0, 0, 0, 1, 0, 0, 1},
