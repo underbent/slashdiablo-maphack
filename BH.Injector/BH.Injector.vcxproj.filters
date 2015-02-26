@@ -9,6 +9,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Common Files">
+      <UniqueIdentifier>{5e07673e-636b-4741-9ba7-5809f08220df}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BH.Injector.cpp">
@@ -17,6 +20,9 @@
     <ClCompile Include="cInjector.cpp">
       <Filter>cInjector</Filter>
     </ClCompile>
+    <ClCompile Include="MPQReader.cpp">
+      <Filter>Common Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BH.Injector.h">
@@ -24,6 +30,9 @@
     </ClInclude>
     <ClInclude Include="cInjector.h">
       <Filter>cInjector</Filter>
+    </ClInclude>
+    <ClInclude Include="MPQReader.h">
+      <Filter>Common Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

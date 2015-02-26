@@ -17,8 +17,26 @@
 
 */
 #include "BH.Injector.h"
+#include "MPQReader.h"
+
+/*
+#undef _DLL
+#undef _UNICODE
+#include "StormLib.h"
+#define _UNICODE
+#define _DLL
+*/
+
+typedef bool (WINAPI *MPQOpenArchive)(const char *, DWORD, DWORD, HANDLE *);
+typedef bool (WINAPI *MPQCloseArchive)(HANDLE);
+typedef bool (WINAPI *MPQOpenFile)(HANDLE, const char *, DWORD, HANDLE *);
+typedef bool (WINAPI *MPQGetSize)(HANDLE, DWORD *);
+typedef bool (WINAPI *MPQReadFile)(HANDLE, VOID *, DWORD, DWORD *, LPOVERLAPPED);
+typedef bool (WINAPI *MPQCloseFile)(HANDLE);
+
 
 wstring BH::wPath;
+string patchPath;
 
 //EnumWindows callback functions, checks for Diablo II process, builds struct, pushs onto vector.
 BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam) {
@@ -27,6 +45,21 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam) {
 	GetClassName(hwnd, szClassName, 1024);
 	//Check if it is Diablo II
 	if (!wcscmp(szClassName, L"Diablo II")) {
+		char szFileName[1024];
+		DWORD dwProcessId = 0;
+		GetWindowThreadProcessId(hwnd, &dwProcessId);
+		if (dwProcessId) {
+			HANDLE hProcess = OpenProcess(PROCESS_VM_READ|PROCESS_QUERY_INFORMATION, FALSE, dwProcessId);
+			if (hProcess) {
+				UINT ret = GetModuleFileNameExA(hProcess, NULL, szFileName, 1024);
+				patchPath.assign(szFileName);
+				size_t start_pos = patchPath.find("Game.exe");
+				if (start_pos != std::string::npos) {
+					patchPath.replace(start_pos, 8, "Patch_D2.mpq");
+				}
+			}
+		}
+
 		//Convert lParam to vector
 		vector<DiabloWindow*>* pVector = (vector<DiabloWindow*>*)lParam;
 		//Push class into vector
@@ -81,18 +114,20 @@ int main(int argc, const char* argv[]) {
 		}
 	}
 
+	//Call EnumWindows to push all Diablo windows into vector.
+	EnumWindows(EnumWindowsProc, (LPARAM)&Windows);
+
 	//Print intro and the beginning of the menu.
 	printf("BH v0.1.5 By McGod\n");
 	printf("SlashDiablo Branch: Edited By Deadlock, underbent\n");
 	printf("Visit http://www.reddit.com/r/slashdiablo for updates!\n");
+	ReadMPQFiles(patchPath);
+
 	printf("\n");
 	printf("Command-line parameters:\n");
 	printf("\t-o <option number>: set injection option (0 for inject all, etc)\n");
 	printf("\t-p: don't pause after injection\n");
 	printf("\n");
-
-	//Call EnumWindows to push all Diablo windows into vector.
-	EnumWindows(EnumWindowsProc, (LPARAM)&Windows);
 
 	if (Windows.size() == 0) {
 		printf("\tNo Windows Found!\n");

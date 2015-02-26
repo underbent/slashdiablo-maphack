@@ -23,8 +23,9 @@ void Item::OnLoad() {
 	Toggles["Color Mod"] = BH::config->ReadToggle("Color Mod", "None", false);
 	Toggles["Shorten Item Names"] = BH::config->ReadToggle("Shorten Item Names", "None", false);
 	Toggles["Advanced Item Display"] = BH::config->ReadToggle("Advanced Item Display", "None", false);
+	Toggles["Allow Unknown Items"] = BH::config->ReadToggle("Allow Unknown Items", "None", false);
 
-	CreateItemTable();
+	InitializeMPQData();
 	if (Toggles["Advanced Item Display"].state) {
 		InitializeItemRules();
 	}
@@ -135,7 +136,7 @@ void __fastcall Item::ItemNamePatch(wchar_t *name, UnitAny *item)
 			uInfo.attrs = ItemAttributeMap[uInfo.itemCode];
 			GetItemName(&uInfo, itemName);
 		} else {
-			PrintText(1, "Unknown item code name: %c%c%c\n", uInfo.itemCode[0], uInfo.itemCode[1], uInfo.itemCode[2]);
+			HandleUnknownItemCode(uInfo.itemCode, "name");
 		}
 	} else {
 		OrigGetItemName(item, itemName, code);

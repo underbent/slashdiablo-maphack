@@ -465,7 +465,7 @@ void ParseItem(const unsigned char *data, ItemInfo *item, bool *success) {
 		item->code[3] = 0;
 
 		if (ItemAttributeMap.find(item->code) == ItemAttributeMap.end()) {
-			PrintText(1, "Unknown item code from packet: %c%c%c\n", item->code[0], item->code[1], item->code[2]);
+			HandleUnknownItemCode(item->code, "from packet");
 			*success = false;
 			return;
 		}
@@ -624,8 +624,12 @@ void ParseItem(const unsigned char *data, ItemInfo *item, bool *success) {
 			}
 			item->properties.push_back(prop);
 		}
+	} catch (int e) {
+		PrintText(1, "Int exception parsing item: %c%c%c, %d", item->code[0], item->code[1], item->code[2], e);
+	} catch (std::exception const & ex) {
+		PrintText(1, "Exception parsing item: %c%c%c, %s", item->code[0], item->code[1], item->code[2], ex.what());
 	} catch(...) {
-		PrintText(1, "Exception parsing item: %c%c%c", item->code[0], item->code[1], item->code[2]);
+		PrintText(1, "Miscellaneous exception parsing item: %c%c%c", item->code[0], item->code[1], item->code[2]);
 		*success = false;
 	}
 	return;
@@ -636,16 +640,24 @@ bool ProcessStat(unsigned int stat, BitReader &reader, ItemProperty &itemProp) {
 		return false;
 	}
 
-	unsigned int saveBits = ItemPropertyBitsList[stat].saveBits;
-	unsigned int saveParamBits = ItemPropertyBitsList[stat].saveParamBits;
-	unsigned int saveAdd = ItemPropertyBitsList[stat].saveAdd;
+	ItemPropertyBits *bits = GetItemPropertyBits(stat);
+	unsigned int saveBits = bits->saveBits;
+	unsigned int saveParamBits = bits->saveParamBits;
+	unsigned int saveAdd = bits->saveAdd;
 	itemProp.stat = stat;
 
 	if (saveParamBits > 0) {
 		switch (stat) {
-			case STAT_REANIMATE:
+			case STAT_CLASSSKILLS:
 			{
-				itemProp.monster = reader.read(saveParamBits);
+				itemProp.characterClass = reader.read(saveParamBits);
+				itemProp.value = reader.read(saveBits);
+				return true;
+			}
+			case STAT_NONCLASSSKILL:
+			case STAT_SINGLESKILL:
+			{
+				itemProp.skill = reader.read(saveParamBits);
 				itemProp.value = reader.read(saveBits);
 				return true;
 			}
@@ -655,31 +667,24 @@ bool ProcessStat(unsigned int stat, BitReader &reader, ItemProperty &itemProp) {
 				itemProp.value = reader.read(saveBits);
 				return true;
 			}
-			case STAT_CLASSSKILLS:
-			{
-				itemProp.characterClass = reader.read(saveParamBits);
-				itemProp.value = reader.read(saveBits);
-				return true;
-			}
 			case STAT_AURA:
 			{
 				itemProp.skill = reader.read(saveParamBits);
 				itemProp.value = reader.read(saveBits);
 				return true;
 			}
-			case STAT_SINGLESKILL:
-			case STAT_NONCLASSSKILL:
+			case STAT_REANIMATE:
 			{
-				itemProp.skill = reader.read(saveParamBits);
+				itemProp.monster = reader.read(saveParamBits);
 				itemProp.value = reader.read(saveBits);
 				return true;
 			}
-			case STAT_CHARGED:
+			case STAT_SKILLTAB:
 			{
-				itemProp.level = reader.read(6);
-				itemProp.skill = reader.read(10);
-				itemProp.charges = reader.read(8);
-				itemProp.maximumCharges = reader.read(8);
+				itemProp.tab = reader.read(3);
+				itemProp.characterClass = reader.read(3);
+				ulong unknown = reader.read(10);
+				itemProp.value = reader.read(saveBits);
 				return true;
 			}
 			case STAT_SKILLONDEATH:
@@ -694,20 +699,31 @@ bool ProcessStat(unsigned int stat, BitReader &reader, ItemProperty &itemProp) {
 				itemProp.skillChance = reader.read(saveBits);
 				return true;
 			}
-			case STAT_SKILLTAB:
+			case STAT_CHARGED:
 			{
-				itemProp.tab = reader.read(3);
-				itemProp.characterClass = reader.read(3);
-				ulong unknown = reader.read(10);
-				itemProp.value = reader.read(saveBits);
+				itemProp.level = reader.read(6);
+				itemProp.skill = reader.read(10);
+				itemProp.charges = reader.read(8);
+				itemProp.maximumCharges = reader.read(8);
+				return true;
+			}
+			case STAT_STATE:
+			case STAT_ATTCKRTNGVSMONSTERTYPE:
+			case STAT_DAMAGETOMONSTERTYPE:
+			{
+				// For some reason heroin_glands doesn't read these, even though
+				// they have saveParamBits; maybe they don't occur in practice?
+				itemProp.value = reader.read(saveBits) - saveAdd;
 				return true;
 			}
 			default:
+				reader.read(saveParamBits);
+				reader.read(saveBits);
 				return true;
 		}
 	}
 
-	if (stat >= STAT_DEFENSEPERLEVEL && stat <= STAT_FINDGEMSPERLEVEL) {
+	if (bits->op >= 2 && bits->op <= 5) {
 		itemProp.perLevel = reader.read(saveBits);
 		return true;
 	}
@@ -723,33 +739,33 @@ bool ProcessStat(unsigned int stat, BitReader &reader, ItemProperty &itemProp) {
 		case STAT_MINIMUMFIREDAMAGE:
 		{
 			itemProp.minimum = reader.read(saveBits);
-			itemProp.maximum = reader.read(ItemPropertyBitsList[STAT_MAXIMUMFIREDAMAGE].saveBits);
+			itemProp.maximum = reader.read(GetItemPropertyBits(STAT_MAXIMUMFIREDAMAGE)->saveBits);
 			return true;
 		}
 		case STAT_MINIMUMLIGHTNINGDAMAGE:
 		{
 			itemProp.minimum = reader.read(saveBits);
-			itemProp.maximum = reader.read(ItemPropertyBitsList[STAT_MAXIMUMLIGHTNINGDAMAGE].saveBits);
+			itemProp.maximum = reader.read(GetItemPropertyBits(STAT_MAXIMUMLIGHTNINGDAMAGE)->saveBits);
 			return true;
 		}
 		case STAT_MINIMUMMAGICALDAMAGE:
 		{
 			itemProp.minimum = reader.read(saveBits);
-			itemProp.maximum = reader.read(ItemPropertyBitsList[STAT_MAXIMUMMAGICALDAMAGE].saveBits);
+			itemProp.maximum = reader.read(GetItemPropertyBits(STAT_MAXIMUMMAGICALDAMAGE)->saveBits);
 			return true;
 		}
 		case STAT_MINIMUMCOLDDAMAGE:
 		{
 			itemProp.minimum = reader.read(saveBits);
-			itemProp.maximum = reader.read(ItemPropertyBitsList[STAT_MAXIMUMCOLDDAMAGE].saveBits);
-			itemProp.length = reader.read(ItemPropertyBitsList[STAT_COLDDAMAGELENGTH].saveBits);
+			itemProp.maximum = reader.read(GetItemPropertyBits(STAT_MAXIMUMCOLDDAMAGE)->saveBits);
+			itemProp.length = reader.read(GetItemPropertyBits(STAT_COLDDAMAGELENGTH)->saveBits);
 			return true;
 		}
 		case STAT_MINIMUMPOISONDAMAGE:
 		{
 			itemProp.minimum = reader.read(saveBits);
-			itemProp.maximum = reader.read(ItemPropertyBitsList[STAT_MAXIMUMPOISONDAMAGE].saveBits);
-			itemProp.length = reader.read(ItemPropertyBitsList[STAT_POISONDAMAGELENGTH].saveBits);
+			itemProp.maximum = reader.read(GetItemPropertyBits(STAT_MAXIMUMPOISONDAMAGE)->saveBits);
+			itemProp.length = reader.read(GetItemPropertyBits(STAT_POISONDAMAGELENGTH)->saveBits);
 			return true;
 		}
 		case STAT_REPAIRSDURABILITY:

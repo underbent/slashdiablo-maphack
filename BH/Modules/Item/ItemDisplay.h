@@ -3,6 +3,7 @@
 #include "../../D2Ptrs.h"
 #include "../../Config.h"
 #include "../../BH.h"
+#include <cstdlib>
 
 #define EXCEPTION_INVALID_STAT			1
 #define EXCEPTION_INVALID_OPERATION		2
@@ -44,16 +45,24 @@
 #define ITEM_GROUP_ALLWEAPON			0x40000000
 #define ITEM_GROUP_CIRCLET				0x80000000
 
+#define ITEM_GROUP_CHIPPED				0x00000001
+#define ITEM_GROUP_FLAWED				0x00000002
+#define ITEM_GROUP_REGULAR				0x00000004
+#define ITEM_GROUP_FLAWLESS				0x00000008
+#define ITEM_GROUP_PERFECT				0x00000010
+#define ITEM_GROUP_AMETHYST				0x00000020
+#define ITEM_GROUP_DIAMOND				0x00000040
+#define ITEM_GROUP_EMERALD				0x00000080
+#define ITEM_GROUP_RUBY					0x00000100
+#define ITEM_GROUP_SAPPHIRE				0x00000200
+#define ITEM_GROUP_TOPAZ				0x00000400
+#define ITEM_GROUP_SKULL				0x00000800
+#define ITEM_GROUP_RUNE					0x00001000
 
-// Item properties from incoming packets
-struct ItemPropertyBits {
-	string name;
-	unsigned int saveBits;
-	unsigned int saveParamBits;
-	unsigned int saveAdd;
-};
+#define ITEM_GROUP_GEM (ITEM_GROUP_AMETHYST|ITEM_GROUP_DIAMOND|ITEM_GROUP_EMERALD|ITEM_GROUP_RUBY|ITEM_GROUP_SAPPHIRE|ITEM_GROUP_TOPAZ|ITEM_GROUP_SKULL)
 
-// Static item attributes
+
+// Item attributes from ItemTypes.txt and Weapon/Armor/Misc.txt
 struct ItemAttributes {
 	string name;
 	char code[4];
@@ -66,7 +75,19 @@ struct ItemAttributes {
 	BYTE itemLevel;		// 1=normal, 2=exceptional, 3=elite
 	BYTE unusedFlags;
 	unsigned int flags;
+	unsigned int flags2;
 	BYTE qualityLevel;
+};
+
+// Item properties from ItemStatCost.txt that we need for parsing incoming 0x9c packets
+struct ItemPropertyBits {
+	string name;
+	BYTE saveBits;
+	BYTE saveParamBits;
+	BYTE saveAdd;
+	BYTE op;
+	BYTE sendParamBits;
+	unsigned short ID;
 };
 
 // Properties that can appear on an item from incoming packets
@@ -170,7 +191,13 @@ struct ItemInfo {
 
 ItemAttributes ItemAttributeList[];
 ItemPropertyBits ItemPropertyBitsList[];
+extern std::map<std::string, int> UnknownItemCodes;
 extern std::map<std::string, ItemAttributes*> ItemAttributeMap;
+extern std::vector<ItemPropertyBits*> ItemStatList;
+extern std::map<std::string, ItemPropertyBits*> ItemStatMap;
+
+extern bool USE_CUSTOM_STATS;
+extern unsigned int STAT_MAX;
 
 enum ConditionType {
 	CT_None,
@@ -491,12 +518,15 @@ extern vector<Rule*> RuleList;
 extern vector<Rule*> MapRuleList;
 extern vector<Rule*> IgnoreRuleList;
 
-void CreateItemTable();
+void InitializeMPQData();
 void InitializeItemRules();
+ItemPropertyBits *GetItemPropertyBits(unsigned int stat);
 void BuildAction(string *str, Action *act);
+void HandleUnknownItemCode(char *code, char *tag);
 BYTE GetOperation(string *op);
 inline bool IntegerCompare(unsigned int Lvalue, int operation, unsigned int Rvalue);
 void GetItemName(UnitItemInfo *uInfo, string &name);
 void SubstituteNameVariables(UnitItemInfo *uInfo, string &name, Action *action);
 int GetDefense(ItemInfo *item);
 BYTE GetAffixLevel(BYTE ilvl, BYTE qlvl, unsigned int flags, char *code);
+BYTE RuneNumberFromItemCode(char *code);

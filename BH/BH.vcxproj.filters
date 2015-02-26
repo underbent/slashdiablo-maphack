@@ -141,9 +141,6 @@
     <ClCompile Include="Config.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="BH.cpp">
-      <Filter>BH</Filter>
-    </ClCompile>
     <ClCompile Include="Modules\Maphack\Maphack.cpp">
       <Filter>BH\Modules\Maphack</Filter>
     </ClCompile>
@@ -227,6 +224,9 @@
     </ClCompile>
     <ClCompile Include="BitReader.cpp">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="BH.cpp">
+      <Filter>BH</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
