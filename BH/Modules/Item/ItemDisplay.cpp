@@ -433,6 +433,11 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_DEFENSE, 0, operation, value));
 	} else if (key.compare(0, 3, "RES") == 0) {
 		Condition::AddOperand(conditions, new ResistAllCondition(operation, value));
+	} else if (key.compare(0, 3, "IAS") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_IAS, 0, operation, value));
+	} else if (key.compare(0, 4, "LIFE") == 0) {
+		// For unknown reasons, the game's internal HP stat is 256 for every 1 displayed on item
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_MAXHP, 0, operation, value * 256));
 	} else if (key.compare(0, 5, "ARMOR") == 0) {
 		Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_ALLARMOR));
 	} else if (key.compare(0, 2, "EQ") == 0 && keylen == 3) {
@@ -520,7 +525,7 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 	} else if (key.compare(0, 5, "TABSK") == 0) {
 		int num = -1;
 		stringstream ss(key.substr(5));
-		if ((ss >> num).fail() || num < 0 || num >= SKILLTAB_MAX) {
+		if ((ss >> num).fail() || num < 0 || num > SKILLTAB_MAX) {
 			return;
 		}
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_SKILLTAB, num, operation, value));
