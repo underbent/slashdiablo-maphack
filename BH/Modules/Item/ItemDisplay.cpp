@@ -826,9 +826,9 @@ bool ItemStatCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *ar
 			}
 		}
 		return IntegerCompare(num, operation, targetStat);
-	case STAT_ALLSKILLS:
+	default:
 		for (vector<ItemProperty>::iterator prop = info->properties.begin(); prop < info->properties.end(); prop++) {
-			if (prop->stat == STAT_ALLSKILLS) {
+			if (prop->stat == itemStat) {
 				num += prop->value;
 			}
 		}
