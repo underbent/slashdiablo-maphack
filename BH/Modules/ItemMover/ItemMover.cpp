@@ -101,7 +101,6 @@ void ItemMover::Init() {
 bool ItemMover::LoadInventory(UnitAny *unit, int xpac, int source, int sourceX, int sourceY, bool shiftState, bool ctrlState, int stashUI, int invUI) {
 	bool returnValue = false;
 
-	Init();
 	memset(InventoryItemIds, 0, INVENTORY_WIDTH * INVENTORY_HEIGHT * sizeof(int));
 	memset(StashItemIds, 0, STASH_WIDTH * LOD_STASH_HEIGHT * sizeof(int));
 	memset(CubeItemIds, 0, CUBE_WIDTH * CUBE_HEIGHT * sizeof(int));
@@ -287,6 +286,8 @@ void ItemMover::OnRightClick(bool up, int x, int y, bool* block) {
 	if (up || !pData || !unit || !(shiftState || ctrlState)) {
 		return;
 	}
+
+	Init();
 
 	int xpac = pData->nCharFlags & PLAYER_TYPE_EXPANSION;
 
