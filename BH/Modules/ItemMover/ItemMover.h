@@ -5,24 +5,25 @@
 #include "../../Common.h"
 #include "../../BitReader.h"
 #include "../Item/ItemDisplay.h"
+#include "../../MPQInit.h"
 
-#define INVENTORY_WIDTH 10
-#define INVENTORY_HEIGHT 4
-#define STASH_WIDTH 6
-#define LOD_STASH_HEIGHT 8
-#define CLASSIC_STASH_HEIGHT 4
-#define CUBE_WIDTH 3
-#define CUBE_HEIGHT 4
+extern int INVENTORY_WIDTH;
+extern int INVENTORY_HEIGHT;
+extern int STASH_WIDTH;
+extern int LOD_STASH_HEIGHT;
+extern int CLASSIC_STASH_HEIGHT;
+extern int CUBE_WIDTH;
+extern int CUBE_HEIGHT;
 
-// Pixel positions
-#define INVENTORY_LEFT 417
-#define INVENTORY_TOP 315
-#define STASH_LEFT 153
-#define LOD_STASH_TOP 143
-#define CLASSIC_STASH_TOP 334
-#define CUBE_LEFT 197
-#define CUBE_TOP 199
-#define CELL_SIZE 29
+extern int INVENTORY_LEFT;
+extern int INVENTORY_TOP;
+extern int STASH_LEFT;
+extern int LOD_STASH_TOP;
+extern int CLASSIC_STASH_TOP;
+extern int CUBE_LEFT;
+extern int CUBE_TOP;
+extern int CELL_SIZE;
+
 
 struct ItemPacketData {
 	unsigned int itemId;
@@ -35,19 +36,32 @@ struct ItemPacketData {
 class ItemMover : public Module {
 private:
 	bool FirstInit;
-	int InventoryItemIds[INVENTORY_WIDTH * INVENTORY_HEIGHT];
-	int StashItemIds[STASH_WIDTH * LOD_STASH_HEIGHT];
-	int CubeItemIds[CUBE_WIDTH * CUBE_HEIGHT];
+	int *InventoryItemIds;
+	int *StashItemIds;
+	int *CubeItemIds;
 	unsigned int HealKey;
 	unsigned int ManaKey;
 	ItemPacketData ActivePacket;
 	CRITICAL_SECTION crit;
 public:
-	ItemMover() : Module("Item Mover"), ActivePacket(), FirstInit(false) {
+	ItemMover() : Module("Item Mover"), ActivePacket(), FirstInit(false), InventoryItemIds(NULL), StashItemIds(NULL), CubeItemIds(NULL) {
 		InitializeCriticalSection(&crit);
 	};
 
-	~ItemMover() { DeleteCriticalSection(&crit); };
+	~ItemMover() {
+		if (InventoryItemIds) {
+			delete [] InventoryItemIds;
+		}
+		if (StashItemIds) {
+			delete [] StashItemIds;
+		}
+		if (CubeItemIds) {
+			delete [] CubeItemIds;
+		}
+		DeleteCriticalSection(&crit);
+	};
+
+	void Init();
 
 	void Lock() { EnterCriticalSection(&crit); };
 	void Unlock() { LeaveCriticalSection(&crit); };

@@ -3,6 +3,7 @@
 #include "../../BH.h"
 #include "../../D2Stubs.h"
 #include "ItemDisplay.h"
+#include "../../MPQInit.h"
 
 map<std::string, Toggle> Item::Toggles;
 UnitAny* Item::viewingUnit;

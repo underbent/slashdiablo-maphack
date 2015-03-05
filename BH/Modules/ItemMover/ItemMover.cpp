@@ -6,8 +6,102 @@
 // This module was inspired by the RedVex plugin "Item Mover", written by kaiks.
 // Thanks to kaiks for sharing his code.
 
+int INVENTORY_WIDTH = 10;
+int INVENTORY_HEIGHT = 4;
+int STASH_WIDTH = 6;
+int LOD_STASH_HEIGHT = 8;
+int CLASSIC_STASH_HEIGHT = 4;
+int CUBE_WIDTH = 3;
+int CUBE_HEIGHT = 4;
+
+// These are pixel positions
+int INVENTORY_LEFT = 417;
+int INVENTORY_TOP = 315;
+int STASH_LEFT = 153;
+int LOD_STASH_TOP = 143;
+int CLASSIC_STASH_TOP = 334;
+int CUBE_LEFT = 197;
+int CUBE_TOP = 199;
+int CELL_SIZE = 29;
+
+
+void ItemMover::Init() {
+	// We should be able to get the layout from *p_D2CLIENT_StashLayout and friends,
+	// but doesn't seem to be working at the moment so use the mpq data.
+
+	InventoryLayout *classicStashLayout;
+	InventoryLayout *lodStashLayout;
+	InventoryLayout *inventoryLayout;
+	InventoryLayout *cubeLayout;
+
+	// Pull screen sizing info from the mpq data
+	int screenWidth = *p_D2CLIENT_ScreenSizeX;
+	int screenHeight = *p_D2CLIENT_ScreenSizeY;
+	//PrintText(1, "Got screensize %d, %d", screenWidth, screenHeight);
+
+	if (screenWidth == 640 && screenHeight == 480) {
+		classicStashLayout = InventoryLayoutMap["Bank Page 1"];
+		lodStashLayout = InventoryLayoutMap["Big Bank Page 1"];
+		inventoryLayout = InventoryLayoutMap["Amazon"];  // all character types have the same layout
+		cubeLayout = InventoryLayoutMap["Transmogrify Box Page 1"];
+	} else {
+		// Currently we don't support non-standard screen sizes; default to 800x600
+		classicStashLayout = InventoryLayoutMap["Bank Page2"];
+		lodStashLayout = InventoryLayoutMap["Big Bank Page2"];
+		inventoryLayout = InventoryLayoutMap["Amazon2"];  // all character types have the same layout
+		cubeLayout = InventoryLayoutMap["Transmogrify Box2"];
+	}
+
+	INVENTORY_WIDTH = inventoryLayout->SlotWidth;
+	INVENTORY_HEIGHT = inventoryLayout->SlotHeight;
+	STASH_WIDTH = lodStashLayout->SlotWidth;
+	LOD_STASH_HEIGHT = lodStashLayout->SlotHeight;
+	CLASSIC_STASH_HEIGHT = classicStashLayout->SlotHeight;
+	CUBE_WIDTH = cubeLayout->SlotWidth;
+	CUBE_HEIGHT = cubeLayout->SlotHeight;
+
+	INVENTORY_LEFT = inventoryLayout->Left;
+	INVENTORY_TOP = inventoryLayout->Top;
+	STASH_LEFT = lodStashLayout->Left;
+	LOD_STASH_TOP = lodStashLayout->Top;
+	CLASSIC_STASH_TOP = classicStashLayout->Top;
+	CUBE_LEFT = cubeLayout->Left;
+	CUBE_TOP = cubeLayout->Top;
+	CELL_SIZE = inventoryLayout->SlotPixelHeight;
+
+	if (!InventoryItemIds) {
+		InventoryItemIds = new int[INVENTORY_WIDTH * INVENTORY_HEIGHT];
+	}
+	if (!StashItemIds) {
+		StashItemIds = new int[STASH_WIDTH * LOD_STASH_HEIGHT];
+	}
+	if (!CubeItemIds) {
+		CubeItemIds = new int[CUBE_WIDTH * CUBE_HEIGHT];
+	}
+
+	//PrintText(1, "Got positions: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d",
+	//	INVENTORY_WIDTH,
+	//	INVENTORY_HEIGHT,
+	//	STASH_WIDTH,
+	//	LOD_STASH_HEIGHT,
+	//	CLASSIC_STASH_HEIGHT,
+	//	CUBE_WIDTH,
+	//	CUBE_HEIGHT,
+	//	INVENTORY_LEFT,
+	//	INVENTORY_TOP,
+	//	STASH_LEFT,
+	//	LOD_STASH_TOP,
+	//	CLASSIC_STASH_TOP,
+	//	CUBE_LEFT,
+	//	CUBE_TOP,
+	//	CELL_SIZE
+	//);
+}
+
 bool ItemMover::LoadInventory(UnitAny *unit, int xpac, int source, int sourceX, int sourceY, bool shiftState, bool ctrlState, int stashUI, int invUI) {
 	bool returnValue = false;
+
+	Init();
 	memset(InventoryItemIds, 0, INVENTORY_WIDTH * INVENTORY_HEIGHT * sizeof(int));
 	memset(StashItemIds, 0, STASH_WIDTH * LOD_STASH_HEIGHT * sizeof(int));
 	memset(CubeItemIds, 0, CUBE_WIDTH * CUBE_HEIGHT * sizeof(int));
@@ -200,7 +294,7 @@ void ItemMover::OnRightClick(bool up, int x, int y, bool* block) {
 	int inventoryBottom = INVENTORY_TOP + (CELL_SIZE * INVENTORY_HEIGHT);
 	int stashRight = STASH_LEFT + (CELL_SIZE * STASH_WIDTH);
 	int stashTop = xpac ? LOD_STASH_TOP : CLASSIC_STASH_TOP;
-	int stashHeight = xpac ? 8 : 4;
+	int stashHeight = xpac ? LOD_STASH_HEIGHT : CLASSIC_STASH_HEIGHT;
 	int stashBottom = stashTop + (CELL_SIZE * stashHeight);
 	int cubeRight = CUBE_LEFT + (CELL_SIZE * CUBE_WIDTH);
 	int cubeBottom = CUBE_TOP + (CELL_SIZE * CUBE_HEIGHT);

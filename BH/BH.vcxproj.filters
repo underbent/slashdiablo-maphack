@@ -228,6 +228,9 @@
     <ClCompile Include="BH.cpp">
       <Filter>BH</Filter>
     </ClCompile>
+    <ClCompile Include="MPQInit.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D2Structs.h">
@@ -372,6 +375,9 @@
       <Filter>BH\Modules\ItemMover</Filter>
     </ClInclude>
     <ClInclude Include="BitReader.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="MPQInit.h">
       <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>

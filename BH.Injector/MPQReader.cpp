@@ -89,7 +89,7 @@ MPQData::~MPQData() {}
 // calling LoadLibrary in the injected dll.
 
 bool ReadMPQFiles(std::string fileName) {
-	int fileCount = 0;
+	int successfulFileCount = 0, desiredFileCount = 0;
 	HMODULE dllHandle = LoadLibraryW(L"StormLib.dll");
 	if (dllHandle) {
 		SFileOpenArchive = (MPQOpenArchive)GetProcAddress(dllHandle, "SFileOpenArchive");
@@ -114,30 +114,35 @@ bool ReadMPQFiles(std::string fileName) {
 
 			MPQArchive archive(copyFileName.c_str());
 			if (archive.error == ERROR_SUCCESS) {
-				MPQFile armorFile(&archive, "data\\global\\excel\\Armor.txt");
+				MPQFile armorFile(&archive, "data\\global\\excel\\Armor.txt"); desiredFileCount++;
 				if (armorFile.error == ERROR_SUCCESS) {
-					fileCount++;
+					successfulFileCount++;
 					MpqDataMap["armor"] = new MPQData(&armorFile);
 				}
-				MPQFile weaponsFile(&archive, "data\\global\\excel\\Weapons.txt");
+				MPQFile weaponsFile(&archive, "data\\global\\excel\\Weapons.txt"); desiredFileCount++;
 				if (weaponsFile.error == ERROR_SUCCESS) {
-					fileCount++;
+					successfulFileCount++;
 					MpqDataMap["weapons"] = new MPQData(&weaponsFile);
 				}
-				MPQFile miscFile(&archive, "data\\global\\excel\\Misc.txt");
+				MPQFile miscFile(&archive, "data\\global\\excel\\Misc.txt"); desiredFileCount++;
 				if (miscFile.error == ERROR_SUCCESS) {
-					fileCount++;
+					successfulFileCount++;
 					MpqDataMap["misc"] = new MPQData(&miscFile);
 				}
-				MPQFile itemTypesFile(&archive, "data\\global\\excel\\ItemTypes.txt");
+				MPQFile itemTypesFile(&archive, "data\\global\\excel\\ItemTypes.txt"); desiredFileCount++;
 				if (itemTypesFile.error == ERROR_SUCCESS) {
-					fileCount++;
+					successfulFileCount++;
 					MpqDataMap["itemtypes"] = new MPQData(&itemTypesFile);
 				}
-				MPQFile itemStatCostFile(&archive, "data\\global\\excel\\ItemStatCost.txt");
+				MPQFile itemStatCostFile(&archive, "data\\global\\excel\\ItemStatCost.txt"); desiredFileCount++;
 				if (itemStatCostFile.error == ERROR_SUCCESS) {
-					fileCount++;
+					successfulFileCount++;
 					MpqDataMap["itemstatcost"] = new MPQData(&itemStatCostFile);
+				}
+				MPQFile inventoryFile(&archive, "data\\global\\excel\\Inventory.txt"); desiredFileCount++;
+				if (inventoryFile.error == ERROR_SUCCESS) {
+					successfulFileCount++;
+					MpqDataMap["inventory"] = new MPQData(&inventoryFile);
 				}
 			}
 		}
@@ -153,7 +158,7 @@ bool ReadMPQFiles(std::string fileName) {
 	} else {
 		lpTempPathBuffer[0] = 0;
 	}
-	if (fileCount == 5 && lpTempPathBuffer) {
+	if (successfulFileCount == desiredFileCount && lpTempPathBuffer) {
 		DWORD dwRetVal2 = _wfopen_s(&tempFP, lpTempPathBuffer, L"w");
 		if (tempFP && dwRetVal2 == 0) {
 			printf("Reading data from MPQ file\n");
@@ -324,7 +329,7 @@ bool ReadMPQFiles(std::string fileName) {
 			}
 			for (std::vector<std::map<std::string, std::string>>::iterator d = MpqDataMap["itemstatcost"]->data.begin(); d < MpqDataMap["itemstatcost"]->data.end(); d++) {
 				if ((*d)["ID"].length() > 0) {
-					//fprintf(test, "MISC: %s, %s, %s, %s, %s, %s, %s, %s, %s\n",
+					//fprintf(test, "STAT: %s, %s, %s, %s, %s, %s, %s, %s, %s\n",
 					//	(*d)["name"].c_str(), (*d)["code"].c_str(), (*d)["type"].c_str(), (*d)["type2"].c_str(),
 					//	(*d)["level"].c_str(), (*d)["*name"].c_str(), (*d)["missiletype"].c_str(),
 					//	(*d)["HellUpgrade"].c_str(), (*d)["NightmareUpgrade"].c_str());
@@ -333,6 +338,15 @@ bool ReadMPQFiles(std::string fileName) {
 						(*d)["Stat"].c_str(), (*d)["ID"].c_str(), (*d)["Send Param Bits"].c_str(), (*d)["Save Bits"].c_str(),
 						(*d)["Save Add"].c_str(), (*d)["Save Param Bits"].c_str(), (*d)["op"].c_str());
 				}
+			}
+			for (std::vector<std::map<std::string, std::string>>::iterator d = MpqDataMap["inventory"]->data.begin(); d < MpqDataMap["inventory"]->data.end(); d++) {
+				//fprintf(test, "INV: %s, %s, %s, %s, %s, %s, %s, %s, %s\n",
+				//	(*d)["class"].c_str(), (*d)["gridX"].c_str(), (*d)["gridY"].c_str(), (*d)["gridLeft"].c_str(),
+				//	(*d)["gridRight"].c_str(), (*d)["gridTop"].c_str(), (*d)["gridBottom"].c_str(), (*d)["gridBoxWidth"].c_str(), (*d)["gridBoxHeight"].c_str());
+
+				fprintf(tempFP, "INV,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+					(*d)["class"].c_str(), (*d)["gridX"].c_str(), (*d)["gridY"].c_str(), (*d)["gridLeft"].c_str(),
+					(*d)["gridRight"].c_str(), (*d)["gridTop"].c_str(), (*d)["gridBottom"].c_str(), (*d)["gridBoxWidth"].c_str(), (*d)["gridBoxHeight"].c_str());
 			}
 			wroteFile = true;
 		}

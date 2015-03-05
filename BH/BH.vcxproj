@@ -141,6 +141,7 @@
     <ClCompile Include="Modules\ScreenInfo\ScreenInfo.cpp" />
     <ClCompile Include="Modules\SpamFilter\Bayes.cpp" />
     <ClCompile Include="Modules\SpamFilter\SpamFilter.cpp" />
+    <ClCompile Include="MPQInit.cpp" />
     <ClCompile Include="Patch.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -191,6 +192,7 @@
     <ClInclude Include="Modules\ScreenInfo\ScreenInfo.h" />
     <ClInclude Include="Modules\SpamFilter\Bayes.h" />
     <ClInclude Include="Modules\SpamFilter\SpamFilter.h" />
+    <ClInclude Include="MPQInit.h" />
     <ClInclude Include="Patch.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
