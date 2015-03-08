@@ -1,11 +1,10 @@
 #include "MPQInit.h"
 
-bool USE_CUSTOM_STATS;
 unsigned int STAT_MAX;
 
+std::vector<StatProperties*> AllStatList;
+std::unordered_map<std::string, StatProperties*> StatMap;
 std::map<std::string, ItemAttributes*> ItemAttributeMap;
-std::vector<ItemPropertyBits*> ItemStatList;
-std::map<std::string, ItemPropertyBits*> ItemStatMap;
 std::map<std::string, InventoryLayout*> InventoryLayoutMap;
 
 // These are the standard item attributes (if we can't read the patch mpq file)
@@ -671,7 +670,7 @@ ItemAttributes ItemAttributeList[] = {
 	{"Matriarchal Javelin", "amf", "Amazon Javelin", 1, 3, 1, 0, 1, 3, 0, 0, 0, 65}
 };
 
-ItemPropertyBits ItemPropertyBitsList[] = {
+StatProperties StatPropertiesList[] = {
 	{"Strength", 8, 0, 32},
 	{"Energy", 7, 0, 32},
 	{"Dexterity", 7, 0, 32},
@@ -1035,9 +1034,6 @@ ItemPropertyBits ItemPropertyBitsList[] = {
 
 // If we find the temp file with MPQ info, use it; otherwise, fall back on the hardcoded lists.
 void InitializeMPQData() {
-	USE_CUSTOM_STATS = false;
-	STAT_MAX = STAT_PASSIVEMAGICRESREDUC;
-
 	FILE *tempFP = NULL;
 	TCHAR lpTempPathBuffer[2*MAX_PATH];
 	DWORD dwRetVal = GetTempPath(2*MAX_PATH, lpTempPathBuffer);
@@ -1094,17 +1090,17 @@ void InitializeMPQData() {
 					if (id > STAT_MAX) {
 						STAT_MAX = id;
 					}
-					USE_CUSTOM_STATS = true;
 
 					for (int missing = lastID + 1; missing < id; missing++) {
-						ItemPropertyBits *mbits = new ItemPropertyBits();
-						mbits->name.assign("missing id");
+						StatProperties *mbits = new StatProperties();
+						mbits->name.assign("missing_id");
 						mbits->ID = missing;
 						mbits->sendParamBits = mbits->saveBits = mbits->saveAdd = mbits->saveParamBits = mbits->op = 0;
-						ItemStatList.push_back(mbits);
+						AllStatList.push_back(mbits);
+						StatMap[mbits->name] = mbits;
 					}
 
-					ItemPropertyBits *bits = new ItemPropertyBits();
+					StatProperties *bits = new StatProperties();
 					bits->name = fields.at(1);
 					bits->ID = id;
 					bits->sendParamBits = (BYTE)std::strtoul(fields.at(3).c_str(), &end, 10);
@@ -1112,7 +1108,8 @@ void InitializeMPQData() {
 					bits->saveAdd = (BYTE)std::strtoul(fields.at(5).c_str(), &end, 10);
 					bits->saveParamBits = (BYTE)std::strtoul(fields.at(6).c_str(), &end, 10);
 					bits->op = (BYTE)std::strtoul(fields.at(7).c_str(), &end, 10);
-					ItemStatList.push_back(bits);
+					AllStatList.push_back(bits);
+					StatMap[bits->name] = bits;
 					lastID = (short)id;
 				} else if (type.compare("INV") == 0) {
 					InventoryLayout *layout = new InventoryLayout();
@@ -1131,7 +1128,14 @@ void InitializeMPQData() {
 		}
 	}
 
-	// Else if we couldn't open the file, process the default data
+	// If we get here we couldn't read MPQ data for whatever reason, so process the default data
+	for (int n = 0; n < sizeof(StatPropertiesList) / sizeof(StatPropertiesList[0]); n++) {
+		StatPropertiesList[n].ID = n;
+		AllStatList.push_back(&StatPropertiesList[n]);
+		StatMap[StatPropertiesList[n].name] = &StatPropertiesList[n];
+		STAT_MAX = n;
+	}
+
 	for (int n = 0; n < sizeof(ItemAttributeList) / sizeof(ItemAttributeList[0]); n++) {
 		if (ItemAttributeList[n].category.compare("Helm") == 0) {
 			ItemAttributeList[n].flags |= ITEM_GROUP_HELM | ITEM_GROUP_ALLARMOR;

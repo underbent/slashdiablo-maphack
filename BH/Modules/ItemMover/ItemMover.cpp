@@ -735,7 +735,7 @@ bool ProcessStat(unsigned int stat, BitReader &reader, ItemProperty &itemProp) {
 		return false;
 	}
 
-	ItemPropertyBits *bits = GetItemPropertyBits(stat);
+	StatProperties *bits = GetStatProperties(stat);
 	unsigned int saveBits = bits->saveBits;
 	unsigned int saveParamBits = bits->saveParamBits;
 	unsigned int saveAdd = bits->saveAdd;
@@ -834,33 +834,33 @@ bool ProcessStat(unsigned int stat, BitReader &reader, ItemProperty &itemProp) {
 		case STAT_MINIMUMFIREDAMAGE:
 		{
 			itemProp.minimum = reader.read(saveBits);
-			itemProp.maximum = reader.read(GetItemPropertyBits(STAT_MAXIMUMFIREDAMAGE)->saveBits);
+			itemProp.maximum = reader.read(GetStatProperties(STAT_MAXIMUMFIREDAMAGE)->saveBits);
 			return true;
 		}
 		case STAT_MINIMUMLIGHTNINGDAMAGE:
 		{
 			itemProp.minimum = reader.read(saveBits);
-			itemProp.maximum = reader.read(GetItemPropertyBits(STAT_MAXIMUMLIGHTNINGDAMAGE)->saveBits);
+			itemProp.maximum = reader.read(GetStatProperties(STAT_MAXIMUMLIGHTNINGDAMAGE)->saveBits);
 			return true;
 		}
 		case STAT_MINIMUMMAGICALDAMAGE:
 		{
 			itemProp.minimum = reader.read(saveBits);
-			itemProp.maximum = reader.read(GetItemPropertyBits(STAT_MAXIMUMMAGICALDAMAGE)->saveBits);
+			itemProp.maximum = reader.read(GetStatProperties(STAT_MAXIMUMMAGICALDAMAGE)->saveBits);
 			return true;
 		}
 		case STAT_MINIMUMCOLDDAMAGE:
 		{
 			itemProp.minimum = reader.read(saveBits);
-			itemProp.maximum = reader.read(GetItemPropertyBits(STAT_MAXIMUMCOLDDAMAGE)->saveBits);
-			itemProp.length = reader.read(GetItemPropertyBits(STAT_COLDDAMAGELENGTH)->saveBits);
+			itemProp.maximum = reader.read(GetStatProperties(STAT_MAXIMUMCOLDDAMAGE)->saveBits);
+			itemProp.length = reader.read(GetStatProperties(STAT_COLDDAMAGELENGTH)->saveBits);
 			return true;
 		}
 		case STAT_MINIMUMPOISONDAMAGE:
 		{
 			itemProp.minimum = reader.read(saveBits);
-			itemProp.maximum = reader.read(GetItemPropertyBits(STAT_MAXIMUMPOISONDAMAGE)->saveBits);
-			itemProp.length = reader.read(GetItemPropertyBits(STAT_POISONDAMAGELENGTH)->saveBits);
+			itemProp.maximum = reader.read(GetStatProperties(STAT_MAXIMUMPOISONDAMAGE)->saveBits);
+			itemProp.length = reader.read(GetStatProperties(STAT_POISONDAMAGELENGTH)->saveBits);
 			return true;
 		}
 		case STAT_REPAIRSDURABILITY:

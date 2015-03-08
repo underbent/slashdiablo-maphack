@@ -888,10 +888,6 @@ void HandleUnknownItemCode(char *code, char *tag) {
 	}
 }
 
-ItemPropertyBits *GetItemPropertyBits(unsigned int stat) {
-	if (USE_CUSTOM_STATS) {
-		return ItemStatList.at(stat);
-	} else {
-		return &(ItemPropertyBitsList[stat]);
-	}
+StatProperties *GetStatProperties(unsigned int stat) {
+	return AllStatList.at(stat);
 }

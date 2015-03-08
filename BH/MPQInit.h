@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <map>
+#include <unordered_map>
 #include "Constants.h"
 #include "Common.h"
 #include "D2Structs.h"
@@ -13,7 +14,6 @@
  * read the MPQ archive.
  */
 
-extern bool USE_CUSTOM_STATS;
 extern unsigned int STAT_MAX;
 
 // Item attributes from ItemTypes.txt and Weapon/Armor/Misc.txt
@@ -33,8 +33,8 @@ struct ItemAttributes {
 	BYTE qualityLevel;
 };
 
-// Item properties from ItemStatCost.txt that we need for parsing incoming 0x9c packets
-struct ItemPropertyBits {
+// Properties from ItemStatCost.txt that we need for parsing incoming 0x9c packets, among other things
+struct StatProperties {
 	std::string name;
 	BYTE saveBits;
 	BYTE saveParamBits;
@@ -44,9 +44,9 @@ struct ItemPropertyBits {
 	unsigned short ID;
 };
 
+extern std::vector<StatProperties*> AllStatList;
+extern std::unordered_map<std::string, StatProperties*> StatMap;
 extern std::map<std::string, ItemAttributes*> ItemAttributeMap;
-extern std::vector<ItemPropertyBits*> ItemStatList;
-extern std::map<std::string, ItemPropertyBits*> ItemStatMap;
 extern std::map<std::string, InventoryLayout*> InventoryLayoutMap;
 
 

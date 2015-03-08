@@ -114,7 +114,7 @@ struct ItemInfo {
 };
 
 ItemAttributes ItemAttributeList[];
-ItemPropertyBits ItemPropertyBitsList[];
+StatProperties StatPropertiesList[];
 extern std::map<std::string, int> UnknownItemCodes;
 
 enum ConditionType {
@@ -437,7 +437,7 @@ extern vector<Rule*> MapRuleList;
 extern vector<Rule*> IgnoreRuleList;
 
 void InitializeItemRules();
-ItemPropertyBits *GetItemPropertyBits(unsigned int stat);
+StatProperties *GetStatProperties(unsigned int stat);
 void BuildAction(string *str, Action *act);
 void HandleUnknownItemCode(char *code, char *tag);
 BYTE GetOperation(string *op);
