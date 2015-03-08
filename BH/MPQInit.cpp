@@ -1102,6 +1102,7 @@ void InitializeMPQData() {
 
 					StatProperties *bits = new StatProperties();
 					bits->name = fields.at(1);
+					std::transform(bits->name.begin(), bits->name.end(), bits->name.begin(), tolower);
 					bits->ID = id;
 					bits->sendParamBits = (BYTE)std::strtoul(fields.at(3).c_str(), &end, 10);
 					bits->saveBits = (BYTE)std::strtoul(fields.at(4).c_str(), &end, 10);
@@ -1132,6 +1133,7 @@ void InitializeMPQData() {
 	for (int n = 0; n < sizeof(StatPropertiesList) / sizeof(StatPropertiesList[0]); n++) {
 		StatPropertiesList[n].ID = n;
 		AllStatList.push_back(&StatPropertiesList[n]);
+		std::transform(StatPropertiesList[n].name.begin(), StatPropertiesList[n].name.end(), StatPropertiesList[n].name.begin(), tolower);
 		StatMap[StatPropertiesList[n].name] = &StatPropertiesList[n];
 		STAT_MAX = n;
 	}

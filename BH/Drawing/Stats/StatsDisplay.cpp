@@ -15,6 +15,31 @@ StatsDisplay::StatsDisplay(std::string name) {
 	int width = 220;
 	int height = 400;
 
+	vector<pair<string, string>> stats = BH::config->ReadMapList("Stat Screen");
+	for (unsigned int i = 0; i < stats.size(); i++) {
+		std::transform(stats[i].first.begin(), stats[i].first.end(), stats[i].first.begin(), ::tolower);
+		if (StatMap.count(stats[i].first) > 0) {
+			StatProperties *sp = StatMap[stats[i].first];
+			DisplayedStat *customStat = new DisplayedStat();
+			customStat->name = stats[i].first;
+			customStat->useValue = false;
+			std::transform(customStat->name.begin(), customStat->name.end(), customStat->name.begin(), ::tolower);
+			if (sp->saveParamBits > 0) {
+				int num = -1;
+				stringstream ss(Trim(stats[i].second));
+				if ((ss >> num).fail() || num < 0) {
+					continue;
+				}
+				customStat->useValue = true;
+				customStat->value = num;
+			}
+			customStats.push_back(customStat);
+		}
+	}
+	if (customStats.size() > 0) {
+		height += (customStats.size() * 16) + 8;
+	}
+
 	InitializeCriticalSection(&crit);
 	SetX(xPos);
 	SetY(yPos);
@@ -153,6 +178,15 @@ void StatsDisplay::OnDraw() {
 		Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4Gold Find:ÿc0 %d", (int)D2COMMON_GetUnitStat(unit, STAT_GOLDFIND, 0));
 		Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4Stash Gold:ÿc0 %d", (int)D2COMMON_GetUnitStat(unit, STAT_GOLDBANK, 0));
 		Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4Cow King:ÿc0 %s", cowKingKilled ? "killed" : "alive");
+
+		if (customStats.size() > 0) {
+			y += 8;
+			for (unsigned int i = 0; i < customStats.size(); i++) {
+				int secondary = customStats[i]->useValue ? customStats[i]->value : 0;
+				int stat = (int)D2COMMON_GetUnitStat(unit, STAT_NUMBER(customStats[i]->name), secondary);
+				Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4%s:ÿc0 %d", customStats[i]->name.c_str(), stat);
+			}
+		}
 	}
 }
 

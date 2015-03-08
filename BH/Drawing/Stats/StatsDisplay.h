@@ -1,9 +1,17 @@
 #pragma once
 
 #include <Windows.h>
+#include <algorithm>
 #include <string>
 #include <list>
 #include "../Hook.h"
+#include "../../MPQInit.h"
+
+struct DisplayedStat {
+	std::string name;
+	int value;
+	bool useValue;
+};
 
 namespace Drawing {
 	class StatsDisplay;
@@ -16,6 +24,7 @@ namespace Drawing {
 			unsigned int statsKey;
 			bool active, minimized;
 			CRITICAL_SECTION crit;
+			std::vector<DisplayedStat*> customStats;
 		public:
 			StatsDisplay(std::string name);
 			~StatsDisplay();

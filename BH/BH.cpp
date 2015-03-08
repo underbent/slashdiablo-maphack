@@ -64,7 +64,6 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 	}
 
 	settingsUI = new Drawing::UI("Settings", 350, 200);
-	statsDisplay = new Drawing::StatsDisplay("Stats");
 
 	new Maphack();
 	new ScreenInfo();
@@ -77,6 +76,8 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 	new ItemMover();
 
 	moduleManager->LoadModules();
+
+	statsDisplay = new Drawing::StatsDisplay("Stats");
 
 	MiscToggles = ((AutoTele*)moduleManager->Get("autotele"))->GetToggles();
 	MiscToggles2 = ((Item*)moduleManager->Get("item"))->GetToggles();

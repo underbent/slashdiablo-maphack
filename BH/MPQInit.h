@@ -1,5 +1,7 @@
 #pragma once
 #include <Windows.h>
+#include <algorithm>
+#include <locale>
 #include <cstdlib>
 #include <fstream>
 #include <map>
@@ -48,6 +50,9 @@ extern std::vector<StatProperties*> AllStatList;
 extern std::unordered_map<std::string, StatProperties*> StatMap;
 extern std::map<std::string, ItemAttributes*> ItemAttributeMap;
 extern std::map<std::string, InventoryLayout*> InventoryLayoutMap;
+
+
+#define STAT_NUMBER(name) (StatMap[name]->ID)
 
 
 void InitializeMPQData();
