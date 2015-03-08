@@ -12,7 +12,7 @@ StatsDisplay *StatsDisplay::display;
 StatsDisplay::StatsDisplay(std::string name) {
 	int xPos = 10;
 	int yPos = 10;
-	int width = 200;
+	int width = 220;
 	int height = 400;
 
 	InitializeCriticalSection(&crit);
@@ -100,7 +100,7 @@ void StatsDisplay::OnDraw() {
 
 		Drawing::Boxhook::Draw(GetX(),GetY(), GetXSize(), GetYSize(), White, Drawing::BTBlack);
 		Drawing::Framehook::DrawRectStub(&pRect);
-		Texthook::Draw(105, (y += 8), Center, 1, Silver, "Character Stats");
+		Texthook::Draw(115, (y += 8), Center, 1, Silver, "Character Stats");
 		Texthook::Draw(15, (y += 24), None, 6, Gold, "ÿc4Name:ÿc0 %s", unit->pPlayerData->szName);
 		Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4Level:ÿc0 %d", (int)D2COMMON_GetUnitStat(unit, STAT_LEVEL, 0));
 		y += 8;
@@ -119,13 +119,21 @@ void StatsDisplay::OnDraw() {
 		Texthook::Draw(15, (y += 16), None, 6, Green, "ÿc4Poison Resist:ÿc2 %d ÿc0/ %d", (int)D2COMMON_GetUnitStat(unit, STAT_POISONRESIST, 0) + penalty, pMax);
 		y += 8;
 
-		int fAbsorb = (int)D2COMMON_GetUnitStat(unit, STAT_FIREABSORBPERCENT, 0);
-		int cAbsorb = (int)D2COMMON_GetUnitStat(unit, STAT_COLDABSORBPERCENT, 0);
-		int lAbsorb = (int)D2COMMON_GetUnitStat(unit, STAT_LIGHTNINGABSORBPERCENT, 0);
+		int fAbsorb = (int)D2COMMON_GetUnitStat(unit, STAT_FIREABSORB, 0);
+		int fAbsorbPct = (int)D2COMMON_GetUnitStat(unit, STAT_FIREABSORBPERCENT, 0);
+		int cAbsorb = (int)D2COMMON_GetUnitStat(unit, STAT_COLDABSORB, 0);
+		int cAbsorbPct = (int)D2COMMON_GetUnitStat(unit, STAT_COLDABSORBPERCENT, 0);
+		int lAbsorb = (int)D2COMMON_GetUnitStat(unit, STAT_LIGHTNINGABSORB, 0);
+		int lAbsorbPct = (int)D2COMMON_GetUnitStat(unit, STAT_LIGHTNINGABSORBPERCENT, 0);
+		int mAbsorb = (int)D2COMMON_GetUnitStat(unit, STAT_MAGICABSORB, 0);
+		int mAbsorbPct = (int)D2COMMON_GetUnitStat(unit, STAT_MAGICABSORBPERCENT, 0);
+		Texthook::Draw(15, (y += 16), None, 6, Red, "ÿc4Absorption: ÿc1%dÿc0/ÿc1%d%c ÿc3%dÿc0/ÿc3%d%c ÿc9%dÿc0/ÿc9%d%c ÿc8%dÿc0/ÿc8%d%c", fAbsorb, fAbsorbPct, '%', cAbsorb, cAbsorbPct, '%', lAbsorb, lAbsorbPct, '%', mAbsorb, mAbsorbPct, '%');
+
 		int dmgReduction = (int)D2COMMON_GetUnitStat(unit, STAT_DMGREDUCTION, 0);
 		int dmgReductionPct = (int)D2COMMON_GetUnitStat(unit, STAT_DMGREDUCTIONPCT, 0);
-		Texthook::Draw(15, (y += 16), None, 6, Red, "ÿc4Absorption: ÿc1%dÿc0 / ÿc3%dÿc0 / ÿc9%d", fAbsorb, cAbsorb, lAbsorb);
-		Texthook::Draw(15, (y += 16), None, 6, Tan, "ÿc4Damage Reduction:ÿc0 %d / %d%c", dmgReduction, dmgReductionPct, '%');
+		int magReduction = (int)D2COMMON_GetUnitStat(unit, STAT_MAGICDMGREDUCTION, 0);
+		int magReductionPct = (int)D2COMMON_GetUnitStat(unit, STAT_MAGICDMGREDUCTIONPCT, 0);
+		Texthook::Draw(15, (y += 16), None, 6, Tan, "ÿc4Damage Reduction: ÿc7%dÿc0/ÿc7%d%c ÿc8%dÿc0/ÿc8%d%c", dmgReduction, dmgReductionPct, '%', magReduction, magReductionPct, '%');
 		y += 8;
 
 		Texthook::Draw(15, (y += 16), None, 6, Gold, "ÿc4Faster Cast Rate:ÿc0 %d", (int)D2COMMON_GetUnitStat(unit, STAT_FASTERCAST, 0));
