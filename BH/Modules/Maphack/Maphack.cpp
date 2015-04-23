@@ -24,6 +24,7 @@ Maphack::Maphack() : Module("Maphack") {
 
 void Maphack::ReadConfig() {
 	revealType = (MaphackReveal)BH::config->ReadInt("RevealMode", 0);
+	monsterResistanceThreshold = BH::config->ReadInt("Show Monster Resistance", 100);
 
 	Config automap(BH::config->ReadAssoc("Missile Color"));
 	automapColors["Player Missile"] = automap.ReadInt("Player", 0x97);
@@ -236,12 +237,23 @@ void Maphack::OnAutomapDraw() {
 
 				//Determine immunities
 				string szImmunities[] = {"ÿc7i", "ÿc8i", "ÿc1i", "ÿc9i", "ÿc3i", "ÿc2i"};
-				DWORD dwImmunities[] = {36,37,39,41,43,45};
+				string szResistances[] = {"ÿc7r", "ÿc8r", "ÿc1r", "ÿc9r", "ÿc3r", "ÿc2r"};
+				DWORD dwImmunities[] = {
+					STAT_DMGREDUCTIONPCT,
+					STAT_MAGICDMGREDUCTIONPCT,
+					STAT_FIRERESIST,
+					STAT_LIGHTNINGRESIST,
+					STAT_COLDRESIST,
+					STAT_POISONRESIST
+				};
 				string immunityText;
 				for (int n = 0; n < 6; n++) {
 					int nImm = D2COMMON_GetUnitStat(unit, dwImmunities[n],0);
-					if (nImm >= 100)
+					if (nImm >= 100) {
 						immunityText += szImmunities[n];
+					} else if (nImm >= monsterResistanceThreshold) {
+						immunityText += szResistances[n];
+					}
 				}
 
 				Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pPath->xPos, unit->pPath->yPos);

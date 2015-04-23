@@ -22,6 +22,7 @@ struct BaseSkill {
 
 class Maphack : public Module {
 	private:
+		int monsterResistanceThreshold;
 		unsigned int revealType;
 		bool revealedGame, revealedAct[6], revealedLevel[255];
 		std::map<string, unsigned int> TextColorMap;
