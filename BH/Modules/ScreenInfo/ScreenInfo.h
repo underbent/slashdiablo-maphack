@@ -37,10 +37,17 @@ class ScreenInfo : public Module {
 		bool DiabloBlocked;
 		bool BaalBlocked;
 		bool ReceivedQuestPacket;
+		int startExperience;
+		int startLevel;
+
+		void ScreenInfo::drawExperienceInfo();
 	public:
+		static map<std::string, Toggle> Toggles;
+
 		ScreenInfo() :
 			Module("Screen Info"), warningTicks(BHGetTickCount()), packetRequests(0),
-			MephistoBlocked(false), DiabloBlocked(false), BaalBlocked(false), ReceivedQuestPacket(false) {};
+			MephistoBlocked(false), DiabloBlocked(false), BaalBlocked(false), ReceivedQuestPacket(false),
+			startExperience(0), startLevel(0) {};
 
 		void OnLoad();
 		void OnGameJoin(const string& name, const string& pass, int diff);
@@ -54,3 +61,4 @@ class ScreenInfo : public Module {
 
 StateCode GetStateCode(unsigned int nKey);
 StateCode GetStateCode(const char* name);
+int ExpByLevel[];

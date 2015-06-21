@@ -115,6 +115,15 @@
     <Filter Include="BH\Modules\ItemMover">
       <UniqueIdentifier>{f0228985-25bf-47bc-8e7e-2d5bec1a7586}</UniqueIdentifier>
     </Filter>
+    <Filter Include="BH\Modules\StashExport">
+      <UniqueIdentifier>{f61bd38d-3389-48ea-a3e2-74cd416ce3f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{8fe515cf-3b22-4f09-92a0-31c72e291f19}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty">
+      <UniqueIdentifier>{e7a20a7a-6a69-423a-abac-a150a9979cd9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DllMain.cpp">
@@ -228,7 +237,19 @@
     <ClCompile Include="BH.cpp">
       <Filter>BH</Filter>
     </ClCompile>
+    <ClCompile Include="Modules\StashExport\StashExport.cpp">
+      <Filter>BH\Modules\StashExport</Filter>
+    </ClCompile>
     <ClCompile Include="MPQInit.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="JSONObject.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="TableReader.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Mustache.cpp">
       <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
@@ -380,5 +401,67 @@
     <ClInclude Include="MPQInit.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="Modules\StashExport\StashExport.h">
+      <Filter>BH\Modules\StashExport</Filter>
+    </ClInclude>
+    <ClInclude Include="JSONObject.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="TableReader.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Mustache.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="data\armor.txt">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\expansionstring.tbl">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\ItemStatCost.txt">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\ItemTypes.txt">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\MagicPrefix.txt">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\MagicSuffix.txt">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\misc.txt">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\patchstring.tbl">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\Properties.txt">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\Runes.txt">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\SetItems.txt">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\skills.txt">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\string.tbl">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\UniqueItems.txt">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\weapons.txt">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="..\ThirdParty\StormLib.dll">
+      <Filter>ThirdParty</Filter>
+    </None>
   </ItemGroup>
 </Project>

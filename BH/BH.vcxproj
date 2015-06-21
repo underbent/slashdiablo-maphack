@@ -63,7 +63,7 @@
     <IncludePath>$(INCLUDE);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LibraryPath>$(LIBPATH);$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\ThirdParty\;$(LIBPATH);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -128,6 +128,7 @@
     <ClCompile Include="Drawing\Stats\StatsDisplay.cpp" />
     <ClCompile Include="Drawing\UI\UI.cpp" />
     <ClCompile Include="Drawing\UI\UITab.cpp" />
+    <ClCompile Include="JSONObject.cpp" />
     <ClCompile Include="Modules\AutoTele\AutoTele.cpp" />
     <ClCompile Include="Modules\Bnet\Bnet.cpp" />
     <ClCompile Include="Modules\Gamefilter\Gamefilter.cpp" />
@@ -142,7 +143,10 @@
     <ClCompile Include="Modules\SpamFilter\Bayes.cpp" />
     <ClCompile Include="Modules\SpamFilter\SpamFilter.cpp" />
     <ClCompile Include="MPQInit.cpp" />
+    <ClCompile Include="Mustache.cpp" />
     <ClCompile Include="Patch.cpp" />
+    <ClCompile Include="Modules\StashExport\StashExport.cpp" />
+    <ClCompile Include="TableReader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BH.h" />
@@ -171,6 +175,7 @@
     <ClInclude Include="Drawing\Stats\StatsDisplay.h" />
     <ClInclude Include="Drawing\UI\UI.h" />
     <ClInclude Include="Drawing\UI\UITab.h" />
+    <ClInclude Include="JSONObject.h" />
     <ClInclude Include="Modules.h" />
     <ClInclude Include="Modules\AutoTele\ATIncludes\ArrayEx.h" />
     <ClInclude Include="Modules\AutoTele\ATIncludes\CMapIncludes.h" />
@@ -193,7 +198,60 @@
     <ClInclude Include="Modules\SpamFilter\Bayes.h" />
     <ClInclude Include="Modules\SpamFilter\SpamFilter.h" />
     <ClInclude Include="MPQInit.h" />
+    <ClInclude Include="Mustache.h" />
     <ClInclude Include="Patch.h" />
+    <ClInclude Include="Modules\StashExport\StashExport.h" />
+    <ClInclude Include="TableReader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\ThirdParty\StormLib.dll">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="data\armor.txt">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="data\expansionstring.tbl">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="data\ItemStatCost.txt">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="data\ItemTypes.txt">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="data\MagicPrefix.txt">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="data\MagicSuffix.txt">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="data\misc.txt">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="data\patchstring.tbl">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="data\Properties.txt">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="data\Runes.txt">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="data\SetItems.txt">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="data\skills.txt">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="data\string.tbl">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="data\UniqueItems.txt">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="data\weapons.txt">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -12,3 +12,4 @@
 #include "Modules\SpamFilter\SpamFilter.h"
 #include "Modules\AutoTele\AutoTele.h"
 #include "Modules\Party\Party.h"
+#include "Modules\StashExport\StashExport.h"

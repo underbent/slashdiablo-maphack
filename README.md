@@ -29,8 +29,27 @@ Major features include:
 * Display gear of other players (default hotkey: 0)
 * Screen showing secondary attributes such as IAS/FHR (default hotkey: 8)
 * Warnings when buffs expire (see "Skill Warning" in config file)
+* Stash Export
+ * Export the inventory & stash of the current character to an external file
+* Experience Meter
+ * Show the current %, % gained, and exp/sec above the stamina bar
 
 The hotkeys for all features can be changed in the config file.
+
+Stash Exporting is configured through [Mustache Templates](https://mustache.github.io/mustache.5.html), see sample below:
+
+Add this to the bottom of your BH.cfg:
+```
+// Stash Export
+// Mustache Templates
+Mustache[stats]: {{#defense}}\n\n    >{{defense}} defense{{/defense}}{{#stats}}\n\n    > {{value}} {{^skill}}{{name}}{{/skill}}{{skill}}{{/stats}}
+Mustache[header-unique]: {{#quality=Unique}}**{{^name}}{{type}}{{/name}}{{name}}** (L{{iLevel}}){{#sockets}}[{{sockets}}]{{/sockets}}{{/quality}}
+Mustache[header-magic]: {{#quality$Magic|Rare}}**{{^name}}{{type}}{{/name}}{{name}}** (L{{iLevel}}){{#sockets}}[{{sockets}}]{{/sockets}}{{/quality}}
+Mustache[header-else]: {{#quality^Unique|Magic|Rare}}{{^isRuneword}}{{^name}}{{type}}{{/name}}{{name}}{{/isRuneword}}{{#isRuneword}}**{{runeword}}** {{type}}{{/isRuneword}} (L{{iLevel}}){{#sockets}}[{{sockets}}]{{/sockets}}{{/quality}}
+Mustache[header]: {{>header-unique}}{{>header-magic}}{{>header-else}}
+Mustache[item]: {{>header}}{{>stats}}{{^isRuneword}}{{#socketed}}\n\n  * {{>>item}}{{/socketed}}{{/isRuneword}}\n
+Mustache[stash]: {{#this}}* {{>item}}\n\n{{/this}}
+```
 
 Github no longer offers binary downloads, so to get the latest release
 (currently v0.1.5) or any older release go to

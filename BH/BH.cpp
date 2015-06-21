@@ -74,6 +74,7 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 	new AutoTele();
 	new Party();
 	new ItemMover();
+	new StashExport();
 
 	moduleManager->LoadModules();
 
