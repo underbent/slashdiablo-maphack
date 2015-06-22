@@ -122,6 +122,102 @@ BOOL cInjector::InjectDLL(DWORD dwPid, wstring wDllName)
 	return FALSE;
 }
 
+HMODULE GetRemoteModuleAddress(DWORD dwPid, wstring wDllName){
+	HMODULE hMods[1024];
+	HANDLE hProcess;
+	DWORD cbNeeded;
+	HMODULE address;
+	unsigned int i;
+
+	// Get a handle to the process.
+	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION |
+		PROCESS_VM_READ,
+		FALSE, dwPid);
+	if (NULL == hProcess)
+		return 0;
+
+	if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded))
+	{
+		for (i = 0; i < (cbNeeded / sizeof(HMODULE)); i++)
+		{
+			TCHAR szModName[MAX_PATH];
+
+			// Get the full path to the module's file.
+
+			if (GetModuleFileNameEx(hProcess, hMods[i], szModName,
+				sizeof(szModName) / sizeof(TCHAR)))
+			{
+				wstring modPath = szModName;
+				if (modPath.compare(modPath.length() - wDllName.length(), wDllName.length(), wDllName) == 0) {
+					address = hMods[i];
+					break;
+				}
+			}
+		}
+	}
+
+	CloseHandle(hProcess);
+	return address;
+}
+
+BOOL cInjector::RunRemoteProc(HWND hwnd, wstring wDllName, string wProcName){
+	DWORD dwPid;
+	GetWindowThreadProcessId(hwnd, &dwPid);
+	return cInjector::RunRemoteProc(dwPid, wDllName, wProcName);
+}
+
+BOOL cInjector::RunRemoteProc(DWORD dwPid, wstring wDllName, string wProcName){
+	if (!FindInjectedModule(dwPid)) {
+		return false;
+	}
+
+	HANDLE hThread;
+	HANDLE hProc;
+	HMODULE hMod;
+	LPVOID procAddress;
+
+	hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);
+
+	if (hProc)
+	{
+		hMod = LoadLibrary(wDllName.c_str());
+
+		if (hMod)
+		{
+			procAddress = GetProcAddress(hMod, wProcName.c_str());
+
+			if (procAddress)
+			{
+					long PROC_OFFSET = (reinterpret_cast<long>(procAddress)-reinterpret_cast<long>(hMod));
+					long MODULE_BASE = reinterpret_cast<long>(GetRemoteModuleAddress(dwPid, wDllName));
+					
+					hThread = CreateRemoteThread(hProc, NULL, NULL, reinterpret_cast<LPTHREAD_START_ROUTINE>((LPVOID)(MODULE_BASE + PROC_OFFSET)), NULL, NULL, NULL);
+					WaitForSingleObject(hThread, INFINITE);
+
+					FreeLibrary(hMod);
+					CloseHandle(hProc);
+					CloseHandle(hThread);
+					return true;
+			}
+			else {
+				printf("GetProcAddress() failed with error code %d\n", GetLastError());
+			}
+
+			FreeLibrary(hMod);
+		}
+		else {
+			printf("LoadLibrary() failed with error code %d\n", GetLastError());
+		}
+
+		CloseHandle(hProc);
+	}
+	else {
+		printf("OpenProcess() failed with error code %d\n", GetLastError());
+	}
+
+	return FALSE;
+}
+
 BOOL cInjector::UnloadDLL(HWND hwnd, HMODULE hDll) {
 	DWORD dwPid;
 	GetWindowThreadProcessId(hwnd, &dwPid);

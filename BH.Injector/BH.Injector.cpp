@@ -153,8 +153,9 @@ int main(int argc, const char* argv[]) {
 	switch(nOpt) 
 	{
 		case 0://Inject into all
-			for (vector<DiabloWindow*>::iterator window = Windows.begin(); window < Windows.end(); window++)
+			for (vector<DiabloWindow*>::iterator window = Windows.begin(); window < Windows.end(); window++){
 				(*window)->Inject();
+			}
 		break;
 		case 1://Unload from all
 			for (vector<DiabloWindow*>::iterator window = Windows.begin(); window < Windows.end(); window++)

@@ -52,6 +52,7 @@ class DiabloWindow {
 			}
 			if (cInjector::InjectDLL(pHwnd, DLL_NAME)) {
 				wprintf(L"Injected BH into %s(HWND: %X)\n", szTitle, pHwnd);
+				cInjector::RunRemoteProc(pHwnd, DLL_NAME, "Initialize");
 			} else {
 				wprintf(L"Failed to inject %s into %s(HWND: %X)\n", DLL_NAME, szTitle, pHwnd);
 			}

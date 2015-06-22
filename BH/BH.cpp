@@ -12,6 +12,7 @@ ModuleManager* BH::moduleManager;
 Config* BH::config;
 Drawing::UI* BH::settingsUI;
 Drawing::StatsDisplay* BH::statsDisplay;
+bool BH::initialized;
 bool BH::cGuardLoaded;
 WNDPROC BH::OldWNDPROC;
 map<string, Toggle>* BH::MiscToggles;
@@ -54,13 +55,21 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 		cGuardLoaded = false;
 	}
 
+	
+	initialized = false;
+
+	return true;
+}
+
+void BH::Initialize(char* installDir)
+{
 	moduleManager = new ModuleManager();
 	config = new Config("BH.cfg");
 	config->Parse();
 
-	if(D2GFX_GetHwnd()) {
-		BH::OldWNDPROC = (WNDPROC)GetWindowLong(D2GFX_GetHwnd(),GWL_WNDPROC);
-		SetWindowLong(D2GFX_GetHwnd(),GWL_WNDPROC,(LONG)GameWindowEvent);
+	if (D2GFX_GetHwnd()) {
+		BH::OldWNDPROC = (WNDPROC)GetWindowLong(D2GFX_GetHwnd(), GWL_WNDPROC);
+		SetWindowLong(D2GFX_GetHwnd(), GWL_WNDPROC, (LONG)GameWindowEvent);
 	}
 
 	settingsUI = new Drawing::UI("Settings", 350, 200);
@@ -100,25 +109,25 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 	// loading/installation finishes.
 	CreateThread(0, 0, GameThread, 0, 0, 0);
 
-	return true;
+	initialized = true;
 }
 
 bool BH::Shutdown() {
+	if (initialized){
+		moduleManager->UnloadModules();
 
-	moduleManager->UnloadModules();
+		delete moduleManager;
+		delete settingsUI;
+		delete statsDisplay;
 
-	delete moduleManager;
-	delete settingsUI;
-	delete statsDisplay;
+		SetWindowLong(D2GFX_GetHwnd(), GWL_WNDPROC, (LONG)BH::OldWNDPROC);
+		for (int n = 0; n < (sizeof(patches) / sizeof(Patch*)); n++) {
+			delete patches[n];
+		}
 
-	SetWindowLong(D2GFX_GetHwnd(),GWL_WNDPROC,(LONG)BH::OldWNDPROC);
-	for (int n = 0; n < (sizeof(patches) / sizeof(Patch*)); n++) {
-		delete patches[n];
+		oogDraw->Remove();
+		delete config;
 	}
-
-	oogDraw->Remove();
-
-	delete config;
-
+	
 	return true;
 }
