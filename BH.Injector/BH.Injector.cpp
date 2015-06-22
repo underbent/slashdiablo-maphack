@@ -121,7 +121,6 @@ int main(int argc, const char* argv[]) {
 	printf("BH v0.1.6a By McGod\n");
 	printf("SlashDiablo Branch: Edited By Deadlock, underbent\n");
 	printf("Visit http://www.reddit.com/r/slashdiablo for updates!\n");
-	ReadMPQFiles(patchPath);
 
 	printf("\n");
 	printf("Command-line parameters:\n");
@@ -134,6 +133,8 @@ int main(int argc, const char* argv[]) {
 		system("PAUSE");
 		return 1;
 	}
+
+	ReadMPQFiles(patchPath);
 
 	if (nOpt < 0) {
 		printf("Please choose an option to inject.\n");
