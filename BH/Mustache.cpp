@@ -311,7 +311,7 @@ namespace Mustache{
 		}
 
 		void tokenize(std::string input, std::vector<Token> &tokens){
-			int cpos = 0;
+			unsigned int cpos = 0;
 			std::string openStr = "{{";
 			std::string closeStr = "}}";
 			while (cpos < input.length()){

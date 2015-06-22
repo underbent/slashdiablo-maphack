@@ -61,4 +61,4 @@ class ScreenInfo : public Module {
 
 StateCode GetStateCode(unsigned int nKey);
 StateCode GetStateCode(const char* name);
-int ExpByLevel[];
+long long ExpByLevel[];

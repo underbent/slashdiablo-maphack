@@ -29,7 +29,7 @@ bool Json_ParseString(std::string &raw){
 			std::stringstream buf;
 			if (raw[raw.length() - 1] == quoteChar){
 				bool escape = false;
-				for (int i = 1; i < raw.length() - 1; i++){
+				for (unsigned int i = 1; i < raw.length() - 1; i++){
 					if (raw[i] == quoteChar){
 						if (escape){
 							buf << quoteChar;
@@ -61,20 +61,20 @@ bool Json_ParseString(std::string &raw){
 }
 
 void JSONWriter::writeStartArray(){
-	if (_options == SerializationOptions::SER_OPT_FORMATTED && typeStack.top() == JSON_ARRAY){
+	if (_options == SER_OPT_FORMATTED && typeStack.top() == JSON_ARRAY){
 		writeIndented("[");
 	}
 	else{
 		writeRaw("[");
 	}
-	if (_options == SerializationOptions::SER_OPT_FORMATTED){
+	if (_options == SER_OPT_FORMATTED){
 		indent++;
 	}
 	typeStack.push(JSON_ARRAY);
 }
 
 void JSONWriter::writeEndArray(){
-	if (_options == SerializationOptions::SER_OPT_FORMATTED){
+	if (_options == SER_OPT_FORMATTED){
 		indent--;
 		writeNewlyIndented("]");
 	}
@@ -86,20 +86,20 @@ void JSONWriter::writeEndArray(){
 }
 
 void JSONWriter::writeStartObject(){
-	if (_options == SerializationOptions::SER_OPT_FORMATTED && typeStack.top() == JSON_ARRAY){
+	if (_options == SER_OPT_FORMATTED && typeStack.top() == JSON_ARRAY){
 		writeIndented("{");
 	}
 	else{
 		writeRaw("{");
 	}
-	if (_options == SerializationOptions::SER_OPT_FORMATTED){
+	if (_options == SER_OPT_FORMATTED){
 		indent++;
 	}
 	typeStack.push(JSON_OBJECT);
 }
 
 void JSONWriter::writeEndObject(){
-	if (_options == SerializationOptions::SER_OPT_FORMATTED){
+	if (_options == SER_OPT_FORMATTED){
 		indent--;
 		writeNewlyIndented("}");
 	}
@@ -111,7 +111,7 @@ void JSONWriter::writeEndObject(){
 }
 
 void JSONWriter::writeKey(std::string key){
-	if (_options == SerializationOptions::SER_OPT_FORMATTED){
+	if (_options == SER_OPT_FORMATTED){
 		writeIndented("\"" + key + "\"");
 	}
 	else{
@@ -120,7 +120,7 @@ void JSONWriter::writeKey(std::string key){
 }
 
 void JSONWriter::writeValue(std::string value){
-	if (_options == SerializationOptions::SER_OPT_FORMATTED && typeStack.top() == JSON_ARRAY){
+	if (_options == SER_OPT_FORMATTED && typeStack.top() == JSON_ARRAY){
 		writeNewlyIndented(value);
 	}
 	else{
@@ -145,7 +145,7 @@ void JSONWriter::writeNewlyIndented(std::string raw){
 }
 
 void JSONWriter::writeNext(){
-	if (_options == SerializationOptions::SER_OPT_FORMATTED){
+	if (_options == SER_OPT_FORMATTED){
 		writeRaw("\n");
 	}
 }
@@ -246,7 +246,7 @@ int JSONString::toInt() const{
 	return atoi(_value.c_str());
 }
 float JSONString::toFloat() const{
-	return atof(_value.c_str());
+	return (float)atof(_value.c_str());
 }
 
 JSONObject::~JSONObject(){
@@ -328,7 +328,7 @@ bool JSONObject::getBool(std::string key) const{
 JSONObject* JSONObject::getObject(std::string key) const{
 	auto entry = _properties.find(key);
 	if (entry != _properties.end() 
-		&& entry->second && entry->second->getType() == JSONElementType::JSON_OBJECT){
+		&& entry->second && entry->second->getType() == JSON_OBJECT){
 		return ((JSONObject*)entry->second.get());
 	}
 
@@ -338,7 +338,7 @@ JSONObject* JSONObject::getObject(std::string key) const{
 JSONArray* JSONObject::getArray(std::string key) const{
 	auto entry = _properties.find(key);
 	if (entry != _properties.end()
-		&& entry->second && entry->second->getType() == JSONElementType::JSON_ARRAY){
+		&& entry->second && entry->second->getType() == JSON_ARRAY){
 		return ((JSONArray*)entry->second.get());
 	}
 
@@ -362,7 +362,7 @@ JSONElement* JSONObject::find(std::string path) const{
 		if (idx > 0){
 			auto key = path.substr(0, idx);
 			auto elem = get(key);
-			int nIdx = idx + (path[idx] == '.' ? 1 : 0);
+			unsigned int nIdx = idx + (path[idx] == '.' ? 1 : 0);
 			if (nIdx < path.length()){
 				return elem->find(path.substr(nIdx));
 			}
@@ -372,7 +372,7 @@ JSONElement* JSONObject::find(std::string path) const{
 			return find(path.substr(1));
 		}
 		else if (idx == 0 && path[0] == '['){
-			int eIdx = path.find_first_of(']', 1);
+			unsigned int eIdx = path.find_first_of(']', 1);
 			if (eIdx > 0){
 				auto key = path.substr(1, eIdx - 1);
 				if (Json_ParseString(key)){
@@ -460,7 +460,7 @@ void JSONArray::removeWhere(std::function<bool(JSONElement*)> predicate){
 	}
 }
 
-std::string JSONArray::getString(int index) const{
+std::string JSONArray::getString(unsigned int index) const{
 	if (index < _elements.size()){
 		return _elements[index]->toString();
 	}
@@ -468,7 +468,7 @@ std::string JSONArray::getString(int index) const{
 	return "";
 }
 
-float JSONArray::getNumber(int index) const{
+float JSONArray::getNumber(unsigned int index) const{
 	if (index < _elements.size()){
 		return _elements[index]->toFloat();
 	}
@@ -476,7 +476,7 @@ float JSONArray::getNumber(int index) const{
 	return 0;
 }
 
-bool JSONArray::getBool(int index) const{
+bool JSONArray::getBool(unsigned int index) const{
 	if (index < _elements.size()){
 		return _elements[index]->toBool();
 	}
@@ -484,23 +484,23 @@ bool JSONArray::getBool(int index) const{
 	return false;
 }
 
-JSONObject* JSONArray::getObject(int index) const{
-	if (index < _elements.size() && _elements[index]->getType() == JSONElementType::JSON_OBJECT){
+JSONObject* JSONArray::getObject(unsigned int index) const{
+	if (index < _elements.size() && _elements[index]->getType() == JSON_OBJECT){
 		return ((JSONObject*)_elements[index].get());
 	}
 
 	return nullptr;
 }
 
-JSONArray* JSONArray::getArray(int index) const{
-	if (index < _elements.size() && _elements[index]->getType() == JSONElementType::JSON_ARRAY){
+JSONArray* JSONArray::getArray(unsigned int index) const{
+	if (index < _elements.size() && _elements[index]->getType() == JSON_ARRAY){
 		return ((JSONArray*)_elements[index].get());
 	}
 
 	return nullptr;
 }
 
-JSONElement* JSONArray::get(int index) const{
+JSONElement* JSONArray::get(unsigned int index) const{
 	if (index < _elements.size()){
 		return _elements[index].get();
 	}
@@ -530,7 +530,7 @@ JSONElement* JSONArray::find(std::string path) const{
 				auto index = atoi(key.c_str());
 				elem = get(index);
 
-				int nIdx = idx + (path[idx] == '.' ? 1 : 0);
+				unsigned int nIdx = idx + (path[idx] == '.' ? 1 : 0);
 				if (nIdx < path.length()){
 					return elem->find(path.substr(nIdx));
 				}
@@ -541,7 +541,7 @@ JSONElement* JSONArray::find(std::string path) const{
 			return find(path.substr(1));
 		}
 		else if (idx == 0 && path[0] == '['){
-			int eIdx = path.find_first_of(']', 1);
+			unsigned int eIdx = path.find_first_of(']', 1);
 			if (eIdx > 0){
 				auto key = path.substr(1, eIdx - 1);
 				if (isPositiveInteger(key)){
@@ -555,7 +555,6 @@ JSONElement* JSONArray::find(std::string path) const{
 			}
 		}
 		else{
-			JSONElement* elem;
 			if (path.compare("this") == 0){
 				return (JSONElement*)this;
 			}

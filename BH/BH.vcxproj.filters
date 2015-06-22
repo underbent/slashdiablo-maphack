@@ -121,9 +121,6 @@
     <Filter Include="Data">
       <UniqueIdentifier>{8fe515cf-3b22-4f09-92a0-31c72e291f19}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ThirdParty">
-      <UniqueIdentifier>{e7a20a7a-6a69-423a-abac-a150a9979cd9}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DllMain.cpp">
@@ -415,12 +412,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="data\armor.txt">
-      <Filter>Data</Filter>
-    </None>
-    <None Include="data\expansionstring.tbl">
-      <Filter>Data</Filter>
-    </None>
     <None Include="data\ItemStatCost.txt">
       <Filter>Data</Filter>
     </None>
@@ -431,12 +422,6 @@
       <Filter>Data</Filter>
     </None>
     <None Include="data\MagicSuffix.txt">
-      <Filter>Data</Filter>
-    </None>
-    <None Include="data\misc.txt">
-      <Filter>Data</Filter>
-    </None>
-    <None Include="data\patchstring.tbl">
       <Filter>Data</Filter>
     </None>
     <None Include="data\Properties.txt">
@@ -451,17 +436,8 @@
     <None Include="data\skills.txt">
       <Filter>Data</Filter>
     </None>
-    <None Include="data\string.tbl">
-      <Filter>Data</Filter>
-    </None>
     <None Include="data\UniqueItems.txt">
       <Filter>Data</Filter>
-    </None>
-    <None Include="data\weapons.txt">
-      <Filter>Data</Filter>
-    </None>
-    <None Include="..\ThirdParty\StormLib.dll">
-      <Filter>ThirdParty</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -51,9 +51,9 @@ public:
 	static Table Skills;
 	static Table MagicPrefix;
 	static Table MagicSuffix;
-	static Table Armor;
+	/*static Table Armor;
 	static Table Weapons;
-	static Table Misc;
+	static Table Misc;*/
 
 	static std::string getString(int index);
 };

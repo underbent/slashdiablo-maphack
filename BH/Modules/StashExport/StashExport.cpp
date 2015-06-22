@@ -169,14 +169,14 @@ void StashExport::fillStats(JSONArray* statsArray, JSONObject *itemDef, UnitAny 
 			std::string funcKey = string_format("func%d", sk);
 			auto skDef = Tables::ItemStatCost.findEntry("Stat", skProps->getString(buf));
 			if (!skDef) { break; }
-			int func = skProps->getNumber(funcKey);
+			int func = (int)skProps->getNumber(funcKey);
 
 			auto statFunc = STAT_FUNCTIONS[1];
 			if (func < MAX_FUNCTION){
 				statFunc = STAT_FUNCTIONS[func];
 			}
 
-			auto entry = statFunc(pItem, skProps, skDef, itemDef->get(par), itemDef->getNumber(min), itemDef->getNumber(max));
+			auto entry = statFunc(pItem, skProps, skDef, itemDef->get(par),(int) itemDef->getNumber(min), (int)itemDef->getNumber(max));
 			statsArray->add(entry);
 			if (entry && Toggles["Condense Stats"].state){
 				auto desc = skProps->getString("*desc");
@@ -194,7 +194,7 @@ void StashExport::fillStats(JSONArray* statsArray, JSONObject *itemDef, UnitAny 
 
 void StashExport::GetItemInfo(UnitAny* pItem, JSONObject* pBuffer){
 	ItemText *txt = D2COMMON_GetItemText(pItem->dwTxtFileNo);
-	auto type = Tables::getString(txt->nLocaleTxtNo);
+	std::string type = UnicodeToAnsi(D2LANG_GetLocaleText(txt->nLocaleTxtNo));
 	pBuffer->set("type", type);
 	pBuffer->set("quality", std::string(QUALITY_NAMES[pItem->pItemData->dwQuality]));
 	pBuffer->set("iLevel", (int)pItem->pItemData->dwItemLevel);
@@ -222,70 +222,19 @@ void StashExport::GetItemInfo(UnitAny* pItem, JSONObject* pBuffer){
 		pBuffer->set("sockets", (int)D2COMMON_GetUnitStat(pItem, STAT_SOCKETS, 0));
 		pBuffer->set("defense", (int)D2COMMON_GetUnitStat(pItem, STAT_DEFENSE, 0));
 
-		auto iDef = Tables::Armor.findEntry("code", code);
-		if (!iDef){
-			iDef = Tables::Weapons.findEntry("code", code);
-			if (!iDef){
-				iDef = Tables::Misc.findEntry("code", code);
-			}
-		}
-
-		std::string category;
-		if (iDef){
-			category = iDef->getString("type");
-		}
-
 		auto statsObject = new JSONArray();
 		pBuffer->set("stats", statsObject);
 		switch (pItem->pItemData->dwQuality){
-		case ITEM_QUALITY_MAGIC:
-		/*case ITEM_QUALITY_RARE:*/{
+		case ITEM_QUALITY_MAGIC:{
 				auto name = type;
 				for (int i = 0; i < 3; i++){
 					const char* prefix = D2COMMON_GetItemMagicalMods(pItem->pItemData->wPrefix[i]);
 					const char* suffix = D2COMMON_GetItemMagicalMods(pItem->pItemData->wSuffix[i]);
 					if (prefix){
 						name = std::string(prefix) + " " + name;
-						/*JSONObject *def = Tables::MagicPrefix.findEntry([prefix, category](JSONObject *obj)->bool{
-							if (obj->getString("Name").compare(prefix) == 0){
-								for (int rs = 1; rs < 8; rs++){
-									std::string key = string_format("itype%d", rs);
-									if (category.compare(key) == 0){
-										return true;
-									}
-									else if (key.length() == 0){
-										break;
-									}
-								}
-
-							}
-							return false;
-						});
-						if (def){
-							fillStats(statsObject, def, pItem, "mod%dcode", "mod%dparam", "mod%dmin", "mod%dmax", 4);
-						}*/
 					}
 					if (suffix){
 						name = name + " " + suffix;
-						/*JSONObject *def = Tables::MagicSuffix.findEntry([suffix, category](JSONObject *obj)->bool{
-							if (obj->getString("Name").compare(suffix) == 0){
-								for (int rs = 1; rs < 8; rs++){
-									std::string key = string_format("itype%d", rs);
-									auto cat = obj->getString(key);
-									if (category.compare(cat) == 0){
-										return true;
-									}
-									else if (cat.length() == 0){
-										break;
-									}
-								}
-
-							}
-							return false;
-						});
-						if (def){
-							fillStats(statsObject, def, pItem, "mod%dcode", "mod%dparam", "mod%dmin", "mod%dmax", 4);
-						}*/
 					}
 				}
 
@@ -305,7 +254,7 @@ void StashExport::GetItemInfo(UnitAny* pItem, JSONObject* pBuffer){
 		}
 		if (checkFlag(pItem, ITEM_RUNEWORD)){
 			pBuffer->set("isRuneword", true);
-			std::string rwName = Tables::getString(pItem->pItemData->wPrefix[0]);
+			std::string rwName = UnicodeToAnsi(D2LANG_GetLocaleText(pItem->pItemData->wPrefix[0]));
 			pBuffer->set("runeword", rwName);
 
 			JSONObject *rwDef = Tables::Runewords.findEntry("Rune Name", rwName);
@@ -313,9 +262,7 @@ void StashExport::GetItemInfo(UnitAny* pItem, JSONObject* pBuffer){
 				fillStats(statsObject, rwDef, pItem, "T1Code%d", "T1Param%d", "T1Min%d", "T1Max%d", 8);
 			}
 		}
-		else if (pItem->pItemData->dwQuality != ITEM_QUALITY_UNIQUE /*&&
-			pItem->pItemData->dwQuality != ITEM_QUALITY_MAGIC &&
-			pItem->pItemData->dwQuality != ITEM_QUALITY_RARE*/){
+		else if (pItem->pItemData->dwQuality != ITEM_QUALITY_UNIQUE){
 			DWORD value = 0;
 			Stat* aStatList = new Stat[STAT_MAX];
 			StatList* pStatList = D2COMMON_GetStatList(pItem, NULL, STAT_MAX);
@@ -480,7 +427,7 @@ static JSONObject* SKILL_FUNCTION(UnitAny *pItem, JSONObject* skProp, JSONObject
 	auto id = param ? param->toInt() : 0;
 	if (!id){
 		auto sk = Tables::Skills.findEntry("skill", param->toString());
-		if (sk) id = sk->getNumber("Id");
+		if (sk) id = (int)sk->getNumber("Id");
 	}
 
 	auto elem = JSONNumber(id);

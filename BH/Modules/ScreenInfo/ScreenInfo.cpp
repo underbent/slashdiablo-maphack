@@ -504,7 +504,7 @@ StateCode StateCodes[] = {
 	{"FADE", 159}
 };
 
-int ExpByLevel[] = {
+long long ExpByLevel[] = {
 	0,
 	500,
 	1500,

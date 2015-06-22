@@ -177,12 +177,12 @@ public:
 
 	int length() const { return _elements.size(); }
 
-	JSONElement* get(int index) const;
-	std::string getString(int index) const;
-	float getNumber(int index) const;
-	bool getBool(int index) const;
-	JSONObject* getObject(int index) const;
-	JSONArray* getArray(int index) const;
+	JSONElement* get(unsigned int index) const;
+	std::string getString(unsigned int index) const;
+	float getNumber(unsigned int index) const;
+	bool getBool(unsigned int index) const;
+	JSONObject* getObject(unsigned int index) const;
+	JSONArray* getArray(unsigned int index) const;
 
 	void add(std::string value);
 	void add(bool value);

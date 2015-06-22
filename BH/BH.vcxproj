@@ -204,15 +204,6 @@
     <ClInclude Include="TableReader.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\ThirdParty\StormLib.dll">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="data\armor.txt">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="data\expansionstring.tbl">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
     <None Include="data\ItemStatCost.txt">
       <DeploymentContent>true</DeploymentContent>
     </None>
@@ -223,12 +214,6 @@
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="data\MagicSuffix.txt">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="data\misc.txt">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="data\patchstring.tbl">
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="data\Properties.txt">
@@ -243,13 +228,7 @@
     <None Include="data\skills.txt">
       <DeploymentContent>true</DeploymentContent>
     </None>
-    <None Include="data\string.tbl">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
     <None Include="data\UniqueItems.txt">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="data\weapons.txt">
       <DeploymentContent>true</DeploymentContent>
     </None>
   </ItemGroup>

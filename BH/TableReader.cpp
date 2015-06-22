@@ -44,7 +44,7 @@ bool TableReader::readTextTable(std::string filePath, Table &table){
 		}
 		else{
 			auto entry = new JSONObject;
-			for (int i = 0; i < headers.size(); i++){
+			for (unsigned int i = 0; i < headers.size(); i++){
 				if (vec[i].length() > 0){
 					entry->set(headers[i], vec[i]);
 				}
@@ -146,7 +146,7 @@ bool TableReader::readTbl(std::string filePath, Table &table){
 	
 	for (int i = 0; i < numElements; i++){
 		int nodePos = firstNodeLocation + NodeSize * nodeNumbers[i];
-		auto active = (bool)readByte(buf, nodePos + ActiveOffset);
+		bool active = readByte(buf, nodePos + ActiveOffset) != 0;
 		auto nameStringOffset = readInt(buf, nodePos + NameStringOffset);
 		JSONObject *obj = new JSONObject();
 		obj->set("idx", i);
@@ -237,7 +237,7 @@ JSONObject* Table::binarySearch(std::string field, int value){
 	if (len > 0){
 		do{
 			JSONObject *obj = data->getObject(idx);
-			val = obj->getNumber(field);
+			val = (int)obj->getNumber(field);
 			if (val > value){
 				upper = idx;
 			}
@@ -264,9 +264,9 @@ Table Tables::SetItems;
 Table Tables::Skills;
 Table Tables::MagicPrefix;
 Table Tables::MagicSuffix;
-Table Tables::Armor;
-Table Tables::Weapons;
-Table Tables::Misc;
+//Table Tables::Armor;
+//Table Tables::Weapons;
+//Table Tables::Misc;
 
 Table Strings;
 Table Expansion;
@@ -285,17 +285,17 @@ bool Tables::initTables(){
 		success &= TableReader::readTable("data\\MagicPrefix.txt", MagicPrefix);
 		success &= TableReader::readTable("data\\MagicSuffix.txt", MagicSuffix);
 		success &= TableReader::readTable("data\\SetItems.txt", SetItems);
-		success &= TableReader::readTable("data\\armor.txt", Armor);
+		/*success &= TableReader::readTable("data\\armor.txt", Armor);
 		success &= TableReader::readTable("data\\weapons.txt", Weapons);
-		success &= TableReader::readTable("data\\misc.txt", Misc);
+		success &= TableReader::readTable("data\\misc.txt", Misc);*/
 		success &= TableReader::readTable("data\\UniqueItems.txt", UniqueItems);
 		UniqueItems.removeWhere([](JSONElement* obj){
 			return ((JSONObject*)obj)->getString("index").compare("Expansion") == 0;
 		});
 		
-		success &= TableReader::readTable("data\\string.tbl", Strings);
+		/*success &= TableReader::readTable("data\\string.tbl", Strings);
 		success &= TableReader::readTable("data\\expansionstring.tbl", Expansion);
-		success &= TableReader::readTable("data\\patchstring.tbl", Patch);
+		success &= TableReader::readTable("data\\patchstring.tbl", Patch);*/
 	}
 
 	return success;
