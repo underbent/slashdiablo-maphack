@@ -33,6 +33,6 @@ namespace BH {
 	extern Patch* oogDraw;
 
 	extern bool Startup(HINSTANCE instance, VOID* reserved);
-	extern "C" __declspec(dllexport) void Initialize(char* installDir);
+	extern "C" __declspec(dllexport) void Initialize();
 	extern bool Shutdown();
 };

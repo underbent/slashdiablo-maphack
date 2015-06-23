@@ -249,6 +249,9 @@
     <ClCompile Include="Mustache.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="MPQReader.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D2Structs.h">
@@ -408,6 +411,9 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="Mustache.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="MPQReader.h">
       <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>

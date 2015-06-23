@@ -1,10 +1,12 @@
 #define _DEFINE_PTRS
 #include "BH.h"
 #include <Shlwapi.h>
+#include <psapi.h>
 #include "D2Ptrs.h"
 #include "D2Intercepts.h"
 #include "D2Handlers.h"
 #include "Modules.h"
+#include "MPQReader.h"
 
 string BH::path;
 HINSTANCE BH::instance;
@@ -61,7 +63,21 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 	return true;
 }
 
-void BH::Initialize(char* installDir)
+DWORD WINAPI LoadMPQData(VOID* lpvoid){
+	char szFileName[1024];
+	std::string patchPath;
+	UINT ret = GetModuleFileName(NULL, szFileName, 1024);
+	patchPath.assign(szFileName);
+	size_t start_pos = patchPath.find("Game.exe");
+	if (start_pos != std::string::npos) {
+		patchPath.replace(start_pos, 8, "Patch_D2.mpq");
+	}
+
+	ReadMPQFiles(patchPath, false);
+	return 0;
+}
+
+void BH::Initialize()
 {
 	moduleManager = new ModuleManager();
 	config = new Config("BH.cfg");
@@ -73,6 +89,9 @@ void BH::Initialize(char* installDir)
 	}
 
 	settingsUI = new Drawing::UI("Settings", 350, 200);
+
+	// Read the MPQ Data asynchronously
+	CreateThread(0, 0, LoadMPQData, 0, 0, 0);
 
 	new Maphack();
 	new ScreenInfo();

@@ -17,7 +17,7 @@
 
 */
 #include "BH.Injector.h"
-#include "MPQReader.h"
+//#include "MPQReader.h"
 
 /*
 #undef _DLL
@@ -27,13 +27,7 @@
 #define _DLL
 */
 
-typedef bool (WINAPI *MPQOpenArchive)(const char *, DWORD, DWORD, HANDLE *);
-typedef bool (WINAPI *MPQCloseArchive)(HANDLE);
-typedef bool (WINAPI *MPQOpenFile)(HANDLE, const char *, DWORD, HANDLE *);
-typedef bool (WINAPI *MPQGetSize)(HANDLE, DWORD *);
-typedef bool (WINAPI *MPQReadFile)(HANDLE, VOID *, DWORD, DWORD *, LPOVERLAPPED);
-typedef bool (WINAPI *MPQCloseFile)(HANDLE);
-
+typedef bool (*ReadMPQFiles)(std::string patchPath, bool writeFiles);
 
 wstring BH::wPath;
 string patchPath;
@@ -134,7 +128,14 @@ int main(int argc, const char* argv[]) {
 		return 1;
 	}
 
-	ReadMPQFiles(patchPath);
+	HMODULE bhModule = LoadLibrary(L"BH.dll");
+	if (bhModule){
+		ReadMPQFiles readMPQFiles = (ReadMPQFiles)GetProcAddress(bhModule, "ReadMPQFiles");
+		if (readMPQFiles){
+			printf("Reading data from MPQ file\n");
+			readMPQFiles(patchPath, true);
+		}
+	}
 
 	if (nOpt < 0) {
 		printf("Please choose an option to inject.\n");

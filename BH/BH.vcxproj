@@ -147,6 +147,7 @@
     <ClCompile Include="Modules\SpamFilter\Bayes.cpp" />
     <ClCompile Include="Modules\SpamFilter\SpamFilter.cpp" />
     <ClCompile Include="MPQInit.cpp" />
+    <ClCompile Include="MPQReader.cpp" />
     <ClCompile Include="Mustache.cpp" />
     <ClCompile Include="Patch.cpp" />
     <ClCompile Include="Modules\StashExport\StashExport.cpp" />
@@ -202,6 +203,7 @@
     <ClInclude Include="Modules\SpamFilter\Bayes.h" />
     <ClInclude Include="Modules\SpamFilter\SpamFilter.h" />
     <ClInclude Include="MPQInit.h" />
+    <ClInclude Include="MPQReader.h" />
     <ClInclude Include="Mustache.h" />
     <ClInclude Include="Patch.h" />
     <ClInclude Include="Modules\StashExport\StashExport.h" />
