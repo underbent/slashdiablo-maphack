@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "TableReader.h"
 #include "BH.h"
+#include "MPQReader.h"
 
 std::vector<std::string> tokenize(std::string line){
 	std::vector<std::string> vstrings;
@@ -176,6 +177,27 @@ bool TableReader::readTable(std::string filePath, Table &table)
 	}
 }
 
+bool TableReader::loadMPQData(std::string archiveName, Table &table)
+{
+	std::transform(archiveName.begin(), archiveName.end(), archiveName.begin(), ::tolower);
+	MPQData* mpq = MpqDataMap[archiveName];
+	if (!mpq || mpq->error) return false;
+	for (auto iter = mpq->data.begin(); iter != mpq->data.end(); iter++){
+		auto entry = *iter;
+
+		JSONObject *obj = new JSONObject();
+		for (auto header = mpq->fields.begin(); header != mpq->fields.end(); header++){
+			std::string h = *header;
+			if (entry[h].length() > 0){
+				obj->set(h, entry[h]);
+			}
+		}
+		table.addEntry(obj);
+	}
+
+	return true;
+}
+
 inline
 void Table::addEntry(JSONObject *entry){
 	data->add(entry);
@@ -264,9 +286,6 @@ Table Tables::SetItems;
 Table Tables::Skills;
 Table Tables::MagicPrefix;
 Table Tables::MagicSuffix;
-//Table Tables::Armor;
-//Table Tables::Weapons;
-//Table Tables::Misc;
 
 Table Strings;
 Table Expansion;
@@ -277,25 +296,29 @@ bool Tables::initTables(){
 	if (!init){
 		init = true;
 		// Add tables here:
-		success &= TableReader::readTable("data\\ItemStatCost.txt", ItemStatCost);
-		success &= TableReader::readTable("data\\ItemTypes.txt", ItemTypes);
-		success &= TableReader::readTable("data\\Properties.txt", Properties);
-		success &= TableReader::readTable("data\\runes.txt", Runewords);
-		success &= TableReader::readTable("data\\skills.txt", Skills);
-		success &= TableReader::readTable("data\\MagicPrefix.txt", MagicPrefix);
-		success &= TableReader::readTable("data\\MagicSuffix.txt", MagicSuffix);
-		success &= TableReader::readTable("data\\SetItems.txt", SetItems);
-		/*success &= TableReader::readTable("data\\armor.txt", Armor);
-		success &= TableReader::readTable("data\\weapons.txt", Weapons);
-		success &= TableReader::readTable("data\\misc.txt", Misc);*/
-		success &= TableReader::readTable("data\\UniqueItems.txt", UniqueItems);
+		//success &= TableReader::readTable("data\\ItemStatCost.txt", ItemStatCost);		
+		//success &= TableReader::readTable("data\\ItemTypes.txt", ItemTypes);		
+		//success &= TableReader::readTable("data\\Properties.txt", Properties);		
+		//success &= TableReader::readTable("data\\runes.txt", Runewords);		
+		//success &= TableReader::readTable("data\\skills.txt", Skills);		
+		//success &= TableReader::readTable("data\\MagicPrefix.txt", MagicPrefix);		
+		//success &= TableReader::readTable("data\\MagicSuffix.txt", MagicSuffix);		
+		//success &= TableReader::readTable("data\\SetItems.txt", SetItems);
+		//success &= TableReader::readTable("data\\UniqueItems.txt", UniqueItems);
+
+		success &= TableReader::loadMPQData("itemstatcost", ItemStatCost);
+		success &= TableReader::loadMPQData("ItemTypes", ItemTypes);
+		success &= TableReader::loadMPQData("Properties", Properties);
+		success &= TableReader::loadMPQData("runes", Runewords);
+		success &= TableReader::loadMPQData("skills", Skills);
+		success &= TableReader::loadMPQData("MagicPrefix", MagicPrefix);
+		success &= TableReader::loadMPQData("MagicSuffix", MagicSuffix);
+		success &= TableReader::loadMPQData("UniqueItems", UniqueItems);
+		success &= TableReader::loadMPQData("SetItems", SetItems);
+
 		UniqueItems.removeWhere([](JSONElement* obj){
 			return ((JSONObject*)obj)->getString("index").compare("Expansion") == 0;
 		});
-		
-		/*success &= TableReader::readTable("data\\string.tbl", Strings);
-		success &= TableReader::readTable("data\\expansionstring.tbl", Expansion);
-		success &= TableReader::readTable("data\\patchstring.tbl", Patch);*/
 	}
 
 	return success;
@@ -316,5 +339,9 @@ std::string Tables::getString(int index){
 		return obj->getString("value");
 	}
 	return "";
+}
+
+bool Tables::isInitialized(){
+	return init;
 }
 

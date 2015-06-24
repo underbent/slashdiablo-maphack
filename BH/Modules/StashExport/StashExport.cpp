@@ -298,7 +298,10 @@ void StashExport::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
 		*block = true;
 		if (up)
 			return;
-		Tables::initTables();
+		if (!Tables::isInitialized()){
+			PrintText(1, "Waiting for MPQ Data to finish loading...");
+			return;
+		}
 
 		UnitAny *unit = D2CLIENT_GetPlayerUnit();
 

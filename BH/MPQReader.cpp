@@ -114,36 +114,32 @@ bool ReadMPQFiles(std::string fileName, bool writeTempFiles) {
 			src.close();
 
 			MPQArchive archive(copyFileName.c_str());
+			const int NUM_MPQS = 13;
+			std::string mpqFiles[NUM_MPQS] = {
+				"UniqueItems",
+				"Armor",
+				"Weapons",
+				"Misc",
+				"ItemTypes",
+				"ItemStatCost",
+				"Inventory",
+				"Properties",
+				"Runes",
+				"SetItems",
+				"skills",
+				"MagicPrefix",
+				"MagicSuffix"
+			};
 			if (archive.error == ERROR_SUCCESS) {
-				MPQFile armorFile(&archive, "data\\global\\excel\\Armor.txt"); desiredFileCount++;
-				if (armorFile.error == ERROR_SUCCESS) {
-					successfulFileCount++;
-					MpqDataMap["armor"] = new MPQData(&armorFile);
-				}
-				MPQFile weaponsFile(&archive, "data\\global\\excel\\Weapons.txt"); desiredFileCount++;
-				if (weaponsFile.error == ERROR_SUCCESS) {
-					successfulFileCount++;
-					MpqDataMap["weapons"] = new MPQData(&weaponsFile);
-				}
-				MPQFile miscFile(&archive, "data\\global\\excel\\Misc.txt"); desiredFileCount++;
-				if (miscFile.error == ERROR_SUCCESS) {
-					successfulFileCount++;
-					MpqDataMap["misc"] = new MPQData(&miscFile);
-				}
-				MPQFile itemTypesFile(&archive, "data\\global\\excel\\ItemTypes.txt"); desiredFileCount++;
-				if (itemTypesFile.error == ERROR_SUCCESS) {
-					successfulFileCount++;
-					MpqDataMap["itemtypes"] = new MPQData(&itemTypesFile);
-				}
-				MPQFile itemStatCostFile(&archive, "data\\global\\excel\\ItemStatCost.txt"); desiredFileCount++;
-				if (itemStatCostFile.error == ERROR_SUCCESS) {
-					successfulFileCount++;
-					MpqDataMap["itemstatcost"] = new MPQData(&itemStatCostFile);
-				}
-				MPQFile inventoryFile(&archive, "data\\global\\excel\\Inventory.txt"); desiredFileCount++;
-				if (inventoryFile.error == ERROR_SUCCESS) {
-					successfulFileCount++;
-					MpqDataMap["inventory"] = new MPQData(&inventoryFile);
+				for (int i = 0; i < NUM_MPQS; i++){
+					std::string path = "data\\global\\excel\\" + mpqFiles[i] + ".txt";
+					MPQFile mpqFile(&archive, path.c_str()); desiredFileCount++;
+					if (mpqFile.error == ERROR_SUCCESS) {
+						successfulFileCount++;
+						std::string key = mpqFiles[i];
+						std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+						MpqDataMap[key] = new MPQData(&mpqFile);
+					}
 				}
 			}
 		}

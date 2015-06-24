@@ -7,6 +7,7 @@
 #include "D2Handlers.h"
 #include "Modules.h"
 #include "MPQReader.h"
+#include "TableReader.h"
 
 string BH::path;
 HINSTANCE BH::instance;
@@ -74,6 +75,8 @@ DWORD WINAPI LoadMPQData(VOID* lpvoid){
 	}
 
 	ReadMPQFiles(patchPath, false);
+	Tables::initTables();
+	
 	return 0;
 }
 

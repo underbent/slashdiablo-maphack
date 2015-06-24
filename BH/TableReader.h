@@ -32,6 +32,7 @@ private:
 	static bool readTbl(std::string filePath, Table &table);
 public:
 	static bool readTable(std::string filePath, Table &table);
+	static bool loadMPQData(std::string archiveName, Table &table);
 };
 
 class Tables {
@@ -56,4 +57,6 @@ public:
 	static Table Misc;*/
 
 	static std::string getString(int index);
+
+	static bool isInitialized();
 };
