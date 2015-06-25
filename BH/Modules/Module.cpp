@@ -7,7 +7,7 @@ Module::Module(string name) : name(name), active(false) {
 
 Module::~Module() {
 	Unload();
-	BH::moduleManager->Remove(this);
+	//BH::moduleManager->Remove(this);
 }
 
 void Module::Load() {

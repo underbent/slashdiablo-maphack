@@ -152,6 +152,7 @@
     <ClCompile Include="Patch.cpp" />
     <ClCompile Include="Modules\StashExport\StashExport.cpp" />
     <ClCompile Include="TableReader.cpp" />
+    <ClCompile Include="Task.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BH.h" />
@@ -208,6 +209,7 @@
     <ClInclude Include="Patch.h" />
     <ClInclude Include="Modules\StashExport\StashExport.h" />
     <ClInclude Include="TableReader.h" />
+    <ClInclude Include="Task.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="data\ItemStatCost.txt">

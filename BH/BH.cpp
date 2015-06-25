@@ -8,6 +8,7 @@
 #include "Modules.h"
 #include "MPQReader.h"
 #include "TableReader.h"
+#include "Task.h"
 
 string BH::path;
 HINSTANCE BH::instance;
@@ -24,7 +25,7 @@ map<string, Toggle>* BH::MiscToggles2;
 Patch* patches[] = {
 	new Patch(Call, D2CLIENT, 0x44230, (int)GameLoop_Interception, 7),
 
-	new Patch(Jump, D2CLIENT, 0xC3DB4,	(int)GameDraw_Interception, 6),
+	new Patch(Jump, D2CLIENT, 0xC3DB4, (int)GameDraw_Interception, 6),
 	new Patch(Jump, D2CLIENT, 0x626C9, (int)GameAutomapDraw_Interception, 5),
 
 	new Patch(Call, BNCLIENT, 0xEABC, (int)ChatPacketRecv_Interception, 12),
@@ -45,11 +46,12 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 	BH::instance = instance;
 	if (reserved != NULL) {
 		cGuardModule* pModule = (cGuardModule*)reserved;
-		if(!pModule)
+		if (!pModule)
 			return FALSE;
 		path.assign(pModule->szPath);
 		cGuardLoaded = true;
-	} else {
+	}
+	else {
 		char szPath[MAX_PATH];
 		GetModuleFileName(BH::instance, szPath, MAX_PATH);
 		PathRemoveFileSpec(szPath);
@@ -58,7 +60,7 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 		cGuardLoaded = false;
 	}
 
-	
+
 	initialized = false;
 
 	return true;
@@ -76,7 +78,7 @@ DWORD WINAPI LoadMPQData(VOID* lpvoid){
 
 	ReadMPQFiles(patchPath, false);
 	Tables::initTables();
-	
+
 	return 0;
 }
 
@@ -93,8 +95,13 @@ void BH::Initialize()
 
 	settingsUI = new Drawing::UI("Settings", 350, 200);
 
+	Task::InitializeThreadPool(2);
+
 	// Read the MPQ Data asynchronously
-	CreateThread(0, 0, LoadMPQData, 0, 0, 0);
+	//CreateThread(0, 0, LoadMPQData, 0, 0, 0);
+	Task::Enqueue([]() -> void {
+		LoadMPQData(NULL);
+	});
 
 	new Maphack();
 	new ScreenInfo();
