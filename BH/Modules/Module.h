@@ -16,7 +16,7 @@ class Module {
 
 	public:
 		Module(string name);
-		~Module();
+		virtual ~Module();
 
 		string GetName() { return name; };
 		bool IsActive() { return active; };
