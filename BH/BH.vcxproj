@@ -109,6 +109,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AsyncDrawBuffer.cpp" />
     <ClCompile Include="BH.cpp" />
     <ClCompile Include="BitReader.cpp" />
     <ClCompile Include="Common.cpp" />
@@ -155,6 +156,7 @@
     <ClCompile Include="Task.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AsyncDrawBuffer.h" />
     <ClInclude Include="BH.h" />
     <ClInclude Include="BitReader.h" />
     <ClInclude Include="Common.h" />

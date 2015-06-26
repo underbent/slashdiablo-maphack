@@ -255,6 +255,9 @@
     <ClCompile Include="Task.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="AsyncDrawBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D2Structs.h">
@@ -421,6 +424,9 @@
     </ClInclude>
     <ClInclude Include="Task.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="AsyncDrawBuffer.h">
+      <Filter>Diablo II</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

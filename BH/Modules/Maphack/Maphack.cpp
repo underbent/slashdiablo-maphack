@@ -9,7 +9,7 @@
 #include "../../BH.h"
 #include "../../Drawing.h"
 #include "../Item/ItemDisplay.h"
-#include "../../Task.h"
+#include "../../AsyncDrawBuffer.h"
 
 using namespace Drawing;
 Patch* weatherPatch = new Patch(Jump, D2COMMON, 0x6CC56, (int)Weather_Interception, 5);
@@ -17,55 +17,7 @@ Patch* lightingPatch = new Patch(Call, D2CLIENT, 0xA9A37, (int)Lighting_Intercep
 Patch* infraPatch = new Patch(Call, D2CLIENT, 0x66623, (int)Infravision_Interception, 7);
 Patch* shakePatch = new Patch(Call, D2CLIENT, 0x442A2,(int)Shake_Interception, 5);
 
-class DrawItem {
-public:
-	UnitAny* unit;
-	std::function<void(UnitAny*)> drawFunc;
-
-	DrawItem(UnitAny *_unit, std::function<void(UnitAny*)> _drawFunc) :
-		unit(_unit), drawFunc(_drawFunc) {}
-};
-
-class DrawBuffer {
-private:
-	CRITICAL_SECTION cSec;
-public:
-	std::vector<DrawItem> drawItems;
-
-	DrawBuffer(){
-		InitializeCriticalSection(&cSec);
-	}
-
-	~DrawBuffer(){
-		DeleteCriticalSection(&cSec);
-	}
-
-	void draw(){
-		lock();
-		for (auto it = drawItems.begin(); it != drawItems.end(); it++){
-			it->drawFunc(it->unit);
-		}
-		unlock();
-	}
-
-	void clear(){
-		lock();
-		drawItems.clear();
-		unlock();
-	}
-
-	void lock(){
-		EnterCriticalSection(&cSec);
-	}
-
-	void unlock(){
-		LeaveCriticalSection(&cSec);
-	}
-};
-
-DrawBuffer *drawBuffer;
-DrawBuffer *backgroundBuffer;
-bool updatePending = false;
+DrawDirective automapDraw(3);
 
 Maphack::Maphack() : Module("Maphack") {
 	revealType = MaphackRevealAct;
@@ -213,10 +165,6 @@ void Maphack::OnLoad() {
 	options.push_back("Act");
 	options.push_back("Level");
 	new Combohook(settingsTab, 100, 137, 70, &revealType, options);
-
-	backgroundBuffer = new DrawBuffer();
-	drawBuffer = new DrawBuffer();
-
 }
 
 void Maphack::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
@@ -264,162 +212,136 @@ void Maphack::OnLoop() {
 	}
 }
 
-int fc = 0;
 Act* lastAct = NULL;
-//CRITICAL_SECTION mapSec;
-
 void Maphack::OnAutomapDraw() {
 	UnitAny* player = D2CLIENT_GetPlayerUnit();
 	
 	if (!player || !player->pAct || player->pPath->pRoom1->pRoom2->pLevel->dwLevelNo == 0)
 		return;
 
-	if (fc > 20 || lastAct != player->pAct){
+	if (lastAct != player->pAct){
 		lastAct = player->pAct;
-		//updatePending = true;
-		Task::Enqueue([=]()->void{
-			backgroundBuffer->clear();
-			for (Room1* room1 = player->pAct->pRoom1; room1; room1 = room1->pRoomNext) {
-				for (UnitAny* unit = room1->pUnitFirst; unit; unit = unit->pListNext) {
-					POINT automapLoc;
+		automapDraw.forceUpdate();
+	}
 
-					// Draw monster on automap
-					if (unit->dwType == UNIT_MONSTER && IsValidMonster(unit) && Toggles["Show Monsters"].state) {
-						int color = automapColors["Normal Monster"];
-						if (unit->pMonsterData->fBoss)
-							color = automapColors["Boss Monster"];
-						if (unit->pMonsterData->fChamp)
-							color = automapColors["Champion Monster"];
-						if (unit->pMonsterData->fMinion)
-							color = automapColors["Minion Monster"];
+	automapDraw.draw([=](AsyncDrawBuffer &automapBuffer) -> void {
+		for (Room1* room1 = player->pAct->pRoom1; room1; room1 = room1->pRoomNext) {
+			for (UnitAny* unit = room1->pUnitFirst; unit; unit = unit->pListNext) {
+				POINT automapLoc;
 
-						// User can override colors of non-boss monsters
-						if (automapMonsterColors.find(unit->dwTxtFileNo) != automapMonsterColors.end() && !unit->pMonsterData->fBoss) {
-							color = automapMonsterColors[unit->dwTxtFileNo];
+				// Draw monster on automap
+				if (unit->dwType == UNIT_MONSTER && IsValidMonster(unit) && Toggles["Show Monsters"].state) {
+					int color = automapColors["Normal Monster"];
+					if (unit->pMonsterData->fBoss)
+						color = automapColors["Boss Monster"];
+					if (unit->pMonsterData->fChamp)
+						color = automapColors["Champion Monster"];
+					if (unit->pMonsterData->fMinion)
+						color = automapColors["Minion Monster"];
+
+					// User can override colors of non-boss monsters
+					if (automapMonsterColors.find(unit->dwTxtFileNo) != automapMonsterColors.end() && !unit->pMonsterData->fBoss) {
+						color = automapMonsterColors[unit->dwTxtFileNo];
+					}
+
+					//Determine immunities
+					string szImmunities[] = { "ÿc7i", "ÿc8i", "ÿc1i", "ÿc9i", "ÿc3i", "ÿc2i" };
+					string szResistances[] = { "ÿc7r", "ÿc8r", "ÿc1r", "ÿc9r", "ÿc3r", "ÿc2r" };
+					DWORD dwImmunities[] = {
+						STAT_DMGREDUCTIONPCT,
+						STAT_MAGICDMGREDUCTIONPCT,
+						STAT_FIRERESIST,
+						STAT_LIGHTNINGRESIST,
+						STAT_COLDRESIST,
+						STAT_POISONRESIST
+					};
+					string immunityText;
+					for (int n = 0; n < 6; n++) {
+						int nImm = D2COMMON_GetUnitStat(unit, dwImmunities[n], 0);
+						if (nImm >= 100) {
+							immunityText += szImmunities[n];
 						}
-
-						//Determine immunities
-						string szImmunities[] = { "ÿc7i", "ÿc8i", "ÿc1i", "ÿc9i", "ÿc3i", "ÿc2i" };
-						string szResistances[] = { "ÿc7r", "ÿc8r", "ÿc1r", "ÿc9r", "ÿc3r", "ÿc2r" };
-						DWORD dwImmunities[] = {
-							STAT_DMGREDUCTIONPCT,
-							STAT_MAGICDMGREDUCTIONPCT,
-							STAT_FIRERESIST,
-							STAT_LIGHTNINGRESIST,
-							STAT_COLDRESIST,
-							STAT_POISONRESIST
-						};
-						string immunityText;
-						for (int n = 0; n < 6; n++) {
-							int nImm = D2COMMON_GetUnitStat(unit, dwImmunities[n], 0);
-							if (nImm >= 100) {
-								immunityText += szImmunities[n];
-							}
-							else if (nImm >= monsterResistanceThreshold) {
-								immunityText += szResistances[n];
-							}
+						else if (nImm >= monsterResistanceThreshold) {
+							immunityText += szResistances[n];
 						}
+					}
 
-						backgroundBuffer->drawItems.push_back(DrawItem(unit, [immunityText, color](UnitAny* unit)->void{
-							POINT automapLoc;
-							if (IsValidMonster(unit) && unit->pPath){
-								Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pPath->xPos, unit->pPath->yPos);
-								if (immunityText.length() > 0)
-									Drawing::Texthook::Draw(automapLoc.x, automapLoc.y - 8, Drawing::Center, 6, White, immunityText);
-								Drawing::Crosshook::Draw(automapLoc.x, automapLoc.y, color);
-							}
-						}));
-						/*Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pPath->xPos, unit->pPath->yPos);
+					Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pPath->xPos, unit->pPath->yPos);
+					automapBuffer.push([immunityText, color, automapLoc]()->void{
 						if (immunityText.length() > 0)
-						Drawing::Texthook::Draw(automapLoc.x, automapLoc.y - 8, Drawing::Center, 6, White, immunityText);
-						Drawing::Crosshook::Draw(automapLoc.x, automapLoc.y, color);*/
+							Drawing::Texthook::Draw(automapLoc.x, automapLoc.y - 8, Drawing::Center, 6, White, immunityText);
+						Drawing::Crosshook::Draw(automapLoc.x, automapLoc.y, color);
+					});
+				}
+				else if (unit->dwType == UNIT_MISSILE && Toggles["Show Missiles"].state) {
+					int color = 255;
+					switch (GetRelation(unit)) {
+					case 0:
+						continue;
+						break;
+					case 1://Me
+						color = automapColors["Player Missile"];
+						break;
+					case 2://Neutral
+						color = automapColors["Neutral Missile"];
+						break;
+					case 3://Partied
+						color = automapColors["Partied Missile"];
+						break;
+					case 4://Hostile
+						color = automapColors["Hostile Missile"];
+						break;
 					}
-					else if (unit->dwType == UNIT_MISSILE && Toggles["Show Missiles"].state) {
-						int color = 255;
-						switch (GetRelation(unit)) {
-						case 0:
-							continue;
-							break;
-						case 1://Me
-							color = automapColors["Player Missile"];
-							break;
-						case 2://Neutral
-							color = automapColors["Neutral Missile"];
-							break;
-						case 3://Partied
-							color = automapColors["Partied Missile"];
-							break;
-						case 4://Hostile
-							color = automapColors["Hostile Missile"];
-							break;
-						}
 
-						backgroundBuffer->drawItems.push_back(DrawItem(unit, [color](UnitAny* unit)->void{
-							POINT automapLoc;
-							if (!unit->pPath) return;
-							Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pPath->xPos, unit->pPath->yPos);
-							Drawing::Boxhook::Draw(automapLoc.x - 1, automapLoc.y - 1, 2, 2, color, Drawing::BTHighlight);
-						}));
-						/*Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pPath->xPos, unit->pPath->yPos);
-						Drawing::Boxhook::Draw(automapLoc.x - 1, automapLoc.y - 1, 2, 2, color, Drawing::BTHighlight);*/
-					}
-					else if (unit->dwType == UNIT_ITEM) {
-						UnitItemInfo uInfo;
-						uInfo.item = unit;
-						uInfo.itemCode[0] = D2COMMON_GetItemText(unit->dwTxtFileNo)->szCode[0];
-						uInfo.itemCode[1] = D2COMMON_GetItemText(unit->dwTxtFileNo)->szCode[1];
-						uInfo.itemCode[2] = D2COMMON_GetItemText(unit->dwTxtFileNo)->szCode[2];
-						uInfo.itemCode[3] = 0;
-						if (ItemAttributeMap.find(uInfo.itemCode) != ItemAttributeMap.end()) {
-							uInfo.attrs = ItemAttributeMap[uInfo.itemCode];
-							for (vector<Rule*>::iterator it = MapRuleList.begin(); it != MapRuleList.end(); it++) {
-								if ((*it)->Evaluate(&uInfo, NULL)) {
-									auto color = TextColorMap[(*it)->action.colorOnMap];
-									backgroundBuffer->drawItems.push_back(DrawItem(unit, [color](UnitAny* unit)->void{
-										POINT automapLoc;
-										if (!unit->pItemPath) return;
-										Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pItemPath->dwPosX, unit->pItemPath->dwPosY);
-										Drawing::Boxhook::Draw(automapLoc.x - 4, automapLoc.y - 4, 8, 8, color, Drawing::BTHighlight);
-									}));
-									/*Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pItemPath->dwPosX, unit->pItemPath->dwPosY);
-									Drawing::Boxhook::Draw(automapLoc.x - 4, automapLoc.y - 4, 8, 8, TextColorMap[(*it)->action.colorOnMap], Drawing::BTHighlight);*/
-									break;
-								}
+					Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pPath->xPos, unit->pPath->yPos);
+					automapBuffer.push([color, unit, automapLoc]()->void{
+						Drawing::Boxhook::Draw(automapLoc.x - 1, automapLoc.y - 1, 2, 2, color, Drawing::BTHighlight);
+					});
+				}
+				else if (unit->dwType == UNIT_ITEM) {
+					UnitItemInfo uInfo;
+					uInfo.item = unit;
+					uInfo.itemCode[0] = D2COMMON_GetItemText(unit->dwTxtFileNo)->szCode[0];
+					uInfo.itemCode[1] = D2COMMON_GetItemText(unit->dwTxtFileNo)->szCode[1];
+					uInfo.itemCode[2] = D2COMMON_GetItemText(unit->dwTxtFileNo)->szCode[2];
+					uInfo.itemCode[3] = 0;
+					if (ItemAttributeMap.find(uInfo.itemCode) != ItemAttributeMap.end()) {
+						uInfo.attrs = ItemAttributeMap[uInfo.itemCode];
+						for (vector<Rule*>::iterator it = MapRuleList.begin(); it != MapRuleList.end(); it++) {
+							if ((*it)->Evaluate(&uInfo, NULL)) {
+								auto color = TextColorMap[(*it)->action.colorOnMap];
+								Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pItemPath->dwPosX, unit->pItemPath->dwPosY);
+								automapBuffer.push([color, unit, automapLoc]()->void{
+									Drawing::Boxhook::Draw(automapLoc.x - 4, automapLoc.y - 4, 8, 8, color, Drawing::BTHighlight);
+								});
+								break;
 							}
 						}
-						else {
-							HandleUnknownItemCode(uInfo.itemCode, "on map");
-						}
+					}
+					else {
+						HandleUnknownItemCode(uInfo.itemCode, "on map");
 					}
 				}
 			}
-
-			auto db = drawBuffer;
-			db->lock();
-			drawBuffer = backgroundBuffer;
-			backgroundBuffer = db;
-			db->unlock();
-			updatePending = false;
-			//PrintText(0, "Saved %d frames", fc);
-			fc = 0;
-		});
-	}
-
-	fc++;
-	drawBuffer->draw();
-
-	if (!Toggles["Display Level Names"].state)
-		return;
-	for (list<LevelList*>::iterator it = automapLevels.begin(); it != automapLevels.end(); it++) {
-		if (player->pAct->dwAct == (*it)->act) {
-			string tombStar = ((*it)->levelId == player->pAct->pMisc->dwStaffTombLevel) ? "ÿc2*" : "ÿc4";
-			POINT unitLoc;
-			Hook::ScreenToAutomap(&unitLoc, (*it)->x, (*it)->y);
-			char* name = UnicodeToAnsi(D2CLIENT_GetLevelName((*it)->levelId));
-			Texthook::Draw(unitLoc.x, unitLoc.y - 15, Center, 6, Gold, "%s%s", name, tombStar.c_str()); 
-			delete[] name;
 		}
-	}
+
+		if (!Toggles["Display Level Names"].state)
+			return;
+		for (list<LevelList*>::iterator it = automapLevels.begin(); it != automapLevels.end(); it++) {
+			if (player->pAct->dwAct == (*it)->act) {
+				string tombStar = ((*it)->levelId == player->pAct->pMisc->dwStaffTombLevel) ? "ÿc2*" : "ÿc4";
+				POINT unitLoc;
+				Hook::ScreenToAutomap(&unitLoc, (*it)->x, (*it)->y);
+				char* name = UnicodeToAnsi(D2CLIENT_GetLevelName((*it)->levelId));
+				std::string nameStr = name;
+				delete[] name;
+
+				automapBuffer.push([nameStr, tombStar, unitLoc]()->void{
+					Texthook::Draw(unitLoc.x, unitLoc.y - 15, Center, 6, Gold, "%s%s", nameStr.c_str(), tombStar.c_str());
+				});
+			}
+		}
+	});
 }
 
 void Maphack::OnGameJoin(const string& name, const string& pass, int diff) {

@@ -11,6 +11,7 @@ ModuleManager::ModuleManager() {
 ModuleManager::~ModuleManager() {
 	while(moduleList.size() > 0) {
 		Module* module = moduleList.begin()->second;
+		//module->Unload();
 		delete module;
 	}
 }
