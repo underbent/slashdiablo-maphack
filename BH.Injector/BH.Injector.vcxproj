@@ -108,10 +108,12 @@
   <ItemGroup>
     <ClCompile Include="BH.Injector.cpp" />
     <ClCompile Include="cInjector.cpp" />
+    <ClCompile Include="PEStructs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BH.Injector.h" />
     <ClInclude Include="cInjector.h" />
+    <ClInclude Include="PEStructs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

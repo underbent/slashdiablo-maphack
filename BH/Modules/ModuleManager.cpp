@@ -14,11 +14,6 @@ ModuleManager::~ModuleManager() {
 		delete module;
 	}
 	moduleList.clear();
-	//while(moduleList.size() > 0) {
-	//	Module* module = moduleList.begin()->second;
-	//	//module->Unload();
-	//	delete module;
-	//}
 }
 
 void ModuleManager::FixName(std::string& name)

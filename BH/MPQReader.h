@@ -98,6 +98,6 @@ private:
 
 extern std::map<std::string, MPQData*> MpqDataMap;
 
-extern "C" __declspec(dllexport) bool ReadMPQFiles(std::string fileName, bool writeTempFiles);
+extern "C" __declspec(dllexport) bool ReadMPQFiles(std::string fileName);
 void FindAncestorTypes(std::string type, std::set<std::string>& ancestors, std::map<std::string, std::string>& map1, std::map<std::string, std::string>& map2);
 unsigned int AssignClassFlags(std::string type, std::set<std::string>& ancestors, unsigned int flags);

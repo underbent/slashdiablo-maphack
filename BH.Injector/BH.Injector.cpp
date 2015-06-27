@@ -17,7 +17,6 @@
 
 */
 #include "BH.Injector.h"
-//#include "MPQReader.h"
 
 /*
 #undef _DLL
@@ -127,16 +126,7 @@ int main(int argc, const char* argv[]) {
 		system("PAUSE");
 		return 1;
 	}
-
-	HMODULE bhModule = LoadLibrary(L"BH.dll");
-	if (bhModule){
-		ReadMPQFiles readMPQFiles = (ReadMPQFiles)GetProcAddress(bhModule, "ReadMPQFiles");
-		if (readMPQFiles){
-			printf("Reading data from MPQ file\n");
-			readMPQFiles(patchPath, true);
-		}
-	}
-
+	
 	if (nOpt < 0) {
 		printf("Please choose an option to inject.\n");
 		printf("\t0) Inject into All\n");

@@ -17,6 +17,8 @@
 
 */
 #include "BH.Injector.h"
+#include "PEStructs.h"
+
 #include <tlhelp32.h>
 
 BOOL cInjector::EnableDebugPriv(VOID) // Abin's function.
@@ -160,13 +162,13 @@ HMODULE GetRemoteModuleAddress(DWORD dwPid, wstring wDllName){
 	return address;
 }
 
-BOOL cInjector::RunRemoteProc(HWND hwnd, wstring wDllName, string wProcName){
+BOOL cInjector::RunRemoteProc(HWND hwnd, wstring wDllName, string procName){
 	DWORD dwPid;
 	GetWindowThreadProcessId(hwnd, &dwPid);
-	return cInjector::RunRemoteProc(dwPid, wDllName, wProcName);
+	return cInjector::RunRemoteProc(dwPid, wDllName, procName);
 }
 
-BOOL cInjector::RunRemoteProc(DWORD dwPid, wstring wDllName, string wProcName){
+BOOL cInjector::RunRemoteProc(DWORD dwPid, wstring wDllName, string procName){
 	if (!FindInjectedModule(dwPid)) {
 		return false;
 	}
@@ -180,33 +182,24 @@ BOOL cInjector::RunRemoteProc(DWORD dwPid, wstring wDllName, string wProcName){
 
 	if (hProc)
 	{
-		hMod = LoadLibrary(wDllName.c_str());
+		std::string s;
+		s.assign(wDllName.begin(), wDllName.end());
 
-		if (hMod)
+		PE::ulong procOffset = PE::GetFunctionOffset(s, procName);
+
+		if (procOffset)
 		{
-			procAddress = GetProcAddress(hMod, wProcName.c_str());
+			long MODULE_BASE = reinterpret_cast<long>(GetRemoteModuleAddress(dwPid, wDllName));
 
-			if (procAddress)
-			{
-					long PROC_OFFSET = (reinterpret_cast<long>(procAddress)-reinterpret_cast<long>(hMod));
-					long MODULE_BASE = reinterpret_cast<long>(GetRemoteModuleAddress(dwPid, wDllName));
-					
-					hThread = CreateRemoteThread(hProc, NULL, NULL, reinterpret_cast<LPTHREAD_START_ROUTINE>((LPVOID)(MODULE_BASE + PROC_OFFSET)), NULL, NULL, NULL);
-					WaitForSingleObject(hThread, INFINITE);
+			hThread = CreateRemoteThread(hProc, NULL, NULL, reinterpret_cast<LPTHREAD_START_ROUTINE>((LPVOID)(MODULE_BASE + procOffset)), NULL, NULL, NULL);
+			WaitForSingleObject(hThread, INFINITE);
 
-					FreeLibrary(hMod);
-					CloseHandle(hProc);
-					CloseHandle(hThread);
-					return true;
-			}
-			else {
-				printf("GetProcAddress() failed with error code %d\n", GetLastError());
-			}
-
-			FreeLibrary(hMod);
+			CloseHandle(hProc);
+			CloseHandle(hThread);
+			return true;
 		}
 		else {
-			printf("LoadLibrary() failed with error code %d\n", GetLastError());
+			printf("GetProcAddress() failed with error code %d\n", GetLastError());
 		}
 
 		CloseHandle(hProc);

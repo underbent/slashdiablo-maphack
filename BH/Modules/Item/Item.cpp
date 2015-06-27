@@ -26,7 +26,7 @@ void Item::OnLoad() {
 	Toggles["Advanced Item Display"] = BH::config->ReadToggle("Advanced Item Display", "None", false);
 	Toggles["Allow Unknown Items"] = BH::config->ReadToggle("Allow Unknown Items", "None", false);
 
-	InitializeMPQData();
+	//InitializeMPQData();
 	if (Toggles["Advanced Item Display"].state) {
 		InitializeItemRules();
 	}

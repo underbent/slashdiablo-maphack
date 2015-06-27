@@ -189,7 +189,6 @@ void Maphack::OnUnload() {
 }
 
 void Maphack::OnLoop() {
-	
 	// Remove or install patchs based on state.
 	ResetPatches();
 
