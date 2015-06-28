@@ -70,6 +70,7 @@ void Maphack::ReadConfig() {
 	Toggles["Auto Reveal"] = BH::config->ReadToggle("Reveal Map", "None", true);
 	Toggles["Show Monsters"] = BH::config->ReadToggle("Show Monsters", "None", true);
 	Toggles["Show Missiles"] = BH::config->ReadToggle("Show Missiles", "None", true);
+	Toggles["Show Chests"] = BH::config->ReadToggle("Show Chests", "None", true);
 	Toggles["Force Light Radius"] = BH::config->ReadToggle("Force Light Radius", "None", true);
 	Toggles["Remove Weather"] = BH::config->ReadToggle("Remove Weather", "None", true);
 	Toggles["Infravision"] = BH::config->ReadToggle("Infravision", "None", true);
