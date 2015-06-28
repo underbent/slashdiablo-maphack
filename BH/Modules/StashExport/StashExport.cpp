@@ -257,9 +257,19 @@ void StashExport::GetItemInfo(UnitAny* pItem, JSONObject* pBuffer){
 				}
 			}
 			break;
+		case ITEM_QUALITY_SET:{
+			JSONObject *setDef = Tables::SetItems.entryAt(pItem->pItemData->dwQuality2);
+			if (setDef){
+				pBuffer->set("set", setDef->getString("set"));
+				pBuffer->set("name", setDef->getString("index"));
+				fillStats(statsObject, setDef, pItem, "prop%d", "par%d", "min%d", "max%d", 13);
+			}
+		}
+		break;
 		default:
 			break;
 		}
+		
 		if (checkFlag(pItem, ITEM_RUNEWORD)){
 			pBuffer->set("isRuneword", true);
 			std::string rwName = UnicodeToAnsi(D2LANG_GetLocaleText(pItem->pItemData->wPrefix[0]));
@@ -270,7 +280,8 @@ void StashExport::GetItemInfo(UnitAny* pItem, JSONObject* pBuffer){
 				fillStats(statsObject, rwDef, pItem, "T1Code%d", "T1Param%d", "T1Min%d", "T1Max%d", 8);
 			}
 		}
-		else if (pItem->pItemData->dwQuality != ITEM_QUALITY_UNIQUE){
+		else if (pItem->pItemData->dwQuality != ITEM_QUALITY_UNIQUE &&
+				 pItem->pItemData->dwQuality != ITEM_QUALITY_SET){
 			DWORD value = 0;
 			Stat* aStatList = new Stat[STAT_MAX];
 			StatList* pStatList = D2COMMON_GetStatList(pItem, NULL, STAT_MAX);

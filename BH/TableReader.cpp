@@ -184,7 +184,6 @@ bool TableReader::loadMPQData(std::string archiveName, Table &table)
 	if (!mpq || mpq->error) return false;
 	for (auto iter = mpq->data.begin(); iter != mpq->data.end(); iter++){
 		auto entry = *iter;
-
 		JSONObject *obj = new JSONObject();
 		for (auto header = mpq->fields.begin(); header != mpq->fields.end(); header++){
 			std::string h = *header;
@@ -317,7 +316,10 @@ bool Tables::initTables(){
 		success &= TableReader::loadMPQData("SetItems", SetItems);
 
 		UniqueItems.removeWhere([](JSONElement* obj){
-			return ((JSONObject*)obj)->getString("index").compare("Expansion") == 0;
+			return ((JSONObject*)obj)->getString("code").length() == 0;
+		});
+		SetItems.removeWhere([](JSONElement* obj){
+			return ((JSONObject*)obj)->getString("item").length() == 0;
 		});
 	}
 
