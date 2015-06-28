@@ -119,30 +119,33 @@ void Maphack::OnLoad() {
 	settingsTab = new UITab("Maphack", BH::settingsUI);
 
 	new Texthook(settingsTab, 80, 3, "Toggles");
+	unsigned int Y = 0;
+	new Checkhook(settingsTab, 4, (Y += 15), &Toggles["Auto Reveal"].state, "Auto Reveal");
+	new Keyhook(settingsTab, 130, (Y + 2), &Toggles["Auto Reveal"].toggle, "");
 
-	new Checkhook(settingsTab, 4, 15, &Toggles["Auto Reveal"].state, "Auto Reveal");
-	new Keyhook(settingsTab, 130, 17, &Toggles["Auto Reveal"].toggle, "");
+	new Checkhook(settingsTab, 4, (Y += 15), &Toggles["Show Monsters"].state, "Show Monsters");
+	new Keyhook(settingsTab, 130, (Y + 2), &Toggles["Show Monsters"].toggle, "");
 
-	new Checkhook(settingsTab, 4, 30, &Toggles["Show Monsters"].state, "Show Monsters");
-	new Keyhook(settingsTab, 130, 32, &Toggles["Show Monsters"].toggle, "");
+	new Checkhook(settingsTab, 4, (Y += 15), &Toggles["Show Missiles"].state, "Show Missiles");
+	new Keyhook(settingsTab, 130, (Y + 2), &Toggles["Show Missiles"].toggle, "");
 
-	new Checkhook(settingsTab, 4, 45, &Toggles["Show Missiles"].state, "Show Missiles");
-	new Keyhook(settingsTab, 130, 47, &Toggles["Show Missiles"].toggle, "");
+	new Checkhook(settingsTab, 4, (Y += 15), &Toggles["Show Chests"].state, "Show Chests");
+	new Keyhook(settingsTab, 130, (Y + 2), &Toggles["Show Chests"].toggle, "");
 
-	new Checkhook(settingsTab, 4, 60, &Toggles["Force Light Radius"].state, "Light Radius");
-	new Keyhook(settingsTab, 130, 62, &Toggles["Force Light Radius"].toggle, "");
+	new Checkhook(settingsTab, 4, (Y += 15), &Toggles["Force Light Radius"].state, "Light Radius");
+	new Keyhook(settingsTab, 130, (Y + 2), &Toggles["Force Light Radius"].toggle, "");
 
-	new Checkhook(settingsTab, 4, 75, &Toggles["Remove Weather"].state, "Remove Weather");
-	new Keyhook(settingsTab, 130, 77, &Toggles["Remove Weather"].toggle, "");
+	new Checkhook(settingsTab, 4, (Y += 15), &Toggles["Remove Weather"].state, "Remove Weather");
+	new Keyhook(settingsTab, 130, (Y + 2), &Toggles["Remove Weather"].toggle, "");
 
-	new Checkhook(settingsTab, 4, 90, &Toggles["Infravision"].state, "Infravision");
-	new Keyhook(settingsTab, 130, 92, &Toggles["Infravision"].toggle, "");
+	new Checkhook(settingsTab, 4, (Y += 15), &Toggles["Infravision"].state, "Infravision");
+	new Keyhook(settingsTab, 130, (Y + 2), &Toggles["Infravision"].toggle, "");
 
-	new Checkhook(settingsTab, 4, 105, &Toggles["Remove Shake"].state, "Remove Shake");
-	new Keyhook(settingsTab, 130, 107, &Toggles["Remove Shake"].toggle, "");
+	new Checkhook(settingsTab, 4, (Y += 15), &Toggles["Remove Shake"].state, "Remove Shake");
+	new Keyhook(settingsTab, 130, (Y + 2), &Toggles["Remove Shake"].toggle, "");
 
-	new Checkhook(settingsTab, 4, 120, &Toggles["Display Level Names"].state, "Level Names");
-	new Keyhook(settingsTab, 130, 122, &Toggles["Display Level Names"].toggle, "");
+	new Checkhook(settingsTab, 4, (Y += 15), &Toggles["Display Level Names"].state, "Level Names");
+	new Keyhook(settingsTab, 130, (Y + 2), &Toggles["Display Level Names"].toggle, "");
 
 	new Texthook(settingsTab, 215, 3, "Missile Colors");
 
@@ -158,13 +161,13 @@ void Maphack::OnLoad() {
 	new Colorhook(settingsTab, 210, 122, &automapColors["Champion Monster"], "Champion");
 	new Colorhook(settingsTab, 210, 137, &automapColors["Boss Monster"], "Boss");
 
-	new Texthook(settingsTab, 3, 137, "Reveal Type:");
+	new Texthook(settingsTab, 3, (Y += 15), "Reveal Type:");
 
 	vector<string> options;
 	options.push_back("Game");
 	options.push_back("Act");
 	options.push_back("Level");
-	new Combohook(settingsTab, 100, 137, 70, &revealType, options);
+	new Combohook(settingsTab, 100, Y, 70, &revealType, options);
 }
 
 void Maphack::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
@@ -343,7 +346,7 @@ void Maphack::OnAutomapDraw() {
 						HandleUnknownItemCode(uInfo.itemCode, "on map");
 					}
 				}
-				else if (unit->dwType == UNIT_OBJECT && !unit->dwMode /* Not opened */ && IsObjectChest(unit->pObjectData->pTxt)) {
+				else if (unit->dwType == UNIT_OBJECT && !unit->dwMode /* Not opened */ && Toggles["Show Chests"].state && IsObjectChest(unit->pObjectData->pTxt)) {
 					Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pObjectPath->dwPosX, unit->pObjectPath->dwPosY);
 					automapBuffer.push([automapLoc]()->void{
 						Drawing::Boxhook::Draw(automapLoc.x - 1, automapLoc.y - 1, 2, 2, 255, Drawing::BTHighlight);
