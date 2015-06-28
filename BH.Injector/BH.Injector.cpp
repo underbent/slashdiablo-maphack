@@ -111,8 +111,8 @@ int main(int argc, const char* argv[]) {
 	EnumWindows(EnumWindowsProc, (LPARAM)&Windows);
 
 	//Print intro and the beginning of the menu.
-	printf("BH v0.1.6a By McGod\n");
-	printf("SlashDiablo Branch: Edited By Deadlock, underbent\n");
+	printf("BH v0.1.7a By Slayergod13\n");
+	printf("SlashDiablo Branch: Edited By Deadlock, underben, and McGodt\n");
 	printf("Visit http://www.reddit.com/r/slashdiablo for updates!\n");
 
 	printf("\n");
