@@ -13,7 +13,7 @@ void ScreenInfo::OnLoad() {
 	Toggles["Experience Meter"] = BH::config->ReadToggle("Experience Meter", "VK_NUMPAD7", false);
 
 	automapInfo = BH::config->ReadArray("AutomapInfo");
-	bhText = new Texthook(Perm, 790, 6, "ÿc4BH v0.1.6a (SlashDiablo Branch)");
+	bhText = new Texthook(Perm, 790, 6, "ÿc4BH v0.1.7a (SlashDiablo Branch)");
 	bhText->SetAlignment(Right);
 	if (BH::cGuardLoaded) {
 		Texthook* cGuardText = new Texthook(Perm, 790, 23, "ÿc4cGuard Loaded");
