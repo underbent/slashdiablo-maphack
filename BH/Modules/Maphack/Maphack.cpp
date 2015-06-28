@@ -17,7 +17,7 @@ Patch* lightingPatch = new Patch(Call, D2CLIENT, 0xA9A37, (int)Lighting_Intercep
 Patch* infraPatch = new Patch(Call, D2CLIENT, 0x66623, (int)Infravision_Interception, 7);
 Patch* shakePatch = new Patch(Call, D2CLIENT, 0x442A2,(int)Shake_Interception, 5);
 
-DrawDirective automapDraw(3);
+DrawDirective automapDraw(true, 5);
 
 Maphack::Maphack() : Module("Maphack") {
 	revealType = MaphackRevealAct;
@@ -114,7 +114,7 @@ void Maphack::ResetPatches() {
 void Maphack::OnLoad() {
 	/*ResetRevealed();
 	ReadConfig();
-	ResetPatches();
+	ResetPatches();*/
 
 	settingsTab = new UITab("Maphack", BH::settingsUI);
 
@@ -164,7 +164,7 @@ void Maphack::OnLoad() {
 	options.push_back("Game");
 	options.push_back("Act");
 	options.push_back("Level");
-	new Combohook(settingsTab, 100, 137, 70, &revealType, options);*/
+	new Combohook(settingsTab, 100, 137, 70, &revealType, options);
 }
 
 void Maphack::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {

@@ -5,7 +5,7 @@ void GameDraw();
 void GameAutomapDraw();
 void OOGDraw();
 
-void GameLoop();
+void WINAPI GameLoop();
 DWORD WINAPI GameThread(VOID* lpvoid);
 LONG WINAPI GameWindowEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

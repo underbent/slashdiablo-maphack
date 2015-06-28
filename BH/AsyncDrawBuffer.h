@@ -36,8 +36,10 @@ private:
 	bool updatePending;
 	AsyncDrawBuffer buffer;
 	bool forcedUpdate;
+	bool synchronous;
+	void drawInternal(fpDirector director);
 public:
-	DrawDirective(unsigned char _maxGhost);
+	DrawDirective(bool synchronous, unsigned char _maxGhost);
 	~DrawDirective();
 	void draw(fpDirector director);
 	void forceUpdate();

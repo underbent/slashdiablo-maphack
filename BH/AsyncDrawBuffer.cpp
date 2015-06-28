@@ -88,8 +88,9 @@ void AsyncDrawBuffer::swapBuffers()
 	f->unlock();
 }
 
-DrawDirective::DrawDirective(unsigned char _maxGhost) :
+DrawDirective::DrawDirective(bool _synchronous, unsigned char _maxGhost) :
 	frameCount(0),
+	synchronous(_synchronous),
 	maxGhost(_maxGhost),
 	updatePending(false),
 	forcedUpdate(false)
@@ -104,21 +105,31 @@ void DrawDirective::forceUpdate(){
 	forcedUpdate = true;
 }
 
+void DrawDirective::drawInternal(fpDirector director)
+{
+	buffer.clear();
+
+	// The guts of the drawing
+	director(buffer);
+
+	buffer.swapBuffers();
+	updatePending = false;
+	frameCount = 0;
+}
+
 void DrawDirective::draw(fpDirector director)
 {
 	if (forcedUpdate || !updatePending && frameCount > maxGhost){
 		updatePending = true;
 		forcedUpdate = false;
-		Task::Enqueue([=]()->void{
-			buffer.clear();
-
-			// The guts of the drawing
-			director(buffer);
-
-			buffer.swapBuffers();
-			updatePending = false;
-			frameCount = 0;
-		});
+		if (synchronous){
+			drawInternal(director);
+		}
+		else{
+			Task::Enqueue([=]()->void{
+				drawInternal(director);
+			});
+		}
 	}
 
 	buffer.drawAll();
