@@ -878,6 +878,11 @@ int GetDefense(ItemInfo *item) {
 }
 
 void HandleUnknownItemCode(char *code, char *tag) {
+	// If the MPQ files arent loaded yet then this is expected
+	if (!IsInitialized()){
+		return;
+	}
+
 	// Avoid spamming endlessly
 	if (UnknownItemCodes.size() > 10 || (*BH::MiscToggles2)["Allow Unknown Items"].state) {
 		return;

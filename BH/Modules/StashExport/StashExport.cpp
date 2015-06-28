@@ -21,14 +21,6 @@ void StashExport::OnLoad() {
 	Toggles["Include Fixed Stats"] = BH::config->ReadToggle("Include Fixed Stats", "None", false);
 	Toggles["Condense Stats"] = BH::config->ReadToggle("Condense Stats", "None", true);
 
-	auto mustaches = BH::config->ReadAssoc("Mustache");
-	for (auto it = mustaches.cbegin(); it != mustaches.cend(); it++){
-		auto t = Mustache::parse(it->second);
-		if (t){
-			MustacheTemplates[it->first] = std::unique_ptr<Mustache::AMustacheTemplate>(t);
-		}
-	}
-
 	exportGear = BH::config->ReadKey("Export Gear", "VK_NUMPAD5");
 
 	settingsTab = new UITab("StashExport", BH::settingsUI);
@@ -40,9 +32,25 @@ void StashExport::OnLoad() {
 
 	new Keyhook(settingsTab, 4, 137, &exportGear, "Export Gear");
 
-	std::vector<std::string> options;
+	options.clear();
 	options.push_back("json");
-	options.push_back("text");
+
+	auto mustaches = BH::config->ReadAssoc("Mustache");
+	auto dfltExprt = BH::config->ReadString("Mustache Default", "json");
+	int idx = 0;
+
+	for (auto it = mustaches.cbegin(); it != mustaches.cend(); it++){
+		auto t = Mustache::parse(it->second);
+		if (t){
+			idx++;
+			if (dfltExprt.compare(it->first) == 0){
+				exportType = idx;
+			}
+			MustacheTemplates[it->first] = std::unique_ptr<Mustache::AMustacheTemplate>(t);
+			options.push_back(it->first);
+		}
+	}
+
 	new Combohook(settingsTab, 4, 122, 70, &exportType, options);
 }
 
@@ -335,14 +343,17 @@ void StashExport::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
 			data->serialize(writer);
 		}
 		else { /* text */
-			buffer = Mustache::renderTemplate(MustacheTemplates["stash"].get(), Mustache::Context(data, [](std::string name) -> Mustache::AMustacheTemplate*{
-				auto tmpl = MustacheTemplates.find(name);
-				if (tmpl != MustacheTemplates.end()){
-					return tmpl->second.get();
-				}
+			std::string tmpltName = options.at(exportType);
+			if (MustacheTemplates.find(tmpltName) != MustacheTemplates.end()){
+				buffer = Mustache::renderTemplate(MustacheTemplates[tmpltName].get(), Mustache::Context(data, [](std::string name) -> Mustache::AMustacheTemplate*{
+					auto tmpl = MustacheTemplates.find(name);
+					if (tmpl != MustacheTemplates.end()){
+						return tmpl->second.get();
+					}
 
-				return nullptr;
-			}));
+					return nullptr;
+				}));
+			}
 		}
 		
 		file.write(buffer.c_str(), buffer.length());

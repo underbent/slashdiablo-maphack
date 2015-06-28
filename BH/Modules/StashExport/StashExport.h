@@ -21,6 +21,7 @@ private:
 	unsigned int exportType;
 	static UnitAny* viewingUnit;
 	Drawing::UITab* settingsTab;
+	std::vector<std::string> options;
 
 	static void fillStats(JSONArray* statsArray, JSONObject *itemDef, UnitAny *pItem, std::string codeKey, std::string paramKey, std::string minKey, std::string maxKey, int maxProps);
 public:

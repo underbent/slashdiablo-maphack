@@ -248,6 +248,10 @@ void Maphack::OnAutomapDraw() {
 		lastAct = player->pAct;
 		automapDraw.forceUpdate();
 	}
+
+	if (!IsInitialized()){
+		Drawing::Texthook::Draw(10, 70, Drawing::None, 12, Gold, "Loading MPQ Data...");
+	}
 	
 	automapDraw.draw([=](AsyncDrawBuffer &automapBuffer) -> void {
 		for (Room1* room1 = player->pAct->pRoom1; room1; room1 = room1->pRoomNext) {
