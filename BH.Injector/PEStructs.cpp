@@ -277,7 +277,7 @@ namespace PE {
 		// PE header starts with "PE\0\0" = 0x50 0x45 0x00 0x00
 		// Followed by 2-byte machine type field
 
-		ifstream inFile("E:\\HomeProjects\\BH Maphack\\slashdiablo-maphack\\Debug\\BH.dll", ifstream::in | ifstream::binary);
+		ifstream inFile(dllPath.c_str(), ifstream::in | ifstream::binary);
 		std::streamoff size = 0;
 		if (inFile.is_open()) {
 

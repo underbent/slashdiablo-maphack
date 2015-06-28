@@ -72,6 +72,8 @@ public:
 
 	operator bool() const { return hasValue(); }
 
+	virtual bool equals(JSONElement *other) = 0;
+
 	/*
 	Finds the child element within this element using the specified path.
 	*/
@@ -94,6 +96,7 @@ public:
 	int toInt() const { return _value ? 1 : 0; }
 	float toFloat() const { return _value ? 1.0f : 0.0f; }
 	std::string toString() const { return _value ? "true" : "false"; }
+	bool equals(JSONElement *other) { return other && other->getType() == JSON_BOOL && _value == ((JSONBool*)other)->_value; }
 };
 
 class JSONNumber : public JSONElement{
@@ -112,6 +115,7 @@ public:
 	int toInt() const { return _ivalue ? _ivalue : (int)_fvalue; }
 	float toFloat() const { return _fvalue ? _fvalue : (float)_ivalue; }
 	std::string toString() const;
+	bool equals(JSONElement *other) { return other && other->getType() == JSON_NUMBER && getValue() == ((JSONNumber*)other)->getValue(); }
 };
 
 class JSONString : public JSONElement{
@@ -128,6 +132,7 @@ public:
 	int toInt() const;
 	float toFloat() const;
 	std::string toString() const { return _value; }
+	bool equals(JSONElement *other) { return other && other->getType() == JSON_STRING && getValue().compare(((JSONString*)other)->getValue()) == 0; }
 };
 
 class JSONArray;
@@ -162,6 +167,8 @@ public:
 	void set(std::string key, JSONArray* value);
 
 	JSONElement* find(std::string path) const;
+
+	bool equals(JSONElement *other);
 };
 
 class JSONArray : public JSONElement{
@@ -198,4 +205,5 @@ public:
 	std::vector<std::unique_ptr<JSONElement>>::iterator end() { return _elements.end(); }
 
 	JSONElement* find(std::string path) const;
+	bool equals(JSONElement *other);
 };

@@ -17,7 +17,6 @@
 
 */
 #include "BH.Injector.h"
-
 /*
 #undef _DLL
 #undef _UNICODE

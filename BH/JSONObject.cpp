@@ -158,6 +158,7 @@ public:
 	bool hasValue() const { return false; }
 	operator bool() const { return false; }
 	operator int() const { return 0; }
+	bool equals(JSONElement *other) { return !other || other->getType() == JSON_NULL; }
 };
 
 std::unique_ptr<JSONNull> jNull = std::unique_ptr<JSONNull>(new JSONNull());
@@ -391,6 +392,21 @@ JSONElement* JSONObject::find(std::string path) const{
 	return item;
 }
 
+bool JSONObject::equals(JSONElement *other){
+	if (other && other->getType() == JSON_OBJECT){
+		JSONObject *o = (JSONObject*)other;
+		if (_properties.size() == o->_properties.size()){
+			for (auto it = _properties.begin(); it != _properties.end(); it++){
+				if (!it->second->equals(o->get(it->first))){
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
 JSONArray::JSONArray() : _elements(){
 	type = JSON_ARRAY;
 }
@@ -567,4 +583,19 @@ JSONElement* JSONArray::find(std::string path) const{
 		}
 	}
 	return item;
+}
+
+bool JSONArray::equals(JSONElement *other){
+	if (other && other->getType() == JSON_ARRAY){
+		JSONArray *o = (JSONArray*)other;
+		if (_elements.size() == o->_elements.size()){
+			for (int i = 0; i < _elements.size(); i++){
+				if (!get(i)->equals(o->get(i))){
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+	return false;
 }
