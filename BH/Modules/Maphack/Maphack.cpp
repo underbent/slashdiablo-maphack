@@ -112,7 +112,7 @@ void Maphack::ResetPatches() {
 }
 
 void Maphack::OnLoad() {
-	ResetRevealed();
+	/*ResetRevealed();
 	ReadConfig();
 	ResetPatches();
 
@@ -164,7 +164,7 @@ void Maphack::OnLoad() {
 	options.push_back("Game");
 	options.push_back("Act");
 	options.push_back("Level");
-	new Combohook(settingsTab, 100, 137, 70, &revealType, options);
+	new Combohook(settingsTab, 100, 137, 70, &revealType, options);*/
 }
 
 void Maphack::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
@@ -189,7 +189,7 @@ void Maphack::OnUnload() {
 }
 
 void Maphack::OnLoop() {
-	// Remove or install patchs based on state.
+	//// Remove or install patchs based on state.
 	ResetPatches();
 
 	// Get the player unit for area information.
@@ -222,7 +222,7 @@ void Maphack::OnAutomapDraw() {
 		lastAct = player->pAct;
 		automapDraw.forceUpdate();
 	}
-
+	
 	automapDraw.draw([=](AsyncDrawBuffer &automapBuffer) -> void {
 		for (Room1* room1 = player->pAct->pRoom1; room1; room1 = room1->pRoomNext) {
 			for (UnitAny* unit = room1->pUnitFirst; unit; unit = unit->pListNext) {

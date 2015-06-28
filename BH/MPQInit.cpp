@@ -1111,6 +1111,10 @@ void InitializeMPQData() {
 	for (auto d = MpqDataMap["armor"]->data.begin(); d < MpqDataMap["armor"]->data.end(); d++) {
 		if ((*d)["code"].length() > 0) {
 			std::set<std::string> ancestorTypes;
+			char stackable = ((*d)["stackable"].length() > 0 ? (*d)["stackable"].at(0) - 48 : 0),
+				useable = ((*d)["useable"].length() > 0 ? (*d)["useable"].at(0) - 48 : 0),
+				throwable = ((*d)["throwable"].length() > 0 ? (*d)["throwable"].at(0) - 48 : 0);
+
 			unsigned int flags = ITEM_GROUP_ALLARMOR, flags2 = 0;
 			FindAncestorTypes((*d)["type"], ancestorTypes, parentMap1, parentMap2);
 
@@ -1155,9 +1159,9 @@ void InitializeMPQData() {
 			attrs->category = (*d)["type"];
 			attrs->width = (*d)["invwidth"].at(0) - '0';
 			attrs->height = (*d)["invheight"].at(0) - '0';
-			attrs->stackable = (*d)["stackable"].at(0) - '0';
-			attrs->useable = (*d)["useable"].at(0) - '0';
-			attrs->throwable = (*d)["throwable"].at(0) - '0';
+			attrs->stackable = stackable;
+			attrs->useable = useable;
+			attrs->throwable = throwable;
 			attrs->itemLevel = 0;
 			attrs->unusedFlags = 0;
 			attrs->flags = flags;
@@ -1166,10 +1170,13 @@ void InitializeMPQData() {
 			ItemAttributeMap[(*d)["code"]] = attrs;
 		}
 
-		for (auto d = MpqDataMap["armor"]->data.begin(); d < MpqDataMap["armor"]->data.end(); d++) {
+		for (auto d = MpqDataMap["weapons"]->data.begin(); d < MpqDataMap["weapons"]->data.end(); d++) {
 			if ((*d)["code"].length() > 0) {
 				std::set<std::string> ancestorTypes;
-				unsigned int flags = ITEM_GROUP_ALLARMOR, flags2 = 0;
+				char stackable = ((*d)["stackable"].length() > 0 ? (*d)["stackable"].at(0) - 48 : 0),
+					useable = ((*d)["useable"].length() > 0 ? (*d)["useable"].at(0) - 48 : 0),
+					throwable = ((*d)["throwable"].length() > 0 ? (*d)["throwable"].at(0) - 48 : 0);
+				unsigned int flags = ITEM_GROUP_ALLWEAPON, flags2 = 0;
 				FindAncestorTypes((*d)["type"], ancestorTypes, parentMap1, parentMap2);
 
 				if ((*d)["code"].compare((*d)["ubercode"]) == 0) {
@@ -1181,26 +1188,46 @@ void InitializeMPQData() {
 				else {
 					flags |= ITEM_GROUP_NORMAL;
 				}
-				if (ancestorTypes.find("circ") != ancestorTypes.end()) {
-					flags |= ITEM_GROUP_CIRCLET;
+				if (ancestorTypes.find("club") != ancestorTypes.end() ||
+					ancestorTypes.find("hamm") != ancestorTypes.end() ||
+					ancestorTypes.find("mace") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_MACE;
 				}
-				else if (bodyLocMap[(*d)["type"]].compare("head") == 0) {
-					flags |= ITEM_GROUP_HELM;
+				else if (ancestorTypes.find("wand") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_WAND;
 				}
-				else if (bodyLocMap[(*d)["type"]].compare("tors") == 0) {
-					flags |= ITEM_GROUP_ARMOR;
+				else if (ancestorTypes.find("staf") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_STAFF;
 				}
-				else if (bodyLocMap[(*d)["type"]].compare("glov") == 0) {
-					flags |= ITEM_GROUP_GLOVES;
+				else if (ancestorTypes.find("bow") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_BOW;
 				}
-				else if (bodyLocMap[(*d)["type"]].compare("feet") == 0) {
-					flags |= ITEM_GROUP_BOOTS;
+				else if (ancestorTypes.find("axe") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_AXE;
 				}
-				else if (bodyLocMap[(*d)["type"]].compare("belt") == 0) {
-					flags |= ITEM_GROUP_BELT;
+				else if (ancestorTypes.find("scep") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_SCEPTER;
 				}
-				else if (bodyLocMap[(*d)["type"]].compare(1, 3, "arm") == 0 && ancestorTypes.find("shld") != ancestorTypes.end()) {
-					flags |= ITEM_GROUP_SHIELD;
+				else if (ancestorTypes.find("swor") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_SWORD;
+				}
+				else if (ancestorTypes.find("knif") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_DAGGER;
+				}
+				else if (ancestorTypes.find("spea") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_SPEAR;
+				}
+				else if (ancestorTypes.find("pole") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_POLEARM;
+				}
+				else if (ancestorTypes.find("xbow") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_CROSSBOW;
+				}
+				else if (ancestorTypes.find("jave") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_JAVELIN;
+				}
+				if (ancestorTypes.find("thro") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_THROWING;
 				}
 				flags = AssignClassFlags((*d)["type"], ancestorTypes, flags);
 
@@ -1213,9 +1240,9 @@ void InitializeMPQData() {
 				attrs->category = (*d)["type"];
 				attrs->width = (*d)["invwidth"].at(0) - '0';
 				attrs->height = (*d)["invheight"].at(0) - '0';
-				attrs->stackable = (*d)["stackable"].at(0) - '0';
-				attrs->useable = (*d)["useable"].at(0) - '0';
-				attrs->throwable = (*d)["throwable"].at(0) - '0';
+				attrs->stackable = stackable;
+				attrs->useable = useable;
+				attrs->throwable = throwable;
 				attrs->itemLevel = 0;
 				attrs->unusedFlags = 0;
 				attrs->flags = flags;
@@ -1228,6 +1255,9 @@ void InitializeMPQData() {
 		for (auto d = MpqDataMap["misc"]->data.begin(); d < MpqDataMap["misc"]->data.end(); d++) {
 			if ((*d)["code"].length() > 0) {
 				std::set<std::string> ancestorTypes;
+				char stackable = ((*d)["stackable"].length() > 0 ? (*d)["stackable"].at(0) - 48 : 0),
+					useable = ((*d)["useable"].length() > 0 ? (*d)["useable"].at(0) - 48 : 0),
+					throwable = ((*d)["throwable"].length() > 0 ? (*d)["throwable"].at(0) - 48 : 0);
 				unsigned int flags = 0, flags2 = 0;
 				FindAncestorTypes((*d)["type"], ancestorTypes, parentMap1, parentMap2);
 				FindAncestorTypes((*d)["type2"], ancestorTypes, parentMap1, parentMap2);
@@ -1281,9 +1311,9 @@ void InitializeMPQData() {
 				attrs->category = (*d)["type"];
 				attrs->width = (*d)["invwidth"].at(0) - '0';
 				attrs->height = (*d)["invheight"].at(0) - '0';
-				attrs->stackable = (*d)["stackable"].at(0) - '0';
-				attrs->useable = (*d)["useable"].at(0) - '0';
-				attrs->throwable = (*d)["throwable"].at(0) - '0';
+				attrs->stackable = stackable;
+				attrs->useable = useable;
+				attrs->throwable = throwable;
 				attrs->itemLevel = 0;
 				attrs->unusedFlags = 0;
 				attrs->flags = flags;

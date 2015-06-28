@@ -105,7 +105,7 @@ void BH::Initialize()
 		LoadMPQData(NULL);
 	});
 
-	new Maphack();
+	
 	new ScreenInfo();
 	new Gamefilter();
 	new Bnet();
@@ -115,6 +115,7 @@ void BH::Initialize()
 	new Party();
 	new ItemMover();
 	new StashExport();
+	new Maphack();
 
 	moduleManager->LoadModules();
 
