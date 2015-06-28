@@ -211,6 +211,28 @@ void Maphack::OnLoop() {
 	}
 }
 
+bool IsObjectChest(ObjectTxt *obj)
+{
+	//ObjectTxt *obj = D2COMMON_GetObjectTxt(objno);
+	return (obj->nSelectable0 && (
+		(obj->nOperateFn == 1) || //bed, undef grave, casket, sarc
+		(obj->nOperateFn == 3) || //basket, urn, rockpile, trapped soul
+		(obj->nOperateFn == 4) || //chest, corpse, wooden chest, buriel chest, skull and rocks, dead barb
+		(obj->nOperateFn == 5) || //barrel
+		(obj->nOperateFn == 7) || //exploding barrel
+		(obj->nOperateFn == 14) || //loose bolder etc....*
+		(obj->nOperateFn == 19) || //armor stand
+		(obj->nOperateFn == 20) || //weapon rack
+		(obj->nOperateFn == 33) || //writ
+		(obj->nOperateFn == 48) || //trapped soul
+		(obj->nOperateFn == 51) || //stash
+		(obj->nOperateFn == 68)    //evil urn
+		));
+}
+
+BYTE nChestClosedColour = 0x09;
+BYTE nChestLockedColour = 0x09;
+
 Act* lastAct = NULL;
 void Maphack::OnAutomapDraw() {
 	UnitAny* player = D2CLIENT_GetPlayerUnit();
@@ -320,6 +342,12 @@ void Maphack::OnAutomapDraw() {
 					else {
 						HandleUnknownItemCode(uInfo.itemCode, "on map");
 					}
+				}
+				else if (unit->dwType == UNIT_OBJECT && !unit->dwMode /* Not opened */ && IsObjectChest(unit->pObjectData->pTxt)) {
+					Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pObjectPath->dwPosX, unit->pObjectPath->dwPosY);
+					automapBuffer.push([automapLoc]()->void{
+						Drawing::Boxhook::Draw(automapLoc.x - 1, automapLoc.y - 1, 2, 2, 255, Drawing::BTHighlight);
+					});
 				}
 			}
 		}

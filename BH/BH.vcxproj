@@ -213,35 +213,6 @@
     <ClInclude Include="TableReader.h" />
     <ClInclude Include="Task.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="data\ItemStatCost.txt">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="data\ItemTypes.txt">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="data\MagicPrefix.txt">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="data\MagicSuffix.txt">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="data\Properties.txt">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="data\Runes.txt">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="data\SetItems.txt">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="data\skills.txt">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="data\UniqueItems.txt">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
