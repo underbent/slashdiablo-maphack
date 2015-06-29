@@ -20,7 +20,7 @@ void OOGDraw() {
 	__raise BH::moduleManager->OnOOGDraw();
 }
  
-void WINAPI GameLoop() {
+void GameLoop() {
 	__raise BH::moduleManager->OnLoop();
 }
 

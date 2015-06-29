@@ -6,6 +6,7 @@
 #include "../Item/Item.h"
 #include "../../TableReader.h"
 #include "../../MPQInit.h"
+#include "../../Constants.h"
 #include <algorithm>
 
 map<std::string, Toggle> StashExport::Toggles;
@@ -27,10 +28,8 @@ void StashExport::OnLoad() {
 
 	int y = 15;
 	new Checkhook(settingsTab, 4, y, &Toggles["Include Equipment"].state, "Include Equipment");
-	new Checkhook(settingsTab, 4, y+=15, &Toggles["Include Fixed Stats"].state, "Include Fixed Stats");
-	new Checkhook(settingsTab, 4, y += 15, &Toggles["Condense Stats"].state, "Condense Stats");
-
-	new Keyhook(settingsTab, 4, 137, &exportGear, "Export Gear");
+	new Checkhook(settingsTab, 4, (y+=15), &Toggles["Include Fixed Stats"].state, "Include Fixed Stats");
+	new Checkhook(settingsTab, 4, (y += 15), &Toggles["Condense Stats"].state, "Condense Stats");
 
 	options.clear();
 	options.push_back("json");
@@ -51,7 +50,7 @@ void StashExport::OnLoad() {
 		}
 	}
 
-	new Combohook(settingsTab, 4, 122, 70, &exportType, options);
+	new Combohook(settingsTab, 4, (y += 15), 150, &exportType, options);
 }
 
 void StashExport::OnUnload() {
@@ -324,6 +323,9 @@ void StashExport::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
 
 		UnitAny *unit = D2CLIENT_GetPlayerUnit();
 
+		// Make sure the directory exists
+		CreateDirectory((BH::path + "\\stash\\").c_str(), NULL);
+
 		std::string path = BH::path + "\\stash\\" + unit->pPlayerData->szName + ".txt";
 		fstream file(path, std::ofstream::out | std::ofstream::trunc);
 		if (!file.is_open()){
@@ -332,6 +334,7 @@ void StashExport::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
 		}
 		
 		auto data = new JSONArray;
+		std::map<JSONObject*, unsigned int> objCounts;
 		for (UnitAny *pItem = unit->pInventory->pFirstItem; pItem; pItem = pItem->pItemData->pNextInvItem) {
 			if (pItem->pItemData->NodePage == NODEPAGE_EQUIP &&
 				!Toggles["Include Equipment"].state){
@@ -344,8 +347,24 @@ void StashExport::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
 			if (name.find("Potion") == std::string::npos
 				&& name.find("Scroll") == std::string::npos
 				&& name.find("Tome") == std::string::npos){ // skip potions & scrolls in the output
-				data->add(stash);
+				
+				auto item = (JSONObject*)data->contains(stash);
+				if (item){
+					// Item already found, track the count
+					if (objCounts[item]){
+						objCounts[item]++;
+					}
+					else{
+						objCounts[item] = 2u;
+					}
+				}
+				else{
+					data->add(stash);
+				}
 			}
+		}
+		for (auto it = objCounts.begin(); it != objCounts.end(); it++){
+			it->first->set("count", (int)it->second);
 		}
 
 		std::string buffer;
@@ -369,6 +388,7 @@ void StashExport::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
 		
 		file.write(buffer.c_str(), buffer.length());
 		delete data;
+		PrintText(White, "Exported stash to: %s", path.c_str());
 	}
 	for (map<string, Toggle>::iterator it = Toggles.begin(); it != Toggles.end(); it++) {
 		if (key == (*it).second.toggle) {

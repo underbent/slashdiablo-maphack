@@ -32,13 +32,14 @@ public:
 class DrawDirective {
 private:
 	int frameCount;
-	unsigned char maxGhost;
 	bool updatePending;
 	AsyncDrawBuffer buffer;
 	bool forcedUpdate;
 	bool synchronous;
 	void drawInternal(fpDirector director);
 public:
+	unsigned char maxGhost;
+
 	DrawDirective(bool synchronous, unsigned char _maxGhost);
 	~DrawDirective();
 	void draw(fpDirector director);

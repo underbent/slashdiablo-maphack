@@ -316,7 +316,7 @@ bool Tables::initTables(){
 		success &= TableReader::loadMPQData("SetItems", SetItems);
 
 		UniqueItems.removeWhere([](JSONElement* obj){
-			return ((JSONObject*)obj)->getString("code").length() == 0;
+			return ((JSONObject*)obj)->getString("index").compare("Expansion") == 0;
 		});
 		SetItems.removeWhere([](JSONElement* obj){
 			return ((JSONObject*)obj)->getString("item").length() == 0;

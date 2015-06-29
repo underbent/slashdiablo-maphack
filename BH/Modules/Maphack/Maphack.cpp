@@ -76,6 +76,8 @@ void Maphack::ReadConfig() {
 	Toggles["Infravision"] = BH::config->ReadToggle("Infravision", "None", true);
 	Toggles["Remove Shake"] = BH::config->ReadToggle("Remove Shake", "None", false);
 	Toggles["Display Level Names"] = BH::config->ReadToggle("Display Level Names", "None", true);
+
+	automapDraw.maxGhost = BH::config->ReadInt("Minimap Max Ghost", 5);
 }
 
 void Maphack::ResetRevealed() {
@@ -169,6 +171,7 @@ void Maphack::OnLoad() {
 	options.push_back("Act");
 	options.push_back("Level");
 	new Combohook(settingsTab, 100, Y, 70, &revealType, options);
+
 }
 
 void Maphack::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {

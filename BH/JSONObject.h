@@ -20,8 +20,8 @@ enum SerializationOptions {
 	SER_OPT_FORMATTED = 1
 };
 
-std::string Json_Escape(std::string input);
-std::string Json_Unescape(std::string input);
+std::string Json_Escape(const std::string &input);
+std::string Json_Unescape(const std::string &input);
 
 class JSONWriter {
 private:
@@ -205,5 +205,10 @@ public:
 	std::vector<std::unique_ptr<JSONElement>>::iterator end() { return _elements.end(); }
 
 	JSONElement* find(std::string path) const;
+
+	// Searches through the array for an element equal to the specified target element
+	// Returns: The element contained in the array or null
+	JSONElement* contains(JSONElement* target) const;
+
 	bool equals(JSONElement *other);
 };

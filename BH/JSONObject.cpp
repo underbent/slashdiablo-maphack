@@ -12,12 +12,25 @@ void string_AppendFormat(std::string &buffer, const char* format, ...){
 	buffer.append(szBuffer);
 }
 
-std::string Json_Escape(std::string input){
-	// TODO
-	return input;
+std::string Json_Escape(const std::string &input){
+	std::ostringstream ss;
+	for (auto iter = input.cbegin(); iter != input.cend(); iter++) {
+		switch (*iter) {
+		case '\\': ss << "\\\\"; break;
+		case '"': ss << "\\\""; break;
+		case '/': ss << "\\/"; break;
+		case '\b': ss << "\\b"; break;
+		case '\f': ss << "\\f"; break;
+		case '\n': ss << "\\n"; break;
+		case '\r': ss << "\\r"; break;
+		case '\t': ss << "\\t"; break;
+		default: ss << *iter; break;
+		}
+	}
+	return ss.str();
 }
 
-std::string Json_Unescape(std::string input){
+std::string Json_Unescape(const std::string &input){
 	// TODO
 	return input;
 }
@@ -229,7 +242,7 @@ JSONString::JSONString(std::string value) : _value(value){
 bool JSONString::serialize(JSONWriter &writer){
 	if (_value.length() > 0){
 		std::string v;
-		string_AppendFormat(v, "\"%s\"", _value.c_str());
+		string_AppendFormat(v, "\"%s\"", Json_Escape(_value).c_str());
 		writer.writeValue(v);
 		return true;
 	}
@@ -583,6 +596,20 @@ JSONElement* JSONArray::find(std::string path) const{
 		}
 	}
 	return item;
+}
+
+// Searches through the array for an element equal to the specified target element
+// Returns: The element contained in the array or null
+JSONElement* JSONArray::contains(JSONElement* target) const {
+	if (target){
+		for (auto it = _elements.begin(); it != _elements.end(); it++){
+			if (target->equals(it->get())){
+				return it->get();
+			}
+		}
+	}
+
+	return NULL;
 }
 
 bool JSONArray::equals(JSONElement *other){
