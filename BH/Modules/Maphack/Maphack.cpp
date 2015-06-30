@@ -259,7 +259,8 @@ void Maphack::OnAutomapDraw() {
 	automapDraw.draw([=](AsyncDrawBuffer &automapBuffer) -> void {
 		for (Room1* room1 = player->pAct->pRoom1; room1; room1 = room1->pRoomNext) {
 			for (UnitAny* unit = room1->pUnitFirst; unit; unit = unit->pListNext) {
-				POINT automapLoc;
+				//POINT automapLoc;
+				DWORD xPos, yPos;
 
 				// Draw monster on automap
 				if (unit->dwType == UNIT_MONSTER && IsValidMonster(unit) && Toggles["Show Monsters"].state) {
@@ -298,8 +299,11 @@ void Maphack::OnAutomapDraw() {
 						}
 					}
 
-					Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pPath->xPos, unit->pPath->yPos);
-					automapBuffer.push([immunityText, color, automapLoc]()->void{
+					xPos = unit->pPath->xPos;
+					yPos = unit->pPath->yPos;
+					automapBuffer.push([immunityText, color, xPos, yPos]()->void{
+						POINT automapLoc;
+						Drawing::Hook::ScreenToAutomap(&automapLoc, xPos, yPos);
 						if (immunityText.length() > 0)
 							Drawing::Texthook::Draw(automapLoc.x, automapLoc.y - 8, Drawing::Center, 6, White, immunityText);
 						Drawing::Crosshook::Draw(automapLoc.x, automapLoc.y, color);
@@ -325,8 +329,11 @@ void Maphack::OnAutomapDraw() {
 						break;
 					}
 
-					Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pPath->xPos, unit->pPath->yPos);
-					automapBuffer.push([color, unit, automapLoc]()->void{
+					xPos = unit->pPath->xPos;
+					yPos = unit->pPath->yPos;					
+					automapBuffer.push([color, unit, xPos, yPos]()->void{
+						POINT automapLoc;
+						Drawing::Hook::ScreenToAutomap(&automapLoc, xPos, yPos);
 						Drawing::Boxhook::Draw(automapLoc.x - 1, automapLoc.y - 1, 2, 2, color, Drawing::BTHighlight);
 					});
 				}
@@ -342,8 +349,12 @@ void Maphack::OnAutomapDraw() {
 						for (vector<Rule*>::iterator it = MapRuleList.begin(); it != MapRuleList.end(); it++) {
 							if ((*it)->Evaluate(&uInfo, NULL)) {
 								auto color = TextColorMap[(*it)->action.colorOnMap];
-								Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pItemPath->dwPosX, unit->pItemPath->dwPosY);
-								automapBuffer.push([color, unit, automapLoc]()->void{
+								
+								xPos = unit->pItemPath->dwPosX;
+								yPos = unit->pItemPath->dwPosY;
+								automapBuffer.push([color, unit, xPos, yPos]()->void{
+									POINT automapLoc;
+									Drawing::Hook::ScreenToAutomap(&automapLoc, xPos, yPos);
 									Drawing::Boxhook::Draw(automapLoc.x - 4, automapLoc.y - 4, 8, 8, color, Drawing::BTHighlight);
 								});
 								break;
@@ -355,8 +366,11 @@ void Maphack::OnAutomapDraw() {
 					}
 				}
 				else if (unit->dwType == UNIT_OBJECT && !unit->dwMode /* Not opened */ && Toggles["Show Chests"].state && IsObjectChest(unit->pObjectData->pTxt)) {
-					Drawing::Hook::ScreenToAutomap(&automapLoc, unit->pObjectPath->dwPosX, unit->pObjectPath->dwPosY);
-					automapBuffer.push([automapLoc]()->void{
+					xPos = unit->pObjectPath->dwPosX;
+					yPos = unit->pObjectPath->dwPosY;
+					automapBuffer.push([xPos, yPos]()->void{
+						POINT automapLoc;
+						Drawing::Hook::ScreenToAutomap(&automapLoc, xPos, yPos);
 						Drawing::Boxhook::Draw(automapLoc.x - 1, automapLoc.y - 1, 2, 2, 255, Drawing::BTHighlight);
 					});
 				}
