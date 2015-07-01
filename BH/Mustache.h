@@ -1,3 +1,7 @@
+/*
+Copyright: Chris Kellner 2015
+License: MIT
+*/
 #pragma once
 #include <string>
 #include <functional>

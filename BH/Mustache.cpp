@@ -1,3 +1,7 @@
+/*
+Copyright: Chris Kellner 2015
+License: MIT
+*/
 #include "Mustache.h"
 #include "Common.h"
 #include <list>

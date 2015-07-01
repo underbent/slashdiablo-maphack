@@ -1,3 +1,7 @@
+/*
+Copyright: Chris Kellner 2015
+License: MIT
+*/
 #pragma once
 #include <memory>
 #include <vector>

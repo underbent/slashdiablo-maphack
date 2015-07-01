@@ -1,3 +1,7 @@
+/*
+Copyright: Chris Kellner 2015
+License: MIT
+*/
 #include "JSONObject.h"
 #include <stdarg.h>
 #include <assert.h>
