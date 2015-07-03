@@ -182,7 +182,7 @@ void ScreenInfo::drawExperienceInfo(){
 	int cLevel = (int)D2COMMON_GetUnitStat(pUnit, STAT_LEVEL, 0);
 	if (startLevel == 0) { startLevel = cLevel; }
 
-	char sExp[30] = { 0 };
+	char sExp[255] = { 0 };
 	double oldPctExp = ((double)startExperience - ExpByLevel[startLevel - 1]) / (ExpByLevel[startLevel] - ExpByLevel[startLevel - 1]) * 100.0;
 	double pExp = ((double)cExp - ExpByLevel[cLevel - 1]) / (ExpByLevel[cLevel] - ExpByLevel[cLevel - 1]) * 100.0;
 	double expGainPct = pExp - oldPctExp;
