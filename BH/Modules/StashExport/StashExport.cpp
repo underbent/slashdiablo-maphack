@@ -322,6 +322,7 @@ void StashExport::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
 		}
 
 		UnitAny *unit = D2CLIENT_GetPlayerUnit();
+		if (!unit) return;
 
 		// Make sure the directory exists
 		CreateDirectory((BH::path + "\\stash\\").c_str(), NULL);
