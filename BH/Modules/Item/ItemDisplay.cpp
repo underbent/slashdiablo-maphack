@@ -225,30 +225,40 @@ bool IntegerCompare(unsigned int Lvalue, BYTE operation, unsigned int Rvalue) {
 	}
 }
 
-void InitializeItemRules() {
-	vector<pair<string, string>> rules = BH::config->ReadMapList("ItemDisplay");
-	for (unsigned int i = 0; i < rules.size(); i++) {
-		string buf;
-		stringstream ss(rules[i].first);
-		vector<string> tokens;
-		while (ss >> buf) {
-			tokens.push_back(buf);
+namespace ItemDisplay {
+	bool item_display_initialized = false;
+	void InitializeItemRules() {
+		if (item_display_initialized) return;
+		if (!IsInitialized()){
+			return;
 		}
 
-		LastConditionType = CT_None;
-		Rule *r = new Rule();
-		vector<Condition*> RawConditions;
-		for (vector<string>::iterator tok = tokens.begin(); tok < tokens.end(); tok++) {
-			Condition::BuildConditions(RawConditions, (*tok));
-		}
-		Condition::ProcessConditions(RawConditions, r->conditions);
-		BuildAction(&(rules[i].second), &(r->action));
+		item_display_initialized = true;
+		vector<pair<string, string>> rules = BH::config->ReadMapList("ItemDisplay");
+		for (unsigned int i = 0; i < rules.size(); i++) {
+			string buf;
+			stringstream ss(rules[i].first);
+			vector<string> tokens;
+			while (ss >> buf) {
+				tokens.push_back(buf);
+			}
 
-		RuleList.push_back(r);
-		if (r->action.colorOnMap.length() > 0) {
-			MapRuleList.push_back(r);
-		} else if (r->action.name.length() == 0) {
-			IgnoreRuleList.push_back(r);
+			LastConditionType = CT_None;
+			Rule *r = new Rule();
+			vector<Condition*> RawConditions;
+			for (vector<string>::iterator tok = tokens.begin(); tok < tokens.end(); tok++) {
+				Condition::BuildConditions(RawConditions, (*tok));
+			}
+			Condition::ProcessConditions(RawConditions, r->conditions);
+			BuildAction(&(rules[i].second), &(r->action));
+
+			RuleList.push_back(r);
+			if (r->action.colorOnMap.length() > 0) {
+				MapRuleList.push_back(r);
+			}
+			else if (r->action.name.length() == 0) {
+				IgnoreRuleList.push_back(r);
+			}
 		}
 	}
 }

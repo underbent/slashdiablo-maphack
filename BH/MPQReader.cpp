@@ -1,7 +1,6 @@
 #include "MPQReader.h"
 #include "BH.h"
 
-
 std::map<std::string, MPQData*> MpqDataMap;
 
 #define SFILE_INVALID_SIZE 0xFFFFFFFF
@@ -80,7 +79,6 @@ MPQData::MPQData(MPQFile *file) : error(ERROR_SUCCESS) {
 }
 MPQData::~MPQData() {}
 
-
 // To handle servers with customized mpq files, try to read Patch_D2.mpq using Stormlib
 // (http://www.zezula.net/en/mpq/stormlib.html). We load the StormLib dll with LoadLibrary
 // to avoid imposing any run- or compile-time dependencies on the user. If we can't load
@@ -100,6 +98,11 @@ bool ReadMPQFiles(std::string fileName) {
 		SFileReadFile = (MPQReadFile)GetProcAddress(dllHandle, "SFileReadFile");
 		SFileCloseFile = (MPQCloseFile)GetProcAddress(dllHandle, "SFileCloseFile");
 
+		HANDLE pMutex = CreateMutex(NULL, true, "Global\BH_PATCH_D2_MPQ_MUTEX");
+		WaitForSingleObject(
+			pMutex,    // handle to mutex
+			INFINITE);  // no time-out interval
+
 		if (SFileOpenArchive && SFileCloseArchive && SFileOpenFileEx && SFileCloseFile && SFileGetFileSize && SFileReadFile) {
 			// Copy the MPQ file to avoid sharing access violations
 			std::string copyFileName(fileName);
@@ -107,6 +110,7 @@ bool ReadMPQFiles(std::string fileName) {
 			if (start_pos != std::string::npos) {
 				copyFileName.replace(start_pos, 12, "Patch_D2.copy.mpq");
 			}
+
 			std::ifstream src(fileName.c_str(), std::ios::binary);
 			std::ofstream dst(copyFileName.c_str(), std::ios::binary);
 			dst << src.rdbuf();
@@ -114,6 +118,7 @@ bool ReadMPQFiles(std::string fileName) {
 			src.close();
 
 			MPQArchive archive(copyFileName.c_str());
+
 			const int NUM_MPQS = 13;
 			std::string mpqFiles[NUM_MPQS] = {
 				"UniqueItems",
@@ -144,6 +149,9 @@ bool ReadMPQFiles(std::string fileName) {
 			}
 		}
 		FreeLibrary(dllHandle);
+
+		ReleaseMutex(pMutex);
+		CloseHandle(pMutex);
 	}
 	return true;
 }

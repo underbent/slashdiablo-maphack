@@ -27,9 +27,6 @@ void Item::OnLoad() {
 	Toggles["Allow Unknown Items"] = BH::config->ReadToggle("Allow Unknown Items", "None", false);
 
 	//InitializeMPQData();
-	if (Toggles["Advanced Item Display"].state) {
-		InitializeItemRules();
-	}
 
 	showPlayer = BH::config->ReadKey("Show Players Gear", "VK_0");
 
@@ -80,6 +77,10 @@ void Item::OnUnload() {
 void Item::OnLoop() {
 	if (!D2CLIENT_GetUIState(0x01))
 		viewingUnit = NULL;
+	
+	if (Toggles["Advanced Item Display"].state) {
+		ItemDisplay::InitializeItemRules();
+	}
 
 	if (viewingUnit && viewingUnit->dwUnitId) {
 		if (!viewingUnit->pInventory){

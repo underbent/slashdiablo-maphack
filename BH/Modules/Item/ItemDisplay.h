@@ -436,7 +436,9 @@ extern vector<Rule*> RuleList;
 extern vector<Rule*> MapRuleList;
 extern vector<Rule*> IgnoreRuleList;
 
-void InitializeItemRules();
+namespace ItemDisplay {
+	void InitializeItemRules();
+}
 StatProperties *GetStatProperties(unsigned int stat);
 void BuildAction(string *str, Action *act);
 void HandleUnknownItemCode(char *code, char *tag);
