@@ -63,7 +63,7 @@ bool BH::Startup(HINSTANCE instance, VOID* reserved) {
 
 
 	initialized = false;
-
+	Initialize();
 	return true;
 }
 
@@ -72,9 +72,12 @@ DWORD WINAPI LoadMPQData(VOID* lpvoid){
 	std::string patchPath;
 	UINT ret = GetModuleFileName(NULL, szFileName, 1024);
 	patchPath.assign(szFileName);
-	size_t start_pos = patchPath.find("Game.exe");
+	size_t start_pos = patchPath.rfind("\\");
 	if (start_pos != std::string::npos) {
-		patchPath.replace(start_pos, 8, "Patch_D2.mpq");
+		start_pos++;
+		if (start_pos < patchPath.size()){
+			patchPath.replace(start_pos, patchPath.size() - start_pos, "Patch_D2.mpq");
+		}
 	}
 
 	ReadMPQFiles(patchPath);
