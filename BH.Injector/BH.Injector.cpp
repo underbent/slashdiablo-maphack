@@ -153,6 +153,9 @@ int main(int argc, const char* argv[]) {
 				(*window)->Unload();
 		break;
 		case 2://Autoinject
+			for (vector<DiabloWindow*>::iterator window = Windows.begin(); window < Windows.end(); window++) {
+				(*window)->Inject();
+			}
 			autoinject_thread = thread(DoAutoInject);
 			printf("Auto injecting into new instances. Press any key to stop.");
 			_getch();
