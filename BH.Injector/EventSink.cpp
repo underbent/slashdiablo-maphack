@@ -25,12 +25,7 @@ HRESULT EventSink::QueryInterface(REFIID riid, void** ppv) {
 
 extern string patchPath;
 
-void InjectIt(DiabloWindow* dw)
-{
-	dw->Inject();
-}
-
-BOOL CALLBACK EnumWindowsProcMy(HWND hwnd, LPARAM lParam) {
+BOOL CALLBACK EnumWindowsProcAutoInject(HWND hwnd, LPARAM lParam) {
 	DWORD lpdwProcessId;
 	GetWindowThreadProcessId(hwnd, &lpdwProcessId);
 	wchar_t szClassName[1024];
@@ -40,7 +35,7 @@ BOOL CALLBACK EnumWindowsProcMy(HWND hwnd, LPARAM lParam) {
 		if (lpdwProcessId == lParam) {
 			printf("\nDiablo 2 instance found. Injecting... \n");
 
-			
+			// If no windows were open when injector was loaded, patchPath still needs to be set
 			char szFileName[1024];
 			HANDLE hProcess = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, lpdwProcessId);
 			if (hProcess) {
@@ -52,8 +47,7 @@ BOOL CALLBACK EnumWindowsProcMy(HWND hwnd, LPARAM lParam) {
 				}
 			}
 			DiabloWindow dw = DiabloWindow(hwnd);
-			std::thread t(InjectIt, &dw);
-			t.join();
+			dw.Inject();
 			return FALSE;
 		}
 	}
@@ -82,7 +76,7 @@ HRESULT EventSink::Indicate(long lObjectCount,
 					if ((cn.vt != VT_NULL) && (cn.vt != VT_EMPTY))
 					{
 						processID = _wtol(cn.bstrVal);
-						EnumWindows(EnumWindowsProcMy, processID);
+						EnumWindows(EnumWindowsProcAutoInject, processID);
 					}			
 				}
 				VariantClear(&cn);
