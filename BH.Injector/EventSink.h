@@ -1,4 +1,3 @@
-// EventSink.h
 #ifndef EVENTSINK_H
 #define EVENTSINK_H
 
@@ -36,4 +35,4 @@ public:
 		);
 };
 
-#endif    // end of EventSink.h
+#endif

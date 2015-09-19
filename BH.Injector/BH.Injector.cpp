@@ -157,7 +157,7 @@ int main(int argc, const char* argv[]) {
 				(*window)->Inject();
 			}
 			autoinject_thread = thread(DoAutoInject);
-			printf("Auto injecting into new instances. Press any key to stop.");
+			printf("Auto injecting into new instances. Press any key to stop.\n");
 			_getch();
 			noPause = true;
 			terminate_autoinject = true;
@@ -182,17 +182,16 @@ int main(int argc, const char* argv[]) {
 }
 
 // Code taken from MSDN https://msdn.microsoft.com/en-us/library/aa390423%28v=vs.85%29.aspx
+// This sets up a COM interface to WMI for notifications on new processes with the image name 'Game.exe'
+// The notification is handled in EventSink:Indicate
 void DoAutoInject()
 {
 	HRESULT hres;
 	printf("\n");
+
 	// Step 1: --------------------------------------------------
 	// Initialize COM. ------------------------------------------
-	if (!cInjector::EnableDebugPriv()) {
-		printf("\tYou must run this injector as an adminstrator!\nIf you're using Windows Vista or Windows 7, right click and choose \'Run as Adminstrator\'");
-		system("PAUSE");
-		return;
-	}
+
 	hres = CoInitializeEx(0, COINIT_MULTITHREADED);
 	if (FAILED(hres)) {
 		cout << "Failed to initialize COM library. Error code = 0x"
