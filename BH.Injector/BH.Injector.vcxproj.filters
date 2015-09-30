@@ -23,6 +23,9 @@
     <ClCompile Include="PEStructs.cpp">
       <Filter>Common Files</Filter>
     </ClCompile>
+    <ClCompile Include="EventSink.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BH.Injector.h">
@@ -33,6 +36,9 @@
     </ClInclude>
     <ClInclude Include="PEStructs.h">
       <Filter>Common Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EventSink.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

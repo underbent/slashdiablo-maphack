@@ -2,7 +2,7 @@
 #include <vector>
 #include <Windows.h>
 #include "Common.h"
-
+#include <memory>
 using namespace std;
 
 void Tokenize(const string& str,
