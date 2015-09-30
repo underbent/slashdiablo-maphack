@@ -98,7 +98,7 @@ bool ReadMPQFiles(std::string fileName) {
 		SFileReadFile = (MPQReadFile)GetProcAddress(dllHandle, "SFileReadFile");
 		SFileCloseFile = (MPQCloseFile)GetProcAddress(dllHandle, "SFileCloseFile");
 
-		HANDLE pMutex = CreateMutex(NULL, true, "Global\BH_PATCH_D2_MPQ_MUTEX");
+		HANDLE pMutex = CreateMutex(NULL, true, "Global\\BH_PATCH_D2_MPQ_MUTEX");
 		WaitForSingleObject(
 			pMutex,    // handle to mutex
 			INFINITE);  // no time-out interval
