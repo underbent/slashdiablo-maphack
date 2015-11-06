@@ -37,7 +37,7 @@ class ScreenInfo : public Module {
 		bool DiabloBlocked;
 		bool BaalBlocked;
 		bool ReceivedQuestPacket;
-		int startExperience;
+		DWORD startExperience;
 		int startLevel;
 
 		void ScreenInfo::drawExperienceInfo();

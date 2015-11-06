@@ -176,7 +176,7 @@ void ScreenInfo::OnDraw() {
 void ScreenInfo::drawExperienceInfo(){
 	UnitAny* pUnit = D2CLIENT_GetPlayerUnit();
 	int nTime = ((GetTickCount() - gameTimer) / 1000);
-	int cExp = (int)D2COMMON_GetUnitStat(pUnit, STAT_EXP, 0);
+	DWORD cExp = (DWORD)D2COMMON_GetUnitStat(pUnit, STAT_EXP, 0);
 	if (startExperience == 0){ startExperience = cExp; }
 
 	int cLevel = (int)D2COMMON_GetUnitStat(pUnit, STAT_LEVEL, 0);
