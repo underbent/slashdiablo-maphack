@@ -29,8 +29,10 @@ namespace BH {
 	extern map<string, Toggle>* MiscToggles;
 	extern map<string, Toggle>* MiscToggles2;
 	extern bool cGuardLoaded;
+	extern bool initialized;
 	extern Patch* oogDraw;
 
 	extern bool Startup(HINSTANCE instance, VOID* reserved);
+	extern "C" __declspec(dllexport) void Initialize();
 	extern bool Shutdown();
 };

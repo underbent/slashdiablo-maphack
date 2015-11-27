@@ -54,5 +54,5 @@ extern std::map<std::string, InventoryLayout*> InventoryLayoutMap;
 
 #define STAT_NUMBER(name) (StatMap[name]->ID)
 
-
+bool IsInitialized();
 void InitializeMPQData();

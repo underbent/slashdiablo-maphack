@@ -6,8 +6,8 @@ Module::Module(string name) : name(name), active(false) {
 }
 
 Module::~Module() {
-	Unload();
-	BH::moduleManager->Remove(this);
+	//Unload();
+	//BH::moduleManager->Remove(this);
 }
 
 void Module::Load() {
@@ -63,7 +63,7 @@ void Module::Unload() {
 	__unhook(&ModuleManager::OnGamePacketRecv, BH::moduleManager, &Module::OnGamePacketRecv, this);
 
 	__unhook(&ModuleManager::OnChatMsg, BH::moduleManager, &Module::OnChatMsg, this);
-	__unhook(&Module::UserInput, this, &Module::OnUserInput, this);
+	//__unhook(&Module::UserInput, this, &Module::OnUserInput, this);
 
 	active = false;
 	OnUnload();

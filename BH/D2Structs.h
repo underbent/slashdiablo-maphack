@@ -375,13 +375,24 @@ struct StatList {
 	WORD wSetStatCount;				//0x4C
 };
 
+struct InventoryStore
+{
+	DWORD pFirstItem;				//0x00
+	DWORD pLastItem;				//0x04
+	BYTE Width;						//0x08
+	BYTE Height;					//0x09
+	BYTE unk[2];					//0x0A
+	DWORD pArray;					//0x0C UnitAny* [height][width]
+};
+
 struct Inventory {
 	DWORD dwSignature;				//0x00
 	BYTE *bGame1C;					//0x04
 	UnitAny *pOwner;				//0x08
 	UnitAny *pFirstItem;			//0x0C
 	UnitAny *pLastItem;				//0x10
-	DWORD _1[2];					//0x14
+	InventoryStore *pStores;		//0x14 InventoryStore* [count]
+	DWORD dwStoresCount;			//0x18
 	DWORD dwLeftItemUid;			//0x1C
 	UnitAny *pCursorItem;			//0x20
 	DWORD dwOwnerId;				//0x24
@@ -425,18 +436,20 @@ struct ItemData {
 	DWORD _3[3];					//0x1C
 	DWORD dwQuality2;				//0x28
 	DWORD dwItemLevel;				//0x2C
-	DWORD _4[2];					//0x30
-	WORD wPrefix;					//0x38
-	WORD _5[2];						//0x3A
-	WORD wSuffix;					//0x3E
-	DWORD _6;						//0x40
+	WORD wVersion;					//0x30
+	WORD wRarePrefix;				//0x32
+	WORD wRareSuffix;				//0x34
+	WORD _14;						//0x36
+	WORD wPrefix[3];				//0x38
+	WORD wSuffix[3];				//0x3E
 	BYTE BodyLocation;				//0x44
 	BYTE ItemLocation;				//0x45 Non-body/belt location (Body/Belt == 0xFF)
-	BYTE _7;						//0x46
-	WORD _8;						//0x47
-	DWORD _9[4];					//0x48
+	BYTE EarLevel;					//0x46
+	BYTE VarGfx;					//0x47
+	CHAR personalizedName[16];		//0x4A
+	WORD _10;						//0x5A
 	Inventory *pOwnerInventory;		//0x5C
-	DWORD _10;						//0x60
+	UnitAny *pPrevInvItem;			//0x60
 	UnitAny *pNextInvItem;			//0x64
 	BYTE _11;						//0x68
 	BYTE NodePage;					//0x69 Actual location, this is the most reliable by far

@@ -341,12 +341,15 @@ void ItemMover::OnKey(bool up, BYTE key, LPARAM lParam, bool* block)  {
 		char firstChar = key == HealKey ? 'h' : 'm';
 		char minPotion = 127;
 		DWORD minItemId = 0;
+		bool isBelt = false;
 		for (UnitAny *pItem = unit->pInventory->pFirstItem; pItem; pItem = pItem->pItemData->pNextInvItem) {
-			if (pItem->pItemData->ItemLocation == STORAGE_INVENTORY) {
+			if (pItem->pItemData->ItemLocation == STORAGE_INVENTORY ||
+				pItem->pItemData->ItemLocation == STORAGE_NULL && pItem->pItemData->NodePage == NODEPAGE_BELTSLOTS) {
 				char* code = D2COMMON_GetItemText(pItem->dwTxtFileNo)->szCode;
 				if (code[0] == firstChar && code[1] == 'p' && code[2] < minPotion) {
 					minPotion = code[2];
 					minItemId = pItem->dwUnitId;
+					isBelt = pItem->pItemData->NodePage == NODEPAGE_BELTSLOTS;
 				}
 			}
 			//char *code = D2COMMON_GetItemText(pItem->dwTxtFileNo)->szCode;
@@ -359,12 +362,19 @@ void ItemMover::OnKey(bool up, BYTE key, LPARAM lParam, bool* block)  {
 			//}
 		}
 		if (minItemId > 0) {
-			//PrintText(1, "Sending packet %d, %d, %d", minItemId, unit->pPath->xPos, unit->pPath->yPos);
-			BYTE PacketData[13] = {0x20,0,0,0,0,0,0,0,0,0,0,0,0};
-			*reinterpret_cast<int*>(PacketData + 1) = minItemId;
-			*reinterpret_cast<WORD*>(PacketData + 5) = (WORD)unit->pPath->xPos;
-			*reinterpret_cast<WORD*>(PacketData + 9) = (WORD)unit->pPath->yPos;
-			D2NET_SendPacket(13, 0, PacketData);
+			if (isBelt){
+				BYTE PacketData[13] = { 0x26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+				*reinterpret_cast<int*>(PacketData + 1) = minItemId;
+				D2NET_SendPacket(13, 0, PacketData);
+			}
+			else{
+				//PrintText(1, "Sending packet %d, %d, %d", minItemId, unit->pPath->xPos, unit->pPath->yPos);
+				BYTE PacketData[13] = { 0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+				*reinterpret_cast<int*>(PacketData + 1) = minItemId;
+				*reinterpret_cast<WORD*>(PacketData + 5) = (WORD)unit->pPath->xPos;
+				*reinterpret_cast<WORD*>(PacketData + 9) = (WORD)unit->pPath->yPos;
+				D2NET_SendPacket(13, 0, PacketData);
+			}
 			*block = true;
 		}
 	}

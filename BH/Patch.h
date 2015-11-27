@@ -6,7 +6,7 @@
 class Patch;
 
 enum Dll { D2CLIENT=0,D2COMMON,D2GFX,D2LANG,D2WIN,D2NET,D2GAME,D2LAUNCH,FOG,BNCLIENT, STORM, D2CMP, D2MULTI, D2MCPCLIENT};
-enum PatchType { Jump=0, Call };
+enum PatchType { Jump=0, Call, NOP };
 class Patch {
 	private:
 		static std::vector<Patch*> Patches;

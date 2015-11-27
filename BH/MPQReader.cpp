@@ -1,5 +1,5 @@
 #include "MPQReader.h"
-
+#include "BH.h"
 
 std::map<std::string, MPQData*> MpqDataMap;
 
@@ -55,7 +55,6 @@ MPQData::MPQData(MPQFile *file) : error(ERROR_SUCCESS) {
 
 	// TODO: need to remove \r, \n chars here
 	if (error == ERROR_SUCCESS) {
-		FILE *phil = fopen("C:\\philtest.txt", "a+"); fprintf(phil, "STARTING A NEW FILE %s\n", file->name.c_str());
 		std::stringstream ss(buffer);
 		std::string line;
 		std::string field;
@@ -63,7 +62,6 @@ MPQData::MPQData(MPQFile *file) : error(ERROR_SUCCESS) {
 			std::stringstream hss(line);
 			while (std::getline(hss, field, '\t')) {
 				fields.push_back(field);
-				fprintf(phil, "Got header field name: %s\n", field.c_str());
 			}
 			while (std::getline(ss, line)) {
 				std::map<std::string, std::string> linedata;
@@ -76,27 +74,23 @@ MPQData::MPQData(MPQFile *file) : error(ERROR_SUCCESS) {
 				}
 				data.push_back(linedata);
 			}
-			fprintf(phil, "Number of data lines: %d\n", data.size());
 		}
-		fclose(phil);
 	}
 }
 MPQData::~MPQData() {}
 
-
-bool ReadMPQFiles() {
-	FILE *phil;
-	phil = fopen("C:\\philtest.txt", "a+"); fprintf(phil, "phil reading files\n"); fclose(phil);
-	int fileCount = 0;
-	HMODULE hModule = GetModuleHandle("StormLib.dll");
-	if (hModule) {
-		phil = fopen("C:\\philtest.txt", "a+"); fprintf(phil, "phil dll already loaded\n"); fclose(phil);
-	}
-	//HMODULE dllHandle = LoadLibrary("StormLib.dll");
-	HMODULE dllHandle = LoadLibraryEx("StormLib.dll", NULL, LOAD_IGNORE_CODE_AUTHZ_LEVEL);
-	phil = fopen("C:\\philtest.txt", "a+"); fprintf(phil, "here with xhandle %d\n", (int)dllHandle); fclose(phil);
+// To handle servers with customized mpq files, try to read Patch_D2.mpq using Stormlib
+// (http://www.zezula.net/en/mpq/stormlib.html). We load the StormLib dll with LoadLibrary
+// to avoid imposing any run- or compile-time dependencies on the user. If we can't load
+// the dll or read the mpq, we will fall back on a hard-coded list of the standard items.
+//
+// We do all this in the injector and write the info to a temp file because of problems
+// calling LoadLibrary in the injected dll.
+// Update: Can now load the dll from BH.dll, so no need to write to external files anymore
+bool ReadMPQFiles(std::string fileName) {
+	int successfulFileCount = 0, desiredFileCount = 0;
+	HMODULE dllHandle = LoadLibrary((BH::path + "StormLib.dll").c_str());
 	if (dllHandle) {
-		phil = fopen("C:\\philtest.txt", "a+"); fprintf(phil, "opened dll!\n"); fclose(phil);
 		SFileOpenArchive = (MPQOpenArchive)GetProcAddress(dllHandle, "SFileOpenArchive");
 		SFileCloseArchive = (MPQCloseArchive)GetProcAddress(dllHandle, "SFileCloseArchive");
 		SFileOpenFileEx = (MPQOpenFile)GetProcAddress(dllHandle, "SFileOpenFileEx");
@@ -104,39 +98,91 @@ bool ReadMPQFiles() {
 		SFileReadFile = (MPQReadFile)GetProcAddress(dllHandle, "SFileReadFile");
 		SFileCloseFile = (MPQCloseFile)GetProcAddress(dllHandle, "SFileCloseFile");
 
+		HANDLE pMutex = CreateMutex(NULL, true, "Global\\BH_PATCH_D2_MPQ_MUTEX");
+		WaitForSingleObject(
+			pMutex,    // handle to mutex
+			INFINITE);  // no time-out interval
+
 		if (SFileOpenArchive && SFileCloseArchive && SFileOpenFileEx && SFileCloseFile && SFileGetFileSize && SFileReadFile) {
-			HANDLE hMpq = NULL;
-			MPQArchive archive("phil.mpq"); // phil fixme phil
-			if (archive.error == ERROR_SUCCESS) {
-				phil = fopen("C:\\philtest.txt", "a+"); fprintf(phil, "opened the archive\n"); fclose(phil);
-				MPQFile armorFile(&archive, "Armor.txt");
-				if (armorFile.error == ERROR_SUCCESS) {
-					fileCount++;
-					MpqDataMap["armor"] = new MPQData(&armorFile);
-				}
-				MPQFile weaponsFile(&archive, "Weapons.txt");
-				if (weaponsFile.error == ERROR_SUCCESS) {
-					fileCount++;
-					MpqDataMap["weapons"] = new MPQData(&weaponsFile);
-				}
-				MPQFile miscFile(&archive, "Misc.txt");
-				if (miscFile.error == ERROR_SUCCESS) {
-					fileCount++;
-					MpqDataMap["misc"] = new MPQData(&miscFile);
-				}
-				MPQFile itemTypesFile(&archive, "ItemTypes.txt");
-				if (itemTypesFile.error == ERROR_SUCCESS) {
-					fileCount++;
-					MpqDataMap["itemtypes"] = new MPQData(&itemTypesFile);
-				}
-				phil = fopen("C:\\philtest.txt", "a+"); fprintf(phil, "file errors %d, %d, %d, %d\n", armorFile.error, weaponsFile.error, miscFile.error, itemTypesFile.error); fclose(phil);
+			// Copy the MPQ file to avoid sharing access violations
+			std::string copyFileName(fileName);
+			size_t start_pos = copyFileName.find("Patch_D2.mpq");
+			if (start_pos != std::string::npos) {
+				copyFileName.replace(start_pos, 12, "Patch_D2.copy.mpq");
 			}
-			phil = fopen("C:\\philtest.txt", "a+"); fprintf(phil, "archive error %d\n", archive.error); fclose(phil);
+
+			std::ifstream src(fileName.c_str(), std::ios::binary);
+			std::ofstream dst(copyFileName.c_str(), std::ios::binary);
+			dst << src.rdbuf();
+			dst.close();
+			src.close();
+
+			MPQArchive archive(copyFileName.c_str());
+
+			const int NUM_MPQS = 13;
+			std::string mpqFiles[NUM_MPQS] = {
+				"UniqueItems",
+				"Armor",
+				"Weapons",
+				"Misc",
+				"ItemTypes",
+				"ItemStatCost",
+				"Inventory",
+				"Properties",
+				"Runes",
+				"SetItems",
+				"skills",
+				"MagicPrefix",
+				"MagicSuffix"
+			};
+			if (archive.error == ERROR_SUCCESS) {
+				for (int i = 0; i < NUM_MPQS; i++){
+					std::string path = "data\\global\\excel\\" + mpqFiles[i] + ".txt";
+					MPQFile mpqFile(&archive, path.c_str()); desiredFileCount++;
+					if (mpqFile.error == ERROR_SUCCESS) {
+						successfulFileCount++;
+						std::string key = mpqFiles[i];
+						std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+						MpqDataMap[key] = new MPQData(&mpqFile);
+					}
+				}
+			}
 		}
 		FreeLibrary(dllHandle);
-	} else {
-		phil = fopen("C:\\philtest.txt", "a+"); fprintf(phil, "couldn't open dll: %d\n", GetLastError()); fclose(phil);
+
+		ReleaseMutex(pMutex);
+		CloseHandle(pMutex);
 	}
-	phil = fopen("C:\\philtest.txt", "a+"); fprintf(phil, "file count is %d\n", fileCount); fclose(phil);
-	return fileCount == 4;
+	return true;
+}
+
+void FindAncestorTypes(std::string type, std::set<std::string>& ancestors, std::map<std::string, std::string>& map1, std::map<std::string, std::string>& map2) {
+	ancestors.insert(type);
+	std::map<std::string, std::string>::iterator it1 = map1.find(type);
+	if (it1 != map1.end()) {
+		FindAncestorTypes(it1->second, ancestors, map1, map2);
+	}
+	std::map<std::string, std::string>::iterator it2 = map2.find(type);
+	if (it2 != map2.end()) {
+		FindAncestorTypes(it2->second, ancestors, map1, map2);
+	}
+}
+
+unsigned int AssignClassFlags(std::string type, std::set<std::string>& ancestors, unsigned int flags) {
+	if (ancestors.find("amaz") != ancestors.end()) {
+		flags |= ITEM_GROUP_AMAZON_WEAPON;
+	} else if (ancestors.find("barb") != ancestors.end()) {
+		flags |= ITEM_GROUP_BARBARIAN_HELM;
+	} else if (ancestors.find("necr") != ancestors.end()) {
+		flags |= ITEM_GROUP_NECROMANCER_SHIELD;
+	} else if (ancestors.find("pala") != ancestors.end()) {
+		flags |= ITEM_GROUP_PALADIN_SHIELD;
+	} else if (ancestors.find("sorc") != ancestors.end()) {
+		flags |= ITEM_GROUP_SORCERESS_ORB;
+	} else if (ancestors.find("assn") != ancestors.end()) {
+		flags |= ITEM_GROUP_ASSASSIN_KATAR;
+	} else if (ancestors.find("drui") != ancestors.end()) {
+		flags |= ITEM_GROUP_DRUID_PELT;
+	}
+	return flags;
 }

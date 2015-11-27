@@ -7,9 +7,13 @@
 
 using namespace Drawing;
 
+map<std::string, Toggle> ScreenInfo::Toggles;
+
 void ScreenInfo::OnLoad() {
+	Toggles["Experience Meter"] = BH::config->ReadToggle("Experience Meter", "VK_NUMPAD7", false);
+
 	automapInfo = BH::config->ReadArray("AutomapInfo");
-	bhText = new Texthook(Perm, 790, 6, "ÿc4BH v0.1.6a (SlashDiablo Branch)");
+	bhText = new Texthook(Perm, 790, 6, "ÿc4BH v0.1.7e (SlashDiablo Branch)");
 	bhText->SetAlignment(Right);
 	if (BH::cGuardLoaded) {
 		Texthook* cGuardText = new Texthook(Perm, 790, 23, "ÿc4cGuard Loaded");
@@ -32,6 +36,9 @@ void ScreenInfo::OnLoad() {
 
 void ScreenInfo::OnGameJoin(const string& name, const string& pass, int diff) {
 	gameTimer = GetTickCount();
+	UnitAny* pUnit = D2CLIENT_GetPlayerUnit();
+	startExperience = (int)D2COMMON_GetUnitStat(pUnit, STAT_EXP, 0);
+	startLevel = (int)D2COMMON_GetUnitStat(pUnit, STAT_LEVEL, 0);
 }
 
 // Right-clicking in the chat console pastes from the clipboard
@@ -160,6 +167,45 @@ void ScreenInfo::OnDraw() {
 			}
 		}
 	}
+
+	if (Toggles["Experience Meter"].state) {
+		drawExperienceInfo();
+	}
+}
+
+void ScreenInfo::drawExperienceInfo(){
+	UnitAny* pUnit = D2CLIENT_GetPlayerUnit();
+	int nTime = ((GetTickCount() - gameTimer) / 1000);
+	DWORD cExp = (DWORD)D2COMMON_GetUnitStat(pUnit, STAT_EXP, 0);
+	if (startExperience == 0){ startExperience = cExp; }
+
+	int cLevel = (int)D2COMMON_GetUnitStat(pUnit, STAT_LEVEL, 0);
+	if (startLevel == 0) { startLevel = cLevel; }
+
+	char sExp[255] = { 0 };
+	double oldPctExp = ((double)startExperience - ExpByLevel[startLevel - 1]) / (ExpByLevel[startLevel] - ExpByLevel[startLevel - 1]) * 100.0;
+	double pExp = ((double)cExp - ExpByLevel[cLevel - 1]) / (ExpByLevel[cLevel] - ExpByLevel[cLevel - 1]) * 100.0;
+	double expGainPct = pExp - oldPctExp;
+	if (cLevel > startLevel){
+		expGainPct = (100 - oldPctExp) + pExp + ((cLevel - startLevel) - 1) * 100;
+	}
+	double expPerSecond = nTime > 0 ? (cExp - startExperience) / (double)nTime : 0;
+	char* unit = "";
+	if (expPerSecond > 1E9){
+		expPerSecond /= 1E9;
+		unit = "B";
+	}
+	else if (expPerSecond > 1E6){
+		expPerSecond /= 1E6;
+		unit = "M";
+	}
+	else if (expPerSecond > 1E3){
+		expPerSecond /= 1E3;
+		unit = "K";
+	}
+	sprintf_s(sExp, "%00.2f%% (%s%00.2f%%) [%s%.2f%s/s]", pExp, expGainPct >= 0 ? "+" : "", expGainPct, expPerSecond >= 0 ? "+" : "", expPerSecond, unit);
+
+	Texthook::Draw(300, 600 - 60, Center, 0, White, "%s", sExp);
 }
 
 void ScreenInfo::OnAutomapDraw() {
@@ -456,6 +502,110 @@ StateCode StateCodes[] = {
 	{"QUICKNESS", 157},
 	{"BLADESHIELD", 158},
 	{"FADE", 159}
+};
+
+long long ExpByLevel[] = {
+	0,
+	500,
+	1500,
+	3750,
+	7875,
+	14175,
+	22680,
+	32886,
+	44396,
+	57715,
+	72144,
+	90180,
+	112725,
+	140906,
+	176132,
+	220165,
+	275207,
+	344008,
+	430010,
+	537513,
+	671891,
+	839864,
+	1049830,
+	1312287,
+	1640359,
+	2050449,
+	2563061,
+	3203826,
+	3902260,
+	4663553,
+	5493363,
+	6397855,
+	7383752,
+	8458379,
+	9629723,
+	10906488,
+	12298162,
+	13815086,
+	15468534,
+	17270791,
+	19235252,
+	21376515,
+	23710491,
+	26254525,
+	29027522,
+	32050088,
+	35344686,
+	38935798,
+	42850109,
+	47116709,
+	51767302,
+	56836449,
+	62361819,
+	68384473,
+	74949165,
+	82104680,
+	89904191,
+	98405658,
+	107672256,
+	117772849,
+	128782495,
+	140783010,
+	153863570,
+	168121381,
+	183662396,
+	200602101,
+	219066380,
+	239192444,
+	261129853,
+	285041630,
+	311105466,
+	339515048,
+	370481492,
+	404234916,
+	441026148,
+	481128591,
+	524840254,
+	572485967,
+	624419793,
+	681027665,
+	742730244,
+	809986056,
+	883294891,
+	963201521,
+	1050299747,
+	1145236814,
+	1248718217,
+	1361512946,
+	1484459201,
+	1618470619,
+	1764543065,
+	1923762030,
+	2097310703,
+	2286478756,
+	2492671933,
+	2717422497,
+	2962400612,
+	3229426756,
+	3520485254,
+	3837739017,
+	9999999999
 };
 
 StateCode GetStateCode(unsigned int nKey) {

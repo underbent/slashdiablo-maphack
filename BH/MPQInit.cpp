@@ -1,6 +1,8 @@
 #include "MPQInit.h"
+#include "MPQReader.h"
 
 unsigned int STAT_MAX;
+bool initialized = false;
 
 std::vector<StatProperties*> AllStatList;
 std::unordered_map<std::string, StatProperties*> StatMap;
@@ -8,6 +10,7 @@ std::map<std::string, ItemAttributes*> ItemAttributeMap;
 std::map<std::string, InventoryLayout*> InventoryLayoutMap;
 
 // These are the standard item attributes (if we can't read the patch mpq file)
+#pragma region DEFAULTS
 ItemAttributes ItemAttributeList[] = {
 	{"Cap", "cap", "Helm", 2, 2, 0, 0, 0, 1, 0, 0, 0, 1},
 	{"Skull Cap", "skp", "Helm", 2, 2, 0, 0, 0, 1, 0, 0, 0, 5},
@@ -1031,181 +1034,295 @@ StatProperties StatPropertiesList[] = {
 	{"Passive Magical Damage Mastery", 9, 0, 50},
 	{"Passive Magical Resistance Reduction", 8, 0, 0}
 };
+#pragma endregion
+
+bool IsInitialized() {
+	return initialized;
+}
 
 // If we find the temp file with MPQ info, use it; otherwise, fall back on the hardcoded lists.
 void InitializeMPQData() {
-	FILE *tempFP = NULL;
-	TCHAR lpTempPathBuffer[2*MAX_PATH];
-	DWORD dwRetVal = GetTempPath(2*MAX_PATH, lpTempPathBuffer);
-	if (dwRetVal > 0 && (dwRetVal + 18) < (2*MAX_PATH)) {
-		strcat_s(lpTempPathBuffer, "D2BH_MPQ_temp.txt");
-	} else {
-		lpTempPathBuffer[0] = 0;
-	}
-	if (lpTempPathBuffer) {
-		std::fstream file(lpTempPathBuffer);
-		if (file.is_open()) {
-			short lastID = -1;
-			char *end;
-			char szLine[256];
-			while(!file.eof()) {
-				file.getline(szLine, 256);
-				std::istringstream lss(szLine);
-				std::vector<std::string> fields;
-				while (!lss.eof()) {
-					std::string field;
-					std::getline(lss, field, ',');
-					fields.push_back(field);
-				}
-				if (fields.size() < 8) {
-					continue;
-				}
-				std::string type = fields.at(0);
-				if (type.compare("ARMOR") == 0 || type.compare("WEAP") == 0 || type.compare("MISC") == 0) {
-					if (fields.size() < 12) {
-						continue;
-					}
-					unsigned int flags = std::strtoul(fields.at(9).c_str(), &end, 10);
-					unsigned int flags2 = std::strtoul(fields.at(10).c_str(), &end, 10);
-					ItemAttributes *attrs = new ItemAttributes();
-					attrs->name = fields.at(1);
-					attrs->code[0] = fields.at(2).c_str()[0];
-					attrs->code[1] = fields.at(2).c_str()[1];
-					attrs->code[2] = fields.at(2).c_str()[2];
-					attrs->code[3] = 0;
-					attrs->category = fields.at(3);
-					attrs->width = fields.at(4).at(0) - '0';
-					attrs->height = fields.at(5).at(0) - '0';
-					attrs->stackable = fields.at(6).at(0) - '0';
-					attrs->useable = fields.at(7).at(0) - '0';
-					attrs->throwable = fields.at(8).at(0) - '0';
-					attrs->itemLevel = 0;
-					attrs->unusedFlags = 0;
-					attrs->flags = flags;
-					attrs->flags2 = flags2;
-					attrs->qualityLevel = fields.at(11).at(0) - '0';
-					ItemAttributeMap[fields.at(2).c_str()] = attrs;
-				} else if (type.compare("STAT") == 0) {
-					unsigned short id = (unsigned short)std::strtoul(fields.at(2).c_str(), &end, 10);
-					if (id > STAT_MAX) {
-						STAT_MAX = id;
-					}
+	if (initialized) return;
+	
+	char* end;
+	short lastID = -1;
 
-					for (int missing = lastID + 1; missing < id; missing++) {
-						StatProperties *mbits = new StatProperties();
-						mbits->name.assign("missing_id");
-						mbits->ID = missing;
-						mbits->sendParamBits = mbits->saveBits = mbits->saveAdd = mbits->saveParamBits = mbits->op = 0;
-						AllStatList.push_back(mbits);
-						StatMap[mbits->name] = mbits;
-					}
-
-					StatProperties *bits = new StatProperties();
-					bits->name = fields.at(1);
-					std::transform(bits->name.begin(), bits->name.end(), bits->name.begin(), tolower);
-					bits->ID = id;
-					bits->sendParamBits = (BYTE)std::strtoul(fields.at(3).c_str(), &end, 10);
-					bits->saveBits = (BYTE)std::strtoul(fields.at(4).c_str(), &end, 10);
-					bits->saveAdd = (BYTE)std::strtoul(fields.at(5).c_str(), &end, 10);
-					bits->saveParamBits = (BYTE)std::strtoul(fields.at(6).c_str(), &end, 10);
-					bits->op = (BYTE)std::strtoul(fields.at(7).c_str(), &end, 10);
-					AllStatList.push_back(bits);
-					StatMap[bits->name] = bits;
-					lastID = (short)id;
-				} else if (type.compare("INV") == 0) {
-					InventoryLayout *layout = new InventoryLayout();
-					layout->SlotWidth = (BYTE)std::strtoul(fields.at(2).c_str(), &end, 10);
-					layout->SlotHeight = (BYTE)std::strtoul(fields.at(3).c_str(), &end, 10);
-					layout->Left = (unsigned short)std::strtoul(fields.at(4).c_str(), &end, 10);
-					layout->Right = (unsigned short)std::strtoul(fields.at(5).c_str(), &end, 10);
-					layout->Top = (unsigned short)std::strtoul(fields.at(6).c_str(), &end, 10);
-					layout->Bottom = (unsigned short)std::strtoul(fields.at(7).c_str(), &end, 10);
-					layout->SlotPixelWidth = (BYTE)std::strtoul(fields.at(8).c_str(), &end, 10);
-					layout->SlotPixelHeight = (BYTE)std::strtoul(fields.at(9).c_str(), &end, 10);
-					InventoryLayoutMap[fields.at(1)] = layout;
-				}
+	for (auto d = MpqDataMap["itemstatcost"]->data.begin(); d < MpqDataMap["itemstatcost"]->data.end(); d++) {
+		if ((*d)["ID"].length() > 0) {
+			unsigned short id = (unsigned short)std::strtoul((*d)["ID"].c_str(), &end, 10);
+			if (id > STAT_MAX) {
+				STAT_MAX = id;
 			}
-			return;
+
+			for (int missing = lastID + 1; missing < id; missing++) {
+				StatProperties *mbits = new StatProperties();
+				mbits->name.assign("missing_id");
+				mbits->ID = missing;
+				mbits->sendParamBits = mbits->saveBits = mbits->saveAdd = mbits->saveParamBits = mbits->op = 0;
+				AllStatList.push_back(mbits);
+				StatMap[mbits->name] = mbits;
+			}
+
+			StatProperties *bits = new StatProperties();
+			bits->name = (*d)["Stat"];
+			std::transform(bits->name.begin(), bits->name.end(), bits->name.begin(), tolower);
+			bits->ID = id;
+			bits->sendParamBits = (BYTE)std::strtoul((*d)["Send Param Bits"].c_str(), &end, 10);
+			bits->saveBits = (BYTE)std::strtoul((*d)["Save Bits"].c_str(), &end, 10);
+			bits->saveAdd = (BYTE)std::strtoul((*d)["Save Add"].c_str(), &end, 10);
+			bits->saveParamBits = (BYTE)std::strtoul((*d)["Save Param Bits"].c_str(), &end, 10);
+			bits->op = (BYTE)std::strtoul((*d)["op"].c_str(), &end, 10);
+			AllStatList.push_back(bits);
+			StatMap[bits->name] = bits;
+			lastID = (short)id;
 		}
 	}
 
-	// If we get here we couldn't read MPQ data for whatever reason, so process the default data
-	for (int n = 0; n < sizeof(StatPropertiesList) / sizeof(StatPropertiesList[0]); n++) {
-		StatPropertiesList[n].ID = n;
-		AllStatList.push_back(&StatPropertiesList[n]);
-		std::transform(StatPropertiesList[n].name.begin(), StatPropertiesList[n].name.end(), StatPropertiesList[n].name.begin(), tolower);
-		StatMap[StatPropertiesList[n].name] = &StatPropertiesList[n];
-		STAT_MAX = n;
+	for (auto d = MpqDataMap["inventory"]->data.begin(); d < MpqDataMap["inventory"]->data.end(); d++) {
+		InventoryLayout *layout = new InventoryLayout();
+		layout->SlotWidth = (BYTE)std::strtoul((*d)["gridX"].c_str(), &end, 10);
+		layout->SlotHeight = (BYTE)std::strtoul((*d)["gridY"].c_str(), &end, 10);
+		layout->Left = (unsigned short)std::strtoul((*d)["gridLeft"].c_str(), &end, 10);
+		layout->Right = (unsigned short)std::strtoul((*d)["gridRight"].c_str(), &end, 10);
+		layout->Top = (unsigned short)std::strtoul((*d)["gridTop"].c_str(), &end, 10);
+		layout->Bottom = (unsigned short)std::strtoul((*d)["gridBottom"].c_str(), &end, 10);
+		layout->SlotPixelWidth = (BYTE)std::strtoul((*d)["gridBoxWidth"].c_str(), &end, 10);
+		layout->SlotPixelHeight = (BYTE)std::strtoul((*d)["gridBoxHeight"].c_str(), &end, 10);
+		InventoryLayoutMap[(*d)["class"]] = layout;
 	}
 
-	for (int n = 0; n < sizeof(ItemAttributeList) / sizeof(ItemAttributeList[0]); n++) {
-		if (ItemAttributeList[n].category.compare("Helm") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_HELM | ITEM_GROUP_ALLARMOR;
-		} else if (ItemAttributeList[n].category.compare("Armor") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_ARMOR | ITEM_GROUP_ALLARMOR;
-		} else if (ItemAttributeList[n].category.compare("Shield") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_SHIELD | ITEM_GROUP_ALLARMOR;
-		} else if (ItemAttributeList[n].category.compare("Gloves") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_GLOVES | ITEM_GROUP_ALLARMOR;
-		} else if (ItemAttributeList[n].category.compare("Boots") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_BOOTS | ITEM_GROUP_ALLARMOR;
-		} else if (ItemAttributeList[n].category.compare("Belt") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_BELT | ITEM_GROUP_ALLARMOR;
-		} else if (ItemAttributeList[n].category.compare("Druid Pelt") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_DRUID_PELT | ITEM_GROUP_ALLARMOR;
-		} else if (ItemAttributeList[n].category.compare("Barbarian Helm") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_BARBARIAN_HELM | ITEM_GROUP_ALLARMOR;
-		} else if (ItemAttributeList[n].category.compare("Paladin Shield") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_PALADIN_SHIELD | ITEM_GROUP_ALLARMOR;
-		} else if (ItemAttributeList[n].category.compare("Necromancer Shrunken Head") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_NECROMANCER_SHIELD | ITEM_GROUP_ALLARMOR;
-		} else if (ItemAttributeList[n].category.compare("Circlet") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_CIRCLET | ITEM_GROUP_ALLARMOR;
-		} else if (ItemAttributeList[n].category.compare("Axe") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_AXE | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare("Mace") == 0 || ItemAttributeList[n].category.compare("Hammer") == 0 || ItemAttributeList[n].category.compare("Club") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_MACE | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare("Sword") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_SWORD | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare("Dagger") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_DAGGER | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare("Throwing Axe") == 0 || ItemAttributeList[n].category.compare("Throwing Knife") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_THROWING | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare("Javelin") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_JAVELIN | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare("Spear") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_SPEAR | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare("Polearm") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_POLEARM | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare("Bow") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_BOW | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare("Crossbow") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_CROSSBOW | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare("Staff") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_STAFF | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare("Wand") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_WAND | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare("Scepter") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_SCEPTER | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare("Assassin Katar") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_ASSASSIN_KATAR | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare("Sorceress Orb") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_SORCERESS_ORB | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare(0, 6, "Amazon") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_AMAZON_WEAPON | ITEM_GROUP_ALLWEAPON;
-		} else if (ItemAttributeList[n].category.compare("Throwing Potion") == 0) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_ALLWEAPON;
+	std::map<std::string, std::string> throwableMap;
+	std::map<std::string, std::string> bodyLocMap;
+	std::map<std::string, std::string> parentMap1;
+	std::map<std::string, std::string> parentMap2;
+	for (auto d = MpqDataMap["itemtypes"]->data.begin(); d < MpqDataMap["itemtypes"]->data.end(); d++) {
+		if ((*d)["Code"].length() > 0) {
+			throwableMap[(*d)["Code"]] = (*d)["Throwable"];
+			bodyLocMap[(*d)["Code"]] = (*d)["BodyLoc1"];
+			if ((*d)["Equiv1"].length() > 0) {
+				parentMap1[(*d)["Code"]] = (*d)["Equiv1"];
+			}
+			if ((*d)["Equiv2"].length() > 0) {
+				parentMap2[(*d)["Code"]] = (*d)["Equiv2"];
+			}
 		}
-
-		if (ItemAttributeList[n].itemLevel == 1) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_NORMAL;
-		} else if (ItemAttributeList[n].itemLevel == 2) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_EXCEPTIONAL;
-		} else if (ItemAttributeList[n].itemLevel == 3) {
-			ItemAttributeList[n].flags |= ITEM_GROUP_ELITE;
-		}
-
-		std::string itemCode(ItemAttributeList[n].code);
-		ItemAttributeMap[itemCode] = &ItemAttributeList[n];
 	}
+
+	for (auto d = MpqDataMap["armor"]->data.begin(); d < MpqDataMap["armor"]->data.end(); d++) {
+		if ((*d)["code"].length() > 0) {
+			std::set<std::string> ancestorTypes;
+			char stackable = ((*d)["stackable"].length() > 0 ? (*d)["stackable"].at(0) - 48 : 0),
+				useable = ((*d)["useable"].length() > 0 ? (*d)["useable"].at(0) - 48 : 0),
+				throwable = ((*d)["throwable"].length() > 0 ? (*d)["throwable"].at(0) - 48 : 0);
+
+			unsigned int flags = ITEM_GROUP_ALLARMOR, flags2 = 0;
+			FindAncestorTypes((*d)["type"], ancestorTypes, parentMap1, parentMap2);
+
+			if ((*d)["code"].compare((*d)["ubercode"]) == 0) {
+				flags |= ITEM_GROUP_EXCEPTIONAL;
+			}
+			else if ((*d)["code"].compare((*d)["ultracode"]) == 0) {
+				flags |= ITEM_GROUP_ELITE;
+			}
+			else {
+				flags |= ITEM_GROUP_NORMAL;
+			}
+			if (ancestorTypes.find("circ") != ancestorTypes.end()) {
+				flags |= ITEM_GROUP_CIRCLET;
+			}
+			else if (bodyLocMap[(*d)["type"]].compare("head") == 0) {
+				flags |= ITEM_GROUP_HELM;
+			}
+			else if (bodyLocMap[(*d)["type"]].compare("tors") == 0) {
+				flags |= ITEM_GROUP_ARMOR;
+			}
+			else if (bodyLocMap[(*d)["type"]].compare("glov") == 0) {
+				flags |= ITEM_GROUP_GLOVES;
+			}
+			else if (bodyLocMap[(*d)["type"]].compare("feet") == 0) {
+				flags |= ITEM_GROUP_BOOTS;
+			}
+			else if (bodyLocMap[(*d)["type"]].compare("belt") == 0) {
+				flags |= ITEM_GROUP_BELT;
+			}
+			else if (bodyLocMap[(*d)["type"]].compare(1, 3, "arm") == 0 && ancestorTypes.find("shld") != ancestorTypes.end()) {
+				flags |= ITEM_GROUP_SHIELD;
+			}
+			flags = AssignClassFlags((*d)["type"], ancestorTypes, flags);
+
+			ItemAttributes *attrs = new ItemAttributes();
+			attrs->name = (*d)["name"];
+			attrs->code[0] = (*d)["code"].c_str()[0];
+			attrs->code[1] = (*d)["code"].c_str()[1];
+			attrs->code[2] = (*d)["code"].c_str()[2];
+			attrs->code[3] = 0;
+			attrs->category = (*d)["type"];
+			attrs->width = (*d)["invwidth"].at(0) - '0';
+			attrs->height = (*d)["invheight"].at(0) - '0';
+			attrs->stackable = stackable;
+			attrs->useable = useable;
+			attrs->throwable = throwable;
+			attrs->itemLevel = 0;
+			attrs->unusedFlags = 0;
+			attrs->flags = flags;
+			attrs->flags2 = flags2;
+			attrs->qualityLevel = (*d)["level"].at(0) - '0';
+			ItemAttributeMap[(*d)["code"]] = attrs;
+		}
+
+		for (auto d = MpqDataMap["weapons"]->data.begin(); d < MpqDataMap["weapons"]->data.end(); d++) {
+			if ((*d)["code"].length() > 0) {
+				std::set<std::string> ancestorTypes;
+				char stackable = ((*d)["stackable"].length() > 0 ? (*d)["stackable"].at(0) - 48 : 0),
+					useable = ((*d)["useable"].length() > 0 ? (*d)["useable"].at(0) - 48 : 0),
+					throwable = ((*d)["throwable"].length() > 0 ? (*d)["throwable"].at(0) - 48 : 0);
+				unsigned int flags = ITEM_GROUP_ALLWEAPON, flags2 = 0;
+				FindAncestorTypes((*d)["type"], ancestorTypes, parentMap1, parentMap2);
+
+				if ((*d)["code"].compare((*d)["ubercode"]) == 0) {
+					flags |= ITEM_GROUP_EXCEPTIONAL;
+				}
+				else if ((*d)["code"].compare((*d)["ultracode"]) == 0) {
+					flags |= ITEM_GROUP_ELITE;
+				}
+				else {
+					flags |= ITEM_GROUP_NORMAL;
+				}
+				if (ancestorTypes.find("club") != ancestorTypes.end() ||
+					ancestorTypes.find("hamm") != ancestorTypes.end() ||
+					ancestorTypes.find("mace") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_MACE;
+				}
+				else if (ancestorTypes.find("wand") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_WAND;
+				}
+				else if (ancestorTypes.find("staf") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_STAFF;
+				}
+				else if (ancestorTypes.find("bow") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_BOW;
+				}
+				else if (ancestorTypes.find("axe") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_AXE;
+				}
+				else if (ancestorTypes.find("scep") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_SCEPTER;
+				}
+				else if (ancestorTypes.find("swor") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_SWORD;
+				}
+				else if (ancestorTypes.find("knif") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_DAGGER;
+				}
+				else if (ancestorTypes.find("spea") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_SPEAR;
+				}
+				else if (ancestorTypes.find("pole") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_POLEARM;
+				}
+				else if (ancestorTypes.find("xbow") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_CROSSBOW;
+				}
+				else if (ancestorTypes.find("jave") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_JAVELIN;
+				}
+				if (ancestorTypes.find("thro") != ancestorTypes.end()) {
+					flags |= ITEM_GROUP_THROWING;
+				}
+				flags = AssignClassFlags((*d)["type"], ancestorTypes, flags);
+
+				ItemAttributes *attrs = new ItemAttributes();
+				attrs->name = (*d)["name"];
+				attrs->code[0] = (*d)["code"].c_str()[0];
+				attrs->code[1] = (*d)["code"].c_str()[1];
+				attrs->code[2] = (*d)["code"].c_str()[2];
+				attrs->code[3] = 0;
+				attrs->category = (*d)["type"];
+				attrs->width = (*d)["invwidth"].at(0) - '0';
+				attrs->height = (*d)["invheight"].at(0) - '0';
+				attrs->stackable = stackable;
+				attrs->useable = useable;
+				attrs->throwable = throwable;
+				attrs->itemLevel = 0;
+				attrs->unusedFlags = 0;
+				attrs->flags = flags;
+				attrs->flags2 = flags2;
+				attrs->qualityLevel = (*d)["level"].at(0) - '0';
+				ItemAttributeMap[(*d)["code"]] = attrs;
+			}
+		}
+
+		for (auto d = MpqDataMap["misc"]->data.begin(); d < MpqDataMap["misc"]->data.end(); d++) {
+			if ((*d)["code"].length() > 0) {
+				std::set<std::string> ancestorTypes;
+				char stackable = ((*d)["stackable"].length() > 0 ? (*d)["stackable"].at(0) - 48 : 0),
+					useable = ((*d)["useable"].length() > 0 ? (*d)["useable"].at(0) - 48 : 0),
+					throwable = ((*d)["throwable"].length() > 0 ? (*d)["throwable"].at(0) - 48 : 0);
+				unsigned int flags = 0, flags2 = 0;
+				FindAncestorTypes((*d)["type"], ancestorTypes, parentMap1, parentMap2);
+				FindAncestorTypes((*d)["type2"], ancestorTypes, parentMap1, parentMap2);
+
+				if (ancestorTypes.find("rune") != ancestorTypes.end()) {
+					flags2 |= ITEM_GROUP_RUNE;
+				}
+				if (ancestorTypes.find("gem0") != ancestorTypes.end()) {
+					flags2 |= ITEM_GROUP_CHIPPED;
+				}
+				else if (ancestorTypes.find("gem1") != ancestorTypes.end()) {
+					flags2 |= ITEM_GROUP_FLAWED;
+				}
+				else if (ancestorTypes.find("gem2") != ancestorTypes.end()) {
+					flags2 |= ITEM_GROUP_REGULAR;
+				}
+				else if (ancestorTypes.find("gem3") != ancestorTypes.end()) {
+					flags2 |= ITEM_GROUP_FLAWLESS;
+				}
+				else if (ancestorTypes.find("gem4") != ancestorTypes.end()) {
+					flags2 |= ITEM_GROUP_PERFECT;
+				}
+				if (ancestorTypes.find("gema") != ancestorTypes.end()) {
+					flags2 |= ITEM_GROUP_AMETHYST;
+				}
+				else if (ancestorTypes.find("gemd") != ancestorTypes.end()) {
+					flags2 |= ITEM_GROUP_DIAMOND;
+				}
+				else if (ancestorTypes.find("geme") != ancestorTypes.end()) {
+					flags2 |= ITEM_GROUP_EMERALD;
+				}
+				else if (ancestorTypes.find("gemr") != ancestorTypes.end()) {
+					flags2 |= ITEM_GROUP_RUBY;
+				}
+				else if (ancestorTypes.find("gems") != ancestorTypes.end()) {
+					flags2 |= ITEM_GROUP_SAPPHIRE;
+				}
+				else if (ancestorTypes.find("gemt") != ancestorTypes.end()) {
+					flags2 |= ITEM_GROUP_TOPAZ;
+				}
+				else if (ancestorTypes.find("gemz") != ancestorTypes.end()) {
+					flags2 |= ITEM_GROUP_SKULL;
+				}
+
+				ItemAttributes *attrs = new ItemAttributes();
+				attrs->name = (*d)["name"];
+				attrs->code[0] = (*d)["code"].c_str()[0];
+				attrs->code[1] = (*d)["code"].c_str()[1];
+				attrs->code[2] = (*d)["code"].c_str()[2];
+				attrs->code[3] = 0;
+				attrs->category = (*d)["type"];
+				attrs->width = (*d)["invwidth"].at(0) - '0';
+				attrs->height = (*d)["invheight"].at(0) - '0';
+				attrs->stackable = stackable;
+				attrs->useable = useable;
+				attrs->throwable = throwable;
+				attrs->itemLevel = 0;
+				attrs->unusedFlags = 0;
+				attrs->flags = flags;
+				attrs->flags2 = flags2;
+				attrs->qualityLevel = (*d)["level"].at(0) - '0';
+				ItemAttributeMap[(*d)["code"]] = attrs;
+			}
+		}
+	}
+
+	initialized = true;
 }

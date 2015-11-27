@@ -19,7 +19,7 @@ void OOGDraw() {
 	Drawing::Hook::Draw(Drawing::OutOfGame);
 	__raise BH::moduleManager->OnOOGDraw();
 }
-
+ 
 void GameLoop() {
 	__raise BH::moduleManager->OnLoop();
 }

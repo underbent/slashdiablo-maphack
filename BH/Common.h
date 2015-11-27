@@ -37,3 +37,5 @@ struct KeyCode {
 KeyCode GetKeyCode(unsigned int nKey);
 KeyCode GetKeyCode(const char* name);
 ULONGLONG BHGetTickCount(void);
+
+std::string string_format(const std::string fmt_str, ...);

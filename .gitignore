@@ -31,3 +31,6 @@
 
 *~
 *.swp
+Debug/
+Packaging/*
+BH/Release/*

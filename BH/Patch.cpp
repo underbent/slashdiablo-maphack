@@ -61,11 +61,13 @@ bool Patch::Install() {
 	//Set the code with all NOPs by default
 	memset(code, 0x90, length);
 
-	//Set the JMP or CALL opcode
-	code[0] = (type == Call) ? 0xE8 : 0xE9;
+	if (type != NOP) {
+		//Set the JMP or CALL opcode
+		code[0] = (type == Call) ? 0xE8 : 0xE9;
 
-	//Set the address to redirect to
-	*(DWORD*)&code[1] = function - (address + 5);
+		//Set the address to redirect to
+		*(DWORD*)&code[1] = function - (address + 5);
+	}
 
 	//Write the patch in
 	VirtualProtect((VOID*)address, length, PAGE_EXECUTE_READWRITE, &protect);

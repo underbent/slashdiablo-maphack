@@ -20,8 +20,11 @@
     <ClCompile Include="cInjector.cpp">
       <Filter>cInjector</Filter>
     </ClCompile>
-    <ClCompile Include="MPQReader.cpp">
+    <ClCompile Include="PEStructs.cpp">
       <Filter>Common Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EventSink.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -31,8 +34,11 @@
     <ClInclude Include="cInjector.h">
       <Filter>cInjector</Filter>
     </ClInclude>
-    <ClInclude Include="MPQReader.h">
+    <ClInclude Include="PEStructs.h">
       <Filter>Common Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EventSink.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

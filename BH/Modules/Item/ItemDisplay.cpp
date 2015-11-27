@@ -221,34 +221,44 @@ bool IntegerCompare(unsigned int Lvalue, BYTE operation, unsigned int Rvalue) {
 	case LESS_THAN:
 		return Lvalue < Rvalue;
 	default:
-		throw EXCEPTION_INVALID_OPERATION;
+		return false;
 	}
 }
 
-void InitializeItemRules() {
-	vector<pair<string, string>> rules = BH::config->ReadMapList("ItemDisplay");
-	for (unsigned int i = 0; i < rules.size(); i++) {
-		string buf;
-		stringstream ss(rules[i].first);
-		vector<string> tokens;
-		while (ss >> buf) {
-			tokens.push_back(buf);
+namespace ItemDisplay {
+	bool item_display_initialized = false;
+	void InitializeItemRules() {
+		if (item_display_initialized) return;
+		if (!IsInitialized()){
+			return;
 		}
 
-		LastConditionType = CT_None;
-		Rule *r = new Rule();
-		vector<Condition*> RawConditions;
-		for (vector<string>::iterator tok = tokens.begin(); tok < tokens.end(); tok++) {
-			Condition::BuildConditions(RawConditions, (*tok));
-		}
-		Condition::ProcessConditions(RawConditions, r->conditions);
-		BuildAction(&(rules[i].second), &(r->action));
+		item_display_initialized = true;
+		vector<pair<string, string>> rules = BH::config->ReadMapList("ItemDisplay");
+		for (unsigned int i = 0; i < rules.size(); i++) {
+			string buf;
+			stringstream ss(rules[i].first);
+			vector<string> tokens;
+			while (ss >> buf) {
+				tokens.push_back(buf);
+			}
 
-		RuleList.push_back(r);
-		if (r->action.colorOnMap.length() > 0) {
-			MapRuleList.push_back(r);
-		} else if (r->action.name.length() == 0) {
-			IgnoreRuleList.push_back(r);
+			LastConditionType = CT_None;
+			Rule *r = new Rule();
+			vector<Condition*> RawConditions;
+			for (vector<string>::iterator tok = tokens.begin(); tok < tokens.end(); tok++) {
+				Condition::BuildConditions(RawConditions, (*tok));
+			}
+			Condition::ProcessConditions(RawConditions, r->conditions);
+			BuildAction(&(rules[i].second), &(r->action));
+
+			RuleList.push_back(r);
+			if (r->action.colorOnMap.length() > 0) {
+				MapRuleList.push_back(r);
+			}
+			else if (r->action.name.length() == 0) {
+				IgnoreRuleList.push_back(r);
+			}
 		}
 	}
 }
@@ -611,17 +621,17 @@ bool NegationOperator::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg
 }
 
 bool LeftParen::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
-	throw EXCEPTION_INVALID_OPERATOR;
+	return false;
 }
 bool LeftParen::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
-	throw EXCEPTION_INVALID_OPERATOR;
+	return false;
 }
 
 bool RightParen::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
-	throw EXCEPTION_INVALID_OPERATOR;
+	return false;
 }
 bool RightParen::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
-	throw EXCEPTION_INVALID_OPERATOR;
+	return false;
 }
 
 bool AndOperator::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
@@ -657,7 +667,7 @@ bool FlagsCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1,
 	case ITEM_RUNEWORD:
 		return info->runeword;
 	}
-	throw EXCEPTION_INVALID_FLAG;
+	return false;
 }
 
 bool QualityCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
@@ -682,49 +692,49 @@ bool GemLevelCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, C
 	if (IsGem(uInfo->attrs)) {
 		return IntegerCompare(GetGemLevel(uInfo->attrs), operation, gemLevel);
 	}
-	throw EXCEPTION_INVALID_ITEM_TYPE;
+	return false;
 }
 bool GemLevelCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
 	if (IsGem(info->attrs)) {
 		return IntegerCompare(GetGemLevel(info->attrs), operation, gemLevel);
 	}
-	throw EXCEPTION_INVALID_ITEM_TYPE;
+	return false;
 }
 
 bool GemTypeCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
 	if (IsGem(uInfo->attrs)) {
 		return IntegerCompare(GetGemType(uInfo->attrs), operation, gemType);
 	}
-	throw EXCEPTION_INVALID_ITEM_TYPE;
+	return false;
 }
 bool GemTypeCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
 	if (IsGem(info->attrs)) {
 		return IntegerCompare(GetGemType(info->attrs), operation, gemType);
 	}
-	throw EXCEPTION_INVALID_ITEM_TYPE;
+	return false;
 }
 
 bool RuneCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
 	if (IsRune(uInfo->attrs)) {
 		return IntegerCompare(RuneNumberFromItemCode(uInfo->itemCode), operation, runeNumber);
 	}
-	throw EXCEPTION_INVALID_ITEM_TYPE;
+	return false;
 }
 bool RuneCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
 	if (IsRune(info->attrs)) {
 		return IntegerCompare(RuneNumberFromItemCode(info->code), operation, runeNumber);
 	}
-	throw EXCEPTION_INVALID_ITEM_TYPE;
+	return false;
 }
 
 bool GoldCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
-	throw EXCEPTION_INVALID_GOLD_TYPE; // can only evaluate this from packet data
+	return false; // can only evaluate this from packet data
 }
 bool GoldCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
 	if (info->code[0] == 'g' && info->code[1] == 'l' && info->code[2] == 'd') {
 		return IntegerCompare(info->amount, operation, goldAmount);
 	}
-	throw EXCEPTION_INVALID_GOLD_TYPE;
+	return false;
 }
 
 bool ItemLevelCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
@@ -834,7 +844,7 @@ bool ItemStatCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *ar
 		}
 		return IntegerCompare(num, operation, targetStat);
 	}
-	throw EXCEPTION_INVALID_STAT;
+	return false;
 }
 
 bool ResistAllCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
@@ -878,6 +888,11 @@ int GetDefense(ItemInfo *item) {
 }
 
 void HandleUnknownItemCode(char *code, char *tag) {
+	// If the MPQ files arent loaded yet then this is expected
+	if (!IsInitialized()){
+		return;
+	}
+
 	// Avoid spamming endlessly
 	if (UnknownItemCodes.size() > 10 || (*BH::MiscToggles2)["Allow Unknown Items"].state) {
 		return;
