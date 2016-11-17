@@ -697,7 +697,8 @@ enum Type {
 	UNIT_ITEM,
 	UNIT_TILE,
 	EXIT,
-	XY
+	XY,
+  EXIT_MULTI
 };
 
 ///////////////////////////////////////////////////

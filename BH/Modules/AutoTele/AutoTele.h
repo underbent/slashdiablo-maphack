@@ -18,7 +18,7 @@ class AutoTele : public Module {
 	private:
 		std::map<string, Toggle> Toggles;
 		unsigned int NextKey, OtherKey, WPKey, PrevKey;
-		unsigned int Colors[5];
+		unsigned int Colors[6];
 		Drawing::UITab* settingsTab;
 
 		int Try;
@@ -28,7 +28,7 @@ class AutoTele : public Module {
 		DWORD InteractType, InteractId;
 		Room2* InteractRoom;
 		DWORD LastArea;
-		POINT Vectors[4];
+		POINT Vectors[5];
 		CArrayEx <POINT, POINT> TPath;
 		HANDLE LoadHandle;
 
