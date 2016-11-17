@@ -46,6 +46,7 @@ void Maphack::ReadConfig() {
 	TextColorMap["ÿc8"] = 0x60;  // orange
 	TextColorMap["ÿc9"] = 0x0C;  // yellow
 	TextColorMap["ÿc;"] = 0x9B;  // purple
+	TextColorMap["ÿc:"] = 0x76;  // dark green
 
 	map<string, string> MonsterColors = BH::config->ReadAssoc("Monster Color");
 	for (auto it = MonsterColors.cbegin(); it != MonsterColors.cend(); ) {

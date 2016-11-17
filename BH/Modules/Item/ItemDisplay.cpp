@@ -12,7 +12,8 @@
 	{"TAN", "ÿc7"},			\
 	{"ORANGE", "ÿc8"},		\
 	{"YELLOW", "ÿc9"},		\
-	{"PURPLE", "ÿc;"}
+	{"PURPLE", "ÿc;"},		\
+	{"DARK_GREEN", "ÿc:"},
 
 enum Operation {
 	EQUAL,
