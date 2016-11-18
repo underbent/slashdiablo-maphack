@@ -29,6 +29,8 @@ class Maphack : public Module {
 		std::map<string, unsigned int> TextColorMap;
 		std::map<string, unsigned int> automapColors;
 		std::map<int, unsigned int> automapMonsterColors;
+		std::map<int, unsigned int> automapMonsterLines;
+		std::list<int> automapHiddenMonsters;
 		std::list<LevelList*> automapLevels;
 		map<std::string, Toggle> Toggles;
 		Drawing::UITab* settingsTab;

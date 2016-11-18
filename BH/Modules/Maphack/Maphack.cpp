@@ -62,6 +62,33 @@ void Maphack::ReadConfig() {
 		}
 	}
 
+	map<string, string> MonsterLines = BH::config->ReadAssoc("Monster Line");
+	for (auto it = MonsterLines.cbegin(); it != MonsterLines.cend(); ) {
+		// If the key is a number, it means a monster we've assigned a specific color
+		int monsterId = -1;
+		stringstream ss((*it).first);
+		if ((ss >> monsterId).fail()) {
+			++it;
+		} else {
+			int lineColor = StringToNumber((*it).second);
+			automapMonsterLines[monsterId] = lineColor;
+			MonsterLines.erase(it++);
+		}
+	}
+
+	map<string, string> MonsterHides = BH::config->ReadAssoc("Monster Hide");
+	for (auto it = MonsterHides.cbegin(); it != MonsterHides.cend(); ) {
+		// If the key is a number, it means do not draw this monster on map
+		int monsterId = -1;
+		stringstream ss((*it).first);
+		if ((ss >> monsterId).fail()) {
+			++it;
+		} else {
+			automapHiddenMonsters.push_back(monsterId);
+			MonsterHides.erase(it++);
+		}
+	}
+
 	Config monster(MonsterColors);
 	automapColors["Normal Monster"] = monster.ReadInt("Normal", 0x5B);
 	automapColors["Minion Monster"] = monster.ReadInt("Minion", 0x60);
@@ -258,6 +285,8 @@ void Maphack::OnAutomapDraw() {
 	}
 	
 	automapDraw.draw([=](AsyncDrawBuffer &automapBuffer) -> void {
+		POINT MyPos;
+		Drawing::Hook::ScreenToAutomap(&MyPos, D2CLIENT_GetUnitX(D2CLIENT_GetPlayerUnit()), D2CLIENT_GetUnitY(D2CLIENT_GetPlayerUnit()));
 		for (Room1* room1 = player->pAct->pRoom1; room1; room1 = room1->pRoomNext) {
 			for (UnitAny* unit = room1->pUnitFirst; unit; unit = unit->pListNext) {
 				//POINT automapLoc;
@@ -266,6 +295,7 @@ void Maphack::OnAutomapDraw() {
 				// Draw monster on automap
 				if (unit->dwType == UNIT_MONSTER && IsValidMonster(unit) && Toggles["Show Monsters"].state) {
 					int color = automapColors["Normal Monster"];
+					int lineColor = -1;
 					if (unit->pMonsterData->fBoss)
 						color = automapColors["Boss Monster"];
 					if (unit->pMonsterData->fChamp)
@@ -276,6 +306,16 @@ void Maphack::OnAutomapDraw() {
 					// User can override colors of non-boss monsters
 					if (automapMonsterColors.find(unit->dwTxtFileNo) != automapMonsterColors.end() && !unit->pMonsterData->fBoss) {
 						color = automapMonsterColors[unit->dwTxtFileNo];
+					}
+
+					// User can hide monsters from map
+					if (std::find(automapHiddenMonsters.begin(), automapHiddenMonsters.end(), unit->dwTxtFileNo) != automapHiddenMonsters.end() ) {
+						continue;
+					}
+
+					// User can make it draw lines to monsters
+					if (automapMonsterLines.find(unit->dwTxtFileNo) != automapMonsterLines.end() ) {
+						lineColor = automapMonsterLines[unit->dwTxtFileNo];
 					}
 
 					//Determine immunities
@@ -302,12 +342,15 @@ void Maphack::OnAutomapDraw() {
 
 					xPos = unit->pPath->xPos;
 					yPos = unit->pPath->yPos;
-					automapBuffer.push([immunityText, color, xPos, yPos]()->void{
+					automapBuffer.push([immunityText, color, xPos, yPos, lineColor, MyPos]()->void{
 						POINT automapLoc;
 						Drawing::Hook::ScreenToAutomap(&automapLoc, xPos, yPos);
 						if (immunityText.length() > 0)
 							Drawing::Texthook::Draw(automapLoc.x, automapLoc.y - 8, Drawing::Center, 6, White, immunityText);
 						Drawing::Crosshook::Draw(automapLoc.x, automapLoc.y, color);
+						if (lineColor != -1) {
+							Drawing::Linehook::Draw(MyPos.x, MyPos.y, automapLoc.x, automapLoc.y, lineColor);
+						}
 					});
 				}
 				else if (unit->dwType == UNIT_MISSILE && Toggles["Show Missiles"].state) {
