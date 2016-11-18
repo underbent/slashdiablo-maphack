@@ -177,6 +177,10 @@ bool TableReader::readTable(std::string filePath, Table &table)
 	}
 }
 
+int Table::size() {
+	return data->length();
+}
+
 bool TableReader::loadMPQData(std::string archiveName, Table &table)
 {
 	std::transform(archiveName.begin(), archiveName.end(), archiveName.begin(), ::tolower);
@@ -285,6 +289,8 @@ Table Tables::SetItems;
 Table Tables::Skills;
 Table Tables::MagicPrefix;
 Table Tables::MagicSuffix;
+Table Tables::RarePrefix;
+Table Tables::RareSuffix;
 
 Table Strings;
 Table Expansion;
@@ -314,6 +320,8 @@ bool Tables::initTables(){
 		success &= TableReader::loadMPQData("MagicSuffix", MagicSuffix);
 		success &= TableReader::loadMPQData("UniqueItems", UniqueItems);
 		success &= TableReader::loadMPQData("SetItems", SetItems);
+		success &= TableReader::loadMPQData("RarePrefix", RarePrefix);
+		success &= TableReader::loadMPQData("RareSuffix", RareSuffix);
 
 		UniqueItems.removeWhere([](JSONElement* obj){
 			return ((JSONObject*)obj)->getString("index").compare("Expansion") == 0;

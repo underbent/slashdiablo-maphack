@@ -37,6 +37,7 @@ public:
 
 	void OnLoop();
 	void OnKey(bool up, BYTE key, LPARAM lParam, bool* block);
+	void WriteStash();
 	std::map<string, Toggle>* GetToggles() { return &Toggles; }
 	static void GetItemInfo(UnitAny* pItem, JSONObject* pBuffer);
 	static JSONObject* getStatEntry(WORD statId, WORD statId2, DWORD statVal, DWORD min, DWORD max);
