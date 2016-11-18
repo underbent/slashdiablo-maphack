@@ -33,6 +33,8 @@ public:
 	void OnLoad();
 	void OnUnload();
 
+	void LoadConfig();
+
 	void OnLoop();
 	void OnKey(bool up, BYTE key, LPARAM lParam, bool* block);
 	std::map<string, Toggle>* GetToggles() { return &Toggles; }

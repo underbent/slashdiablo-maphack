@@ -262,6 +262,13 @@ namespace ItemDisplay {
 			}
 		}
 	}
+
+	void UninitializeItemRules() {
+		item_display_initialized = false;
+		RuleList.clear();
+		MapRuleList.clear();
+		IgnoreRuleList.clear();
+	}
 }
 
 void BuildAction(string *str, Action *act) {

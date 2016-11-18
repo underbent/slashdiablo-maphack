@@ -19,6 +19,9 @@ class Item : public Module {
 		void OnLoad();
 		void OnUnload();
 
+		void LoadConfig();
+		void DrawSettings();
+
 		void OnLoop();
 		void OnKey(bool up, BYTE key, LPARAM lParam, bool* block);
 		void OnLeftClick(bool up, int x, int y, bool* block);

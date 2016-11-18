@@ -16,6 +16,20 @@ Patch* viewInvPatch3 = new Patch(Call, D2CLIENT, 0x93A6F, (int)ViewInventoryPatc
 using namespace Drawing;
 
 void Item::OnLoad() {
+	LoadConfig();
+
+	viewInvPatch1->Install();
+	viewInvPatch2->Install();
+	viewInvPatch3->Install();
+
+	if (Toggles["Show Ethereal"].state || Toggles["Show Sockets"].state || Toggles["Show iLvl"].state || Toggles["Color Mod"].state ||
+		Toggles["Show Rune Numbers"].state || Toggles["Alt Item Style"].state || Toggles["Shorten Item Names"].state || Toggles["Advanced Item Display"].state)
+		itemNamePatch->Install();
+
+	DrawSettings();
+}
+
+void Item::LoadConfig() {
 	Toggles["Show Ethereal"] = BH::config->ReadToggle("Show Ethereal", "None", true);
 	Toggles["Show Sockets"] = BH::config->ReadToggle("Show Sockets", "None", true);
 	Toggles["Show iLvl"] = BH::config->ReadToggle("Show iLvl", "None", true);
@@ -26,18 +40,14 @@ void Item::OnLoad() {
 	Toggles["Advanced Item Display"] = BH::config->ReadToggle("Advanced Item Display", "None", false);
 	Toggles["Allow Unknown Items"] = BH::config->ReadToggle("Allow Unknown Items", "None", false);
 
+	ItemDisplay::UninitializeItemRules();
+
 	//InitializeMPQData();
 
 	showPlayer = BH::config->ReadKey("Show Players Gear", "VK_0");
+}
 
-	viewInvPatch1->Install();
-	viewInvPatch2->Install();
-	viewInvPatch3->Install();
-
-	if (Toggles["Show Ethereal"].state || Toggles["Show Sockets"].state || Toggles["Show iLvl"].state || Toggles["Color Mod"].state ||
-		Toggles["Show Rune Numbers"].state || Toggles["Alt Item Style"].state || Toggles["Shorten Item Names"].state || Toggles["Advanced Item Display"].state)
-		itemNamePatch->Install();
-
+void Item::DrawSettings() {
 	settingsTab = new UITab("Item", BH::settingsUI);
 
 	new Checkhook(settingsTab, 4, 15, &Toggles["Show Ethereal"].state, "Show Ethereal");
@@ -72,6 +82,7 @@ void Item::OnUnload() {
 	viewInvPatch1->Remove();
 	viewInvPatch2->Remove();
 	viewInvPatch3->Remove();
+	ItemDisplay::UninitializeItemRules();
 }
 
 void Item::OnLoop() {

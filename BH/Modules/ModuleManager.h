@@ -23,6 +23,7 @@ class ModuleManager {
 
 		void LoadModules();
 		void UnloadModules();
+		void ReloadConfig();
 
 		bool UserInput(wchar_t* module, wchar_t* msg, bool fromGame);
 

@@ -25,9 +25,19 @@ Maphack::Maphack() : Module("Maphack") {
 	ReadConfig();
 }
 
+void Maphack::LoadConfig() {
+	automapMonsterColors.clear();
+	automapMonsterLines.clear();
+	automapHiddenMonsters.clear();
+
+	ReadConfig();
+}
+
 void Maphack::ReadConfig() {
 	revealType = (MaphackReveal)BH::config->ReadInt("RevealMode", 0);
 	monsterResistanceThreshold = BH::config->ReadInt("Show Monster Resistance", 100);
+
+	reloadConfig = BH::config->ReadKey("Reload Config", "VK_NUMPAD0");
 
 	Config automap(BH::config->ReadAssoc("Missile Color"));
 	automapColors["Player Missile"] = automap.ReadInt("Player", 0x97);
@@ -203,6 +213,10 @@ void Maphack::OnLoad() {
 }
 
 void Maphack::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
+	if (key == reloadConfig && up) {
+		BH::ReloadConfig();
+		return;
+	}
 	for (map<string,Toggle>::iterator it = Toggles.begin(); it != Toggles.end(); it++) {
 		if (key == (*it).second.toggle) {
 			*block = true;

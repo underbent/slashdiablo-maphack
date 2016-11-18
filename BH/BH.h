@@ -35,4 +35,5 @@ namespace BH {
 	extern bool Startup(HINSTANCE instance, VOID* reserved);
 	extern "C" __declspec(dllexport) void Initialize();
 	extern bool Shutdown();
+	extern bool ReloadConfig();
 };

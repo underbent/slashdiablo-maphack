@@ -19,6 +19,7 @@ bool Config::Parse() {
 
 	//Lock Critical Section then wipe contents incase we are reloading.
 	contents.erase(contents.begin(), contents.end());
+	orderedKeys.clear();
 
 	//Begin to loop the configuration file one line at a time.
 	std::string line;

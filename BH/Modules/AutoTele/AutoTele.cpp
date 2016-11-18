@@ -13,26 +13,9 @@ int CS[] = {392, 394, 396, 255};
 using namespace Drawing;
 
 void AutoTele::OnLoad() {
+	LoadConfig();
 
 	settingsTab = new UITab("Miscellaneous", BH::settingsUI);
-
-	Toggles["CP to cave"] = BH::config->ReadToggle("CP to cave", "None", false);
-	Toggles["Display Messages"] = BH::config->ReadToggle("Display Messages", "None", true);
-	Toggles["Draw Path"] = BH::config->ReadToggle("Draw Path", "None", true);	
-	Toggles["Draw Destination"] = BH::config->ReadToggle("Draw Destination", "None", true);
-	Toggles["Fast Teleport"] = BH::config->ReadToggle("Fast Teleport", "None", true);
-	Toggles["Quest Drop Warning"] = BH::config->ReadToggle("Quest Drop Warning", "None", false);
-
-	NextKey = BH::config->ReadKey("Next Tele", "VK_NUMPAD0");
-	OtherKey = BH::config->ReadKey("Other Tele", "VK_NUMPAD1");
-	WPKey = BH::config->ReadKey("Waypoint Tele", "VK_NUMPAD2");
-	PrevKey = BH::config->ReadKey("Prev Tele", "VK_NUMPAD3");
-	Colors[0] = BH::config->ReadInt("Path Color", 97);
-	Colors[1] = BH::config->ReadInt("Next Color", 0x97);
-	Colors[2] = BH::config->ReadInt("Other Color", 0x0A);
-	Colors[3] = BH::config->ReadInt("WP Color", 0x84);
-	Colors[4] = BH::config->ReadInt("Prev Color", 0x5B);
-	Colors[5] = BH::config->ReadInt("Other Extra Color", 0xA8);
 
 	new Texthook(settingsTab, 60, 12, "Toggles");
 
@@ -56,6 +39,26 @@ void AutoTele::OnLoad() {
 	new Colorhook(settingsTab, 250, 87, &Colors[4], "Prev");
 
 	new Colorhook(settingsTab, 250, 102, &Colors[5], "Other Extra");
+}
+
+void AutoTele::LoadConfig() {
+	Toggles["CP to cave"] = BH::config->ReadToggle("CP to cave", "None", false);
+	Toggles["Display Messages"] = BH::config->ReadToggle("Display Messages", "None", true);
+	Toggles["Draw Path"] = BH::config->ReadToggle("Draw Path", "None", true);	
+	Toggles["Draw Destination"] = BH::config->ReadToggle("Draw Destination", "None", true);
+	Toggles["Fast Teleport"] = BH::config->ReadToggle("Fast Teleport", "None", true);
+	Toggles["Quest Drop Warning"] = BH::config->ReadToggle("Quest Drop Warning", "None", false);
+
+	NextKey = BH::config->ReadKey("Next Tele", "VK_NUMPAD0");
+	OtherKey = BH::config->ReadKey("Other Tele", "VK_NUMPAD1");
+	WPKey = BH::config->ReadKey("Waypoint Tele", "VK_NUMPAD2");
+	PrevKey = BH::config->ReadKey("Prev Tele", "VK_NUMPAD3");
+	Colors[0] = BH::config->ReadInt("Path Color", 97);
+	Colors[1] = BH::config->ReadInt("Next Color", 0x97);
+	Colors[2] = BH::config->ReadInt("Other Color", 0x0A);
+	Colors[3] = BH::config->ReadInt("WP Color", 0x84);
+	Colors[4] = BH::config->ReadInt("Prev Color", 0x5B);
+	Colors[5] = BH::config->ReadInt("Other Extra Color", 0xA8);
 }
 
 void AutoTele::OnAutomapDraw() {

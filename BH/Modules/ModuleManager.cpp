@@ -58,6 +58,12 @@ void ModuleManager::UnloadModules() {
 	}
 }
 
+void ModuleManager::ReloadConfig() {
+	for (map<string, Module*>::iterator it = moduleList.begin(); it != moduleList.end(); ++it) {
+		(*it).second->LoadConfig();
+	}
+}
+
 bool ModuleManager::UserInput(wchar_t* module, wchar_t* msg, bool fromGame) {
 	bool block = false;
 	std::string name;

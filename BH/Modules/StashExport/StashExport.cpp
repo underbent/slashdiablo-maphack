@@ -18,11 +18,7 @@ UnitAny* StashExport::viewingUnit;
 using namespace Drawing;
 
 void StashExport::OnLoad() {
-	Toggles["Include Equipment"] = BH::config->ReadToggle("Include Equipment", "None", true);
-	Toggles["Include Fixed Stats"] = BH::config->ReadToggle("Include Fixed Stats", "None", false);
-	Toggles["Condense Stats"] = BH::config->ReadToggle("Condense Stats", "None", true);
-
-	exportGear = BH::config->ReadKey("Export Gear", "VK_NUMPAD5");
+	LoadConfig();
 
 	settingsTab = new UITab("StashExport", BH::settingsUI);
 
@@ -31,6 +27,7 @@ void StashExport::OnLoad() {
 	new Checkhook(settingsTab, 4, (y+=15), &Toggles["Include Fixed Stats"].state, "Include Fixed Stats");
 	new Checkhook(settingsTab, 4, (y += 15), &Toggles["Condense Stats"].state, "Condense Stats");
 
+	// the MustacheTemplates will not be reloaded
 	options.clear();
 	options.push_back("json");
 
@@ -51,6 +48,14 @@ void StashExport::OnLoad() {
 	}
 
 	new Combohook(settingsTab, 4, (y += 15), 150, &exportType, options);
+}
+
+void StashExport::LoadConfig() {
+	Toggles["Include Equipment"] = BH::config->ReadToggle("Include Equipment", "None", true);
+	Toggles["Include Fixed Stats"] = BH::config->ReadToggle("Include Fixed Stats", "None", false);
+	Toggles["Condense Stats"] = BH::config->ReadToggle("Condense Stats", "None", true);
+
+	exportGear = BH::config->ReadKey("Export Gear", "VK_NUMPAD5");
 }
 
 void StashExport::OnUnload() {

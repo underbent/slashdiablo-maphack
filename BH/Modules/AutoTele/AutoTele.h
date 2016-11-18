@@ -48,6 +48,7 @@ class AutoTele : public Module {
 	public:
 		AutoTele() : Module("AutoTele"), LoadHandle(NULL) {};
 		void OnLoad();
+		void LoadConfig();
 		void OnLoop();
 		void OnAutomapDraw();
 		void OnKey(bool up, BYTE key, LPARAM lParam, bool* block);

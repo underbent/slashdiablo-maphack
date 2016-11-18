@@ -438,6 +438,7 @@ extern vector<Rule*> IgnoreRuleList;
 
 namespace ItemDisplay {
 	void InitializeItemRules();
+	void UninitializeItemRules();
 }
 StatProperties *GetStatProperties(unsigned int stat);
 void BuildAction(string *str, Action *act);

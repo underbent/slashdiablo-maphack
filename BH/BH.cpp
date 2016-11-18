@@ -167,3 +167,13 @@ bool BH::Shutdown() {
 	
 	return true;
 }
+
+bool BH::ReloadConfig() {
+	if (initialized){
+		if (D2CLIENT_GetPlayerUnit())
+			PrintText(0, "Reloading BH config");
+		config->Parse();
+		moduleManager->ReloadConfig();
+	}
+	return true;
+}
