@@ -1,6 +1,6 @@
 #include "ItemDisplay.h"
 
-// All colors here must also be defined in TextColorMap
+// All colors here must also be defined in MAP_COLOR_REPLACEMENTS
 #define COLOR_REPLACEMENTS	\
 	{"WHITE", "ÿc0"},		\
 	{"RED", "ÿc1"},			\
@@ -13,7 +13,23 @@
 	{"ORANGE", "ÿc8"},		\
 	{"YELLOW", "ÿc9"},		\
 	{"PURPLE", "ÿc;"},		\
-	{"DARK_GREEN", "ÿc:"},
+	{"DARK_GREEN", "ÿc:"}
+
+#define MAP_COLOR_WHITE     0x20
+
+#define MAP_COLOR_REPLACEMENTS	\
+	{"WHITE", 0x20},		\
+	{"RED", 0x0A},			\
+	{"GREEN", 0x84},		\
+	{"BLUE", 0x97},			\
+	{"GOLD", 0x0D},			\
+	{"GRAY", 0xD0},			\
+	{"BLACK", 0x00},		\
+	{"TAN", 0x5A},			\
+	{"ORANGE", 0x60},		\
+	{"YELLOW", 0x0C},		\
+	{"PURPLE", 0x9B},		\
+	{"DARK_GREEN", 0x76}
 
 enum Operation {
 	EQUAL,
@@ -254,7 +270,7 @@ namespace ItemDisplay {
 			BuildAction(&(rules[i].second), &(r->action));
 
 			RuleList.push_back(r);
-			if (r->action.colorOnMap.length() > 0) {
+			if (r->action.colorOnMap != 0xff) {
 				MapRuleList.push_back(r);
 			}
 			else if (r->action.name.length() == 0) {
@@ -276,10 +292,10 @@ void BuildAction(string *str, Action *act) {
 
 	size_t map = act->name.find("%MAP%");
 	if (map != string::npos) {
-		string mapColor = "ÿc0";
+		int mapColor = MAP_COLOR_WHITE;
 		size_t lastColorPos = 0;
-		ActionReplace colors[] = {
-			COLOR_REPLACEMENTS
+		ColorReplace colors[] = {
+			MAP_COLOR_REPLACEMENTS
 		};
 		for (int n = 0; n < sizeof(colors) / sizeof(colors[0]); n++) {
 			size_t pos = act->name.find("%" + colors[n].key + "%");
@@ -291,7 +307,41 @@ void BuildAction(string *str, Action *act) {
 
 		act->name.replace(map, 5, "");
 		act->colorOnMap = mapColor;
+		if (act->borderColor == 0xff)
+			act->borderColor = act->colorOnMap;
 	}
+
+	std::regex map_color_reg("%MAP-([a-f0-9]{2})%",
+		std::regex_constants::ECMAScript | std::regex_constants::icase);
+	std::smatch map_match;
+	if (std::regex_search(act->name, map_match, map_color_reg)) {
+		act->colorOnMap = stoi(map_match[1].str(), nullptr, 16);
+		if (act->borderColor == 0xff)
+			act->borderColor = act->colorOnMap;
+		act->name.replace(
+				map_match.prefix().length(),
+				map_match[0].length(), "");
+	}
+
+	std::regex border_color_reg("%BORDER-([a-f0-9]{2})%",
+		std::regex_constants::ECMAScript | std::regex_constants::icase);
+	std::smatch border_match;
+	if (std::regex_search(act->name, border_match, border_color_reg)) {
+		act->borderColor = stoi(border_match[1].str(), nullptr, 16);
+		if (act->colorOnMap == 0xff)
+			act->colorOnMap = act->borderColor;
+		act->name.replace(
+				border_match.prefix().length(),
+				border_match[0].length(), "");
+	}
+
+	size_t line = act->name.find("%LINE%");
+	if (line != string::npos) {
+		act->name.replace(line, 6, "");
+		act->drawLine = true;
+	} else
+		act->drawLine = false;
+
 	size_t done = act->name.find("%CONTINUE%");
 	if (done != string::npos) {
 		act->name.replace(done, 10, "");

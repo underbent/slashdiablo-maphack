@@ -300,7 +300,9 @@ void Maphack::OnAutomapDraw() {
 	
 	automapDraw.draw([=](AsyncDrawBuffer &automapBuffer) -> void {
 		POINT MyPos;
-		Drawing::Hook::ScreenToAutomap(&MyPos, D2CLIENT_GetUnitX(D2CLIENT_GetPlayerUnit()), D2CLIENT_GetUnitY(D2CLIENT_GetPlayerUnit()));
+		Drawing::Hook::ScreenToAutomap(&MyPos,
+			D2CLIENT_GetUnitX(D2CLIENT_GetPlayerUnit()),
+			D2CLIENT_GetUnitY(D2CLIENT_GetPlayerUnit()));
 		for (Room1* room1 = player->pAct->pRoom1; room1; room1 = room1->pRoomNext) {
 			for (UnitAny* unit = room1->pUnitFirst; unit; unit = unit->pListNext) {
 				//POINT automapLoc;
@@ -406,14 +408,19 @@ void Maphack::OnAutomapDraw() {
 						uInfo.attrs = ItemAttributeMap[uInfo.itemCode];
 						for (vector<Rule*>::iterator it = MapRuleList.begin(); it != MapRuleList.end(); it++) {
 							if ((*it)->Evaluate(&uInfo, NULL)) {
-								auto color = TextColorMap[(*it)->action.colorOnMap];
+								auto color = (*it)->action.colorOnMap;
+								auto borderColor = (*it)->action.borderColor;
+								auto drawLine = (*it)->action.drawLine;
 								
 								xPos = unit->pItemPath->dwPosX;
 								yPos = unit->pItemPath->dwPosY;
-								automapBuffer.push([color, unit, xPos, yPos]()->void{
+								automapBuffer.push([color, unit, xPos, yPos, MyPos, drawLine, borderColor]()->void{
 									POINT automapLoc;
 									Drawing::Hook::ScreenToAutomap(&automapLoc, xPos, yPos);
-									Drawing::Boxhook::Draw(automapLoc.x - 4, automapLoc.y - 4, 8, 8, color, Drawing::BTHighlight);
+									Drawing::Boxhook::Draw(automapLoc.x - 4, automapLoc.y - 4, 8, 8, borderColor, Drawing::BTHighlight);
+									Drawing::Boxhook::Draw(automapLoc.x - 3, automapLoc.y - 3, 6, 6, color, Drawing::BTHighlight);
+									if (drawLine)
+										Drawing::Linehook::Draw(MyPos.x, MyPos.y, automapLoc.x, automapLoc.y, color);
 								});
 								break;
 							}

@@ -5,6 +5,7 @@
 #include "../../MPQInit.h"
 #include "../../BH.h"
 #include <cstdlib>
+#include <regex>
 
 #define EXCEPTION_INVALID_STAT			1
 #define EXCEPTION_INVALID_OPERATION		2
@@ -375,11 +376,18 @@ struct ActionReplace {
 	string value;
 };
 
+struct ColorReplace {
+	string key;
+	int value;
+};
+
 struct Action {
 	bool stopProcessing;
 	string name;
-	string colorOnMap;
-	Action() : colorOnMap(""), stopProcessing(true), name("") {}
+	int colorOnMap;
+	int borderColor;
+	bool drawLine;
+	Action() : colorOnMap(0xff), borderColor(0xff), stopProcessing(true), name("") {}
 };
 
 struct Rule {
