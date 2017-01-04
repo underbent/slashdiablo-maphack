@@ -213,8 +213,10 @@ void Maphack::OnLoad() {
 }
 
 void Maphack::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
-	if (key == reloadConfig && up) {
-		BH::ReloadConfig();
+	if (key == reloadConfig) {
+		*block = true;
+		if (up)
+			BH::ReloadConfig();
 		return;
 	}
 	for (map<string,Toggle>::iterator it = Toggles.begin(); it != Toggles.end(); it++) {
