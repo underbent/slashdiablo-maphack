@@ -585,7 +585,7 @@ Vector vVector[] = {
 	{EXIT, MAP_A5_CRYSTALLINE_PASSAGE},
 
 	{EXIT, MAP_A5_FROZEN_TUNDRA},							//0x73
-  {0},
+	{EXIT, MAP_A5_DRIFTER_CAVERN},
 	{UNIT_OBJECT, 511},
 	{EXIT, MAP_A5_CRYSTALLINE_PASSAGE},
 
@@ -600,7 +600,7 @@ Vector vVector[] = {
 	{EXIT, MAP_A5_GLACIAL_TRAIL},
 
 	{EXIT, MAP_A5_ARREAT_SUMMIT},							//0x76
-  {0},
+	{EXIT, MAP_A5_ICY_CELLAR},
 	{UNIT_OBJECT, 511},
 	{EXIT, MAP_A5_FROZEN_TUNDRA},
 
@@ -644,7 +644,7 @@ Vector vVector[] = {
 	{0},
 	{EXIT, MAP_A5_ARREAT_PLATEAU},
 
-  {0},																	//0x7f -> infernal pit
+	{0},																	//0x7f -> infernal pit
 	{UNIT_OBJECT, 397},
 	{0},
 	{EXIT, MAP_A5_FROZEN_TUNDRA},
