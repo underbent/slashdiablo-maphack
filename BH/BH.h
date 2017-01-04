@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include <Windows.h>
+#include <thread>
+#include <chrono>
 #include "Modules/ModuleManager.h"
 #include "Config.h"
 #include "Drawing.h"

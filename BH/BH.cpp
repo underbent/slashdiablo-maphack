@@ -94,10 +94,16 @@ void BH::Initialize()
 	config = new Config("BH.cfg");
 	config->Parse();
 
-	if (D2GFX_GetHwnd()) {
+	// Do this asynchronously because D2GFX_GetHwnd() will be null if
+	// we inject on process start
+	Task::Enqueue([]() -> void {
+		std::chrono::milliseconds duration(200);
+		while(!D2GFX_GetHwnd()) {
+			std::this_thread::sleep_for(duration);
+		}
 		BH::OldWNDPROC = (WNDPROC)GetWindowLong(D2GFX_GetHwnd(), GWL_WNDPROC);
 		SetWindowLong(D2GFX_GetHwnd(), GWL_WNDPROC, (LONG)GameWindowEvent);
-	}
+	});
 
 	settingsUI = new Drawing::UI("Settings", 350, 200);
 
