@@ -134,7 +134,7 @@ void GetItemName(UnitItemInfo *uInfo, string &name) {
 
 void SubstituteNameVariables(UnitItemInfo *uInfo, string &name, Action *action) {
 	char origName[128], sockets[4], code[4], ilvl[4], alvl[4], runename[16] = "", runenum[4] = "0";
-	char gemtype[16] = "", gemlevel[16] = "", sellValue[16] = "";
+	char gemtype[16] = "", gemlevel[16] = "", sellValue[16] = "", statVal[16] = "";
 
 	UnitAny *item = uInfo->item;
 	ItemText *txt = D2COMMON_GetItemText(item->dwTxtFileNo);
@@ -170,14 +170,41 @@ void SubstituteNameVariables(UnitItemInfo *uInfo, string &name, Action *action) 
 		{"ILVL", ilvl},
 		{"ALVL", alvl},
 		{"CODE", code},
+		{"NL", "\n"},
 		{"PRICE", sellValue},
 		COLOR_REPLACEMENTS
 	};
 	name.assign(action->name);
 	for (int n = 0; n < sizeof(replacements) / sizeof(replacements[0]); n++) {
-		if (name.find("%" + replacements[n].key + "%") == string::npos)
-			continue;
-		name.replace(name.find("%" + replacements[n].key + "%"), replacements[n].key.length() + 2, replacements[n].value);
+		std::regex replace_reg("%" + replacements[n].key + "%",
+				std::regex_constants::ECMAScript | std::regex_constants::icase);
+		std::smatch replace_match;
+		if (std::regex_search(name, replace_match, replace_reg)) {
+			name.replace(
+					replace_match.prefix().length(),
+					replace_match[0].length(), replacements[n].value);
+		}
+
+	}
+
+	std::regex stat_reg("%stat-([0-9]{1,4})%",
+			std::regex_constants::ECMAScript | std::regex_constants::icase);
+	std::smatch stat_match;
+
+	while (std::regex_search(name, stat_match, stat_reg)) {
+		int stat = stoi(stat_match[1].str(), nullptr, 10);
+		statVal[0] = '\0';
+		if (stat <= (int)STAT_MAX) {
+			auto value = D2COMMON_GetUnitStat(item, stat, 0);
+			// Hp and mana need adjusting
+			if (stat == 7 || stat == 9)
+				value /= 256;
+			sprintf_s(statVal, "%d", value);
+		}
+
+		name.replace(
+				stat_match.prefix().length(),
+				stat_match[0].length(), statVal);
 	}
 }
 
@@ -468,7 +495,7 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 	unsigned int keylen = key.length();
 	if (key.compare(0, 3, "AND") == 0) {
 		Condition::AddNonOperand(conditions, new AndOperator());
-	} else if (key.compare(0, 2, "OR") == 0) {
+	} else if (key.compare(0, 2, "OR") == 0 || key.compare(0, 2, "||") == 0) {
 		Condition::AddNonOperand(conditions, new OrOperator());
 	} else if (keylen >= 3 && !(isupper(key[0]) || isupper(key[1]) || isupper(key[2]))) {
 		Condition::AddOperand(conditions, new ItemCodeCondition(key.substr(0, 3).c_str()));
@@ -594,10 +621,17 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 	} else if (key.compare(0, 2, "SK") == 0) {
 		int num = -1;
 		stringstream ss(key.substr(2));
-		if ((ss >> num).fail() || num < 0 || num > (int)STAT_MAX) {
+		if ((ss >> num).fail() || num < 0 || num > (int)SKILL_MAX) {
 			return;
 		}
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_SINGLESKILL, num, operation, value));
+	} else if (key.compare(0, 2, "OS") == 0) {
+		int num = -1;
+		stringstream ss(key.substr(2));
+		if ((ss >> num).fail() || num < 0 || num > (int)SKILL_MAX) {
+			return;
+		}
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_NONCLASSSKILL, num, operation, value));
 	} else if (key.compare(0, 4, "CLSK") == 0) {
 		int num = -1;
 		stringstream ss(key.substr(4));
@@ -621,6 +655,19 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 			return;
 		}
 		Condition::AddOperand(conditions, new ItemStatCondition(num, 0, operation, value));
+	} else if (key.compare(0, 5, "MULTI") == 0) {
+
+		std::regex multi_reg("([0-9]{1,4}),([0-9]{1,4})",
+			std::regex_constants::ECMAScript | std::regex_constants::icase);
+		std::smatch multi_match;
+		if (std::regex_search(key, multi_match, multi_reg)) {
+			int stat1, stat2;
+			stat1 = stoi(multi_match[1].str(), nullptr, 10);
+			stat2 = stoi(multi_match[2].str(), nullptr, 10);
+
+			Condition::AddOperand(conditions, new ItemStatCondition(stat1, stat2, operation, value));
+		}
+
 	}
 
 	for (vector<Condition*>::iterator it = endConditions.begin(); it != endConditions.end(); it++) {
@@ -873,6 +920,13 @@ bool ItemStatCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *ar
 		return IntegerCompare(info->sockets, operation, targetStat);
 	case STAT_DEFENSE:
 		return IntegerCompare(GetDefense(info), operation, targetStat);
+	case STAT_NONCLASSSKILL:
+		for (vector<ItemProperty>::iterator prop = info->properties.begin(); prop < info->properties.end(); prop++) {
+			if (prop->stat == STAT_NONCLASSSKILL && prop->skill == itemStat2) {
+				num += prop->value;
+			}
+		}
+		return IntegerCompare(num, operation, targetStat);
 	case STAT_SINGLESKILL:
 		for (vector<ItemProperty>::iterator prop = info->properties.begin(); prop < info->properties.end(); prop++) {
 			if (prop->stat == STAT_SINGLESKILL && prop->skill == itemStat2) {

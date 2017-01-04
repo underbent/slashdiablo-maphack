@@ -2,6 +2,7 @@
 #include "MPQReader.h"
 
 unsigned int STAT_MAX;
+unsigned int SKILL_MAX;
 bool initialized = false;
 
 std::vector<StatProperties*> AllStatList;
@@ -1046,6 +1047,15 @@ void InitializeMPQData() {
 	
 	char* end;
 	short lastID = -1;
+
+	for (auto d = MpqDataMap["skills"]->data.begin(); d < MpqDataMap["skills"]->data.end(); d++) {
+		if ((*d)["Id"].length() > 0) {
+			unsigned short id = (unsigned short)std::strtoul((*d)["Id"].c_str(), &end, 10);
+			if (id > SKILL_MAX) {
+				SKILL_MAX = id;
+			}
+    }
+  }
 
 	for (auto d = MpqDataMap["itemstatcost"]->data.begin(); d < MpqDataMap["itemstatcost"]->data.end(); d++) {
 		if ((*d)["ID"].length() > 0) {

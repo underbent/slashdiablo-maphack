@@ -17,6 +17,7 @@
  */
 
 extern unsigned int STAT_MAX;
+extern unsigned int SKILL_MAX;
 
 // Item attributes from ItemTypes.txt and Weapon/Armor/Misc.txt
 struct ItemAttributes {
