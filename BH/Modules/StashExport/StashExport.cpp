@@ -26,6 +26,7 @@ void StashExport::OnLoad() {
 	new Checkhook(settingsTab, 4, y, &Toggles["Include Equipment"].state, "Include Equipment");
 	new Checkhook(settingsTab, 4, (y+=15), &Toggles["Include Fixed Stats"].state, "Include Fixed Stats");
 	new Checkhook(settingsTab, 4, (y += 15), &Toggles["Condense Stats"].state, "Condense Stats");
+	new Checkhook(settingsTab, 4, (y += 15), &Toggles["Export On Menu"].state, "Export On Menu");
 
 	// the MustacheTemplates will not be reloaded
 	options.clear();
@@ -54,6 +55,7 @@ void StashExport::LoadConfig() {
 	Toggles["Include Equipment"] = BH::config->ReadToggle("Include Equipment", "None", true);
 	Toggles["Include Fixed Stats"] = BH::config->ReadToggle("Include Fixed Stats", "None", false);
 	Toggles["Condense Stats"] = BH::config->ReadToggle("Condense Stats", "None", true);
+	Toggles["Export On Menu"] = BH::config->ReadToggle("Export On Menu", "None", false);
 
 	exportGear = BH::config->ReadKey("Export Gear", "VK_NUMPAD5");
 }
@@ -413,6 +415,12 @@ void StashExport::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
 		if (up)
 			return;
 		WriteStash();
+	} else if (key == VK_ESCAPE) {
+		if (up &&
+				StashExport::Toggles["Export On Menu"].state &&
+				D2CLIENT_GetUIState(UI_ESCMENU_MAIN) ) {
+			WriteStash();
+		}
 	}
 	for (map<string, Toggle>::iterator it = Toggles.begin(); it != Toggles.end(); it++) {
 		if (key == (*it).second.toggle) {

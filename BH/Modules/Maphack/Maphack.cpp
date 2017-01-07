@@ -11,6 +11,8 @@
 #include "../Item/ItemDisplay.h"
 #include "../../AsyncDrawBuffer.h"
 
+#pragma optimize( "", off)
+
 using namespace Drawing;
 Patch* weatherPatch = new Patch(Jump, D2COMMON, 0x6CC56, (int)Weather_Interception, 5);
 Patch* lightingPatch = new Patch(Call, D2CLIENT, 0xA9A37, (int)Lighting_Interception, 6);
@@ -817,3 +819,5 @@ VOID __stdcall Shake_Interception(LPDWORD lpX, LPDWORD lpY)
 	*p_D2CLIENT_yShake = 0;
 
 }
+
+#pragma optimize( "", on)
