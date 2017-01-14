@@ -176,35 +176,30 @@ void SubstituteNameVariables(UnitItemInfo *uInfo, string &name, Action *action) 
 	};
 	name.assign(action->name);
 	for (int n = 0; n < sizeof(replacements) / sizeof(replacements[0]); n++) {
-		std::regex replace_reg("%" + replacements[n].key + "%",
-				std::regex_constants::ECMAScript | std::regex_constants::icase);
-		std::smatch replace_match;
-		if (std::regex_search(name, replace_match, replace_reg)) {
-			name.replace(
-					replace_match.prefix().length(),
-					replace_match[0].length(), replacements[n].value);
-		}
-
+		if (name.find("%" + replacements[n].key + "%") == string::npos)
+			continue;
+		name.replace(name.find("%" + replacements[n].key + "%"), replacements[n].key.length() + 2, replacements[n].value);
 	}
 
-	std::regex stat_reg("%stat-([0-9]{1,4})%",
-			std::regex_constants::ECMAScript | std::regex_constants::icase);
-	std::smatch stat_match;
+	// stat replacements
+	if (name.find("%STAT-") != string::npos) {
+		std::regex stat_reg("%STAT-([0-9]{1,4})%", std::regex_constants::ECMAScript);
+		std::smatch stat_match;
 
-	while (std::regex_search(name, stat_match, stat_reg)) {
-		int stat = stoi(stat_match[1].str(), nullptr, 10);
-		statVal[0] = '\0';
-		if (stat <= (int)STAT_MAX) {
-			auto value = D2COMMON_GetUnitStat(item, stat, 0);
-			// Hp and mana need adjusting
-			if (stat == 7 || stat == 9)
-				value /= 256;
-			sprintf_s(statVal, "%d", value);
+		while (std::regex_search(name, stat_match, stat_reg)) {
+			int stat = stoi(stat_match[1].str(), nullptr, 10);
+			statVal[0] = '\0';
+			if (stat <= (int)STAT_MAX) {
+				auto value = D2COMMON_GetUnitStat(item, stat, 0);
+				// Hp and mana need adjusting
+				if (stat == 7 || stat == 9)
+					value /= 256;
+				sprintf_s(statVal, "%d", value);
+			}
+			name.replace(
+					stat_match.prefix().length(),
+					stat_match[0].length(), statVal);
 		}
-
-		name.replace(
-				stat_match.prefix().length(),
-				stat_match[0].length(), statVal);
 	}
 }
 
@@ -316,6 +311,21 @@ namespace ItemDisplay {
 
 void BuildAction(string *str, Action *act) {
 	act->name = string(str->c_str());
+
+	// upcase all text in a %replacement_string%
+	// for some reason \w wasn't catching _, so I added it to the groups
+	std::regex replace_reg("%(\\w|_|-)*?[a-z]+?(\\w|_|-)*?%",
+		std::regex_constants::ECMAScript|std::regex_constants::nosubs);
+	std::smatch replace_match;
+	while (std::regex_search(act->name, replace_match, replace_reg)) {
+		auto startPos = act->name.begin() + replace_match.prefix().length();
+		std::transform(
+				startPos,
+				startPos + replace_match[0].length(),
+				startPos,
+				toupper
+				);
+	}
 
 	size_t map = act->name.find("%MAP%");
 	if (map != string::npos) {
@@ -493,7 +503,7 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 	BYTE operation = GetOperation(&delim);
 
 	unsigned int keylen = key.length();
-	if (key.compare(0, 3, "AND") == 0) {
+	if (key.compare(0, 3, "AND") == 0 || key.compare(0, 2, "&&") == 0) {
 		Condition::AddNonOperand(conditions, new AndOperator());
 	} else if (key.compare(0, 2, "OR") == 0 || key.compare(0, 2, "||") == 0) {
 		Condition::AddNonOperand(conditions, new OrOperator());
