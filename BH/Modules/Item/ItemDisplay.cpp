@@ -314,7 +314,7 @@ void BuildAction(string *str, Action *act) {
 
 	// upcase all text in a %replacement_string%
 	// for some reason \w wasn't catching _, so I added it to the groups
-	std::regex replace_reg("%(\\w|_|-)*?[a-z]+?(\\w|_|-)*?%",
+	std::regex replace_reg(R"(%(\w|_|-)*?[a-z]+?(\w|_|-)*?%)",
 		std::regex_constants::ECMAScript|std::regex_constants::nosubs);
 	std::smatch replace_match;
 	while (std::regex_search(act->name, replace_match, replace_reg)) {
