@@ -314,15 +314,16 @@ void BuildAction(string *str, Action *act) {
 
 	// upcase all text in a %replacement_string%
 	// for some reason \w wasn't catching _, so I added it to the groups
-	std::regex replace_reg(R"(%(\w|_|-)*?[a-z]+?(\w|_|-)*?%)",
-		std::regex_constants::ECMAScript|std::regex_constants::nosubs);
+	std::regex replace_reg(
+			R"(^(?:(?:%[^%]*%)|[^%])*%((?:\w|_|-)*?[a-z]+?(?:\w|_|-)*?)%)",
+			std::regex_constants::ECMAScript);
 	std::smatch replace_match;
 	while (std::regex_search(act->name, replace_match, replace_reg)) {
-		auto startPos = act->name.begin() + replace_match.prefix().length();
+		auto offset = replace_match[1].first - act->name.begin();
 		std::transform(
-				startPos,
-				startPos + replace_match[0].length(),
-				startPos,
+				replace_match[1].first,
+				replace_match[1].second,
+				act->name.begin() + offset,
 				toupper
 				);
 	}
