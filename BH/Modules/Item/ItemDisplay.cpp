@@ -292,7 +292,9 @@ namespace ItemDisplay {
 			BuildAction(&(rules[i].second), &(r->action));
 
 			RuleList.push_back(r);
-			if (r->action.colorOnMap != 0xff) {
+			if (r->action.colorOnMap != 0xff ||
+					r->action.borderColor != 0xff ||
+					r->action.dotColor != 0xff ) {
 				MapRuleList.push_back(r);
 			}
 			else if (r->action.name.length() == 0) {
@@ -354,8 +356,6 @@ void BuildAction(string *str, Action *act) {
 	std::smatch map_match;
 	if (std::regex_search(act->name, map_match, map_color_reg)) {
 		act->colorOnMap = stoi(map_match[1].str(), nullptr, 16);
-		if (act->borderColor == 0xff)
-			act->borderColor = act->colorOnMap;
 		act->name.replace(
 				map_match.prefix().length(),
 				map_match[0].length(), "");
@@ -366,11 +366,19 @@ void BuildAction(string *str, Action *act) {
 	std::smatch border_match;
 	if (std::regex_search(act->name, border_match, border_color_reg)) {
 		act->borderColor = stoi(border_match[1].str(), nullptr, 16);
-		if (act->colorOnMap == 0xff)
-			act->colorOnMap = act->borderColor;
 		act->name.replace(
 				border_match.prefix().length(),
 				border_match[0].length(), "");
+	}
+
+	std::regex dot_color_reg("%DOT-([a-f0-9]{2})%",
+		std::regex_constants::ECMAScript | std::regex_constants::icase);
+	std::smatch dot_match;
+	if (std::regex_search(act->name, dot_match, dot_color_reg)) {
+		act->dotColor = stoi(dot_match[1].str(), nullptr, 16);
+		act->name.replace(
+				dot_match.prefix().length(),
+				dot_match[0].length(), "");
 	}
 
 	size_t line = act->name.find("%LINE%");

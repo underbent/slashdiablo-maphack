@@ -386,8 +386,14 @@ struct Action {
 	string name;
 	int colorOnMap;
 	int borderColor;
+	int dotColor;
 	bool drawLine;
-	Action() : colorOnMap(0xff), borderColor(0xff), stopProcessing(true), name("") {}
+	Action() :
+		colorOnMap(0xff),
+		borderColor(0xff),
+		dotColor(0xff),
+		stopProcessing(true),
+		name("") {}
 };
 
 struct Rule {
