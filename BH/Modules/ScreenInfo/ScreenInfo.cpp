@@ -41,6 +41,20 @@ void ScreenInfo::OnGameJoin(const string& name, const string& pass, int diff) {
 	startLevel = (int)D2COMMON_GetUnitStat(pUnit, STAT_LEVEL, 0);
 }
 
+void ScreenInfo::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
+	for (map<string,Toggle>::iterator it = Toggles.begin(); it != Toggles.end(); it++) {
+		if (key == (*it).second.toggle) {
+			*block = true;
+			if (up) {
+				(*it).second.state = !(*it).second.state;
+			}
+			return;
+		}
+	}
+	return;
+}
+
+
 // Right-clicking in the chat console pastes from the clipboard
 void ScreenInfo::OnRightClick(bool up, int x, int y, bool* block) {
 	if (up)
