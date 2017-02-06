@@ -180,6 +180,7 @@ bool BH::ReloadConfig() {
 			PrintText(0, "Reloading BH config");
 		config->Parse();
 		moduleManager->ReloadConfig();
+		statsDisplay->LoadConfig();
 	}
 	return true;
 }

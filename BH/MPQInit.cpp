@@ -7,6 +7,7 @@ bool initialized = false;
 
 std::vector<StatProperties*> AllStatList;
 std::unordered_map<std::string, StatProperties*> StatMap;
+std::vector<CharStats*> CharList;
 std::map<std::string, ItemAttributes*> ItemAttributeMap;
 std::map<std::string, InventoryLayout*> InventoryLayoutMap;
 
@@ -1056,6 +1057,14 @@ void InitializeMPQData() {
 			}
     }
   }
+
+	for (auto d = MpqDataMap["charstats"]->data.begin(); d < MpqDataMap["charstats"]->data.end(); d++) {
+		if ((*d)["ToHitFactor"].length() > 0) {
+			CharStats *bits = new CharStats();
+			bits->toHitFactor = std::stoi((*d)["ToHitFactor"].c_str(), nullptr, 10);
+			CharList.push_back(bits);
+		}
+	}
 
 	for (auto d = MpqDataMap["itemstatcost"]->data.begin(); d < MpqDataMap["itemstatcost"]->data.end(); d++) {
 		if ((*d)["ID"].length() > 0) {

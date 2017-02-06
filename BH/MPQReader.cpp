@@ -119,7 +119,7 @@ bool ReadMPQFiles(std::string fileName) {
 
 			MPQArchive archive(copyFileName.c_str());
 
-			const int NUM_MPQS = 15;
+			const int NUM_MPQS = 16;
 			std::string mpqFiles[NUM_MPQS] = {
 				"UniqueItems",
 				"Armor",
@@ -135,7 +135,8 @@ bool ReadMPQFiles(std::string fileName) {
 				"MagicPrefix",
 				"MagicSuffix",
 				"RarePrefix",
-				"RareSuffix"
+				"RareSuffix",
+				"CharStats"
 			};
 			if (archive.error == ERROR_SUCCESS) {
 				for (int i = 0; i < NUM_MPQS; i++){

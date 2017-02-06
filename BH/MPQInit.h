@@ -47,8 +47,13 @@ struct StatProperties {
 	unsigned short ID;
 };
 
+struct CharStats {
+	int toHitFactor;
+};
+
 extern std::vector<StatProperties*> AllStatList;
 extern std::unordered_map<std::string, StatProperties*> StatMap;
+extern std::vector<CharStats*> CharList;
 extern std::map<std::string, ItemAttributes*> ItemAttributeMap;
 extern std::map<std::string, InventoryLayout*> InventoryLayoutMap;
 

@@ -29,6 +29,8 @@ namespace Drawing {
 			StatsDisplay(std::string name);
 			~StatsDisplay();
 
+			void LoadConfig();
+
 			void Lock() { EnterCriticalSection(&crit); };
 			void Unlock() { LeaveCriticalSection(&crit); };
 
