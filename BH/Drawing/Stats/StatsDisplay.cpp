@@ -197,7 +197,7 @@ void StatsDisplay::OnDraw() {
 		int mPierce = (int)D2COMMON_GetUnitStat(unit, STAT_PASSIVEMAGICRESREDUC, 0);
 		Texthook::Draw(15, (y += 16), None, 6, Gold,
 				"Elemental Mastery:ÿc1 %d%%ÿc3 %d%%ÿc9 %d%%ÿc2 %d%%ÿc8 %d%%",
-				fMastery, cMastery, lMastery, pMastery, pMastery);
+				fMastery, cMastery, lMastery, pMastery, mMastery);
 		Texthook::Draw(15, (y += 16), None, 6, Gold,
 				"Elemental Pierce:ÿc1 %d%%ÿc3 %d%%ÿc9 %d%%ÿc2 %d%%ÿc8 %d%%",
 				fPierce, cPierce, lPierce, pPierce, mPierce);
