@@ -41,6 +41,19 @@ void ScreenInfo::OnLoad() {
 }
 
 void ScreenInfo::OnGameJoin(const string& name, const string& pass, int diff) {
+	BnetData* pInfo = (*p_D2LAUNCH_BnData);
+	UnitAny *unit = D2CLIENT_GetPlayerUnit();
+	if (unit) {
+		std::string title = (std::string)"Diablo II - ";
+		if (strlen(pInfo->szAccountName) > 0) {
+			title += (std::string)pInfo->szAccountName + " - ";
+		}
+		title += unit->pPlayerData->szName;
+		if (!SetWindowText(D2GFX_GetHwnd(), title.c_str())) {
+			printf("Failed setting window text, error: %d\n\n", GetLastError());
+		}
+	}
+
 	gameTimer = GetTickCount();
 	UnitAny* pUnit = D2CLIENT_GetPlayerUnit();
 	startExperience = (int)D2COMMON_GetUnitStat(pUnit, STAT_EXP, 0);
