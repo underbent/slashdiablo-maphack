@@ -459,6 +459,7 @@ namespace ItemDisplay {
 }
 StatProperties *GetStatProperties(unsigned int stat);
 void BuildAction(string *str, Action *act);
+int ParseMapColor(Action *act, const string& reg_string);
 void HandleUnknownItemCode(char *code, char *tag);
 BYTE GetOperation(string *op);
 inline bool IntegerCompare(unsigned int Lvalue, int operation, unsigned int Rvalue);

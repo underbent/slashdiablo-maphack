@@ -355,61 +355,32 @@ void BuildAction(string *str, Action *act) {
 	}
 
 	// new stuff:
-	std::regex border_color_reg("%BORDER-([a-f0-9]{2})%",
-		std::regex_constants::ECMAScript | std::regex_constants::icase);
-	std::smatch border_match;
-	if (std::regex_search(act->name, border_match, border_color_reg)) {
-		act->borderColor = stoi(border_match[1].str(), nullptr, 16);
-		act->name.replace(
-				border_match.prefix().length(),
-				border_match[0].length(), "");
-	}
-
-	std::regex map_color_reg("%MAP-([a-f0-9]{2})%",
-		std::regex_constants::ECMAScript | std::regex_constants::icase);
-	std::smatch map_match;
-	if (std::regex_search(act->name, map_match, map_color_reg)) {
-		act->colorOnMap = stoi(map_match[1].str(), nullptr, 16);
-		act->name.replace(
-				map_match.prefix().length(),
-				map_match[0].length(), "");
-	}
-
-	std::regex dot_color_reg("%DOT-([a-f0-9]{2})%",
-		std::regex_constants::ECMAScript | std::regex_constants::icase);
-	std::smatch dot_match;
-	if (std::regex_search(act->name, dot_match, dot_color_reg)) {
-		act->dotColor = stoi(dot_match[1].str(), nullptr, 16);
-		act->name.replace(
-				dot_match.prefix().length(),
-				dot_match[0].length(), "");
-	}
-
-	std::regex px_color_reg("%PX-([a-f0-9]{2})%",
-		std::regex_constants::ECMAScript | std::regex_constants::icase);
-	std::smatch px_match;
-	if (std::regex_search(act->name, px_match, px_color_reg)) {
-		act->pxColor = stoi(px_match[1].str(), nullptr, 16);
-		act->name.replace(
-				px_match.prefix().length(),
-				px_match[0].length(), "");
-	}
-
-	std::regex line_color_reg("%LINE-([a-f0-9]{2})%",
-		std::regex_constants::ECMAScript | std::regex_constants::icase);
-	std::smatch the_match;
-	if (std::regex_search(act->name, the_match, line_color_reg)) {
-		act->lineColor = stoi(the_match[1].str(), nullptr, 16);
-		act->name.replace(
-				the_match.prefix().length(),
-				the_match[0].length(), "");
-	}
+	act->borderColor = ParseMapColor(act, "BORDER");
+	act->colorOnMap = ParseMapColor(act, "MAP");
+	act->dotColor = ParseMapColor(act, "DOT");
+	act->pxColor = ParseMapColor(act, "PX");
+	act->lineColor = ParseMapColor(act, "LINE");
 
 	size_t done = act->name.find("%CONTINUE%");
 	if (done != string::npos) {
 		act->name.replace(done, 10, "");
 		act->stopProcessing = false;
 	}
+}
+
+int ParseMapColor(Action *act, const string& key_string) {
+	std::regex pattern("%" + key_string + "-([a-f0-9]{2})%",
+		std::regex_constants::ECMAScript | std::regex_constants::icase);
+	int color = 0xff;
+	std::smatch the_match;
+
+	if (std::regex_search(act->name, the_match, pattern)) {
+		color = stoi(the_match[1].str(), nullptr, 16);
+		act->name.replace(
+				the_match.prefix().length(),
+				the_match[0].length(), "");
+	}
+	return color;
 }
 
 const string Condition::tokenDelims = "<=>";
