@@ -13,8 +13,14 @@ void ScreenInfo::OnLoad() {
 	Toggles["Experience Meter"] = BH::config->ReadToggle("Experience Meter", "VK_NUMPAD7", false);
 
 	automapInfo = BH::config->ReadArray("AutomapInfo");
-	bhText = new Texthook(Perm, 790, 6, "ÿc4BH v0.1.8(alpha10) (SlashDiablo Branch)");
+	bhText = new Texthook(Perm, 795, 6, "BH v0.1.8(beta2)");
 	bhText->SetAlignment(Right);
+	bhText->SetFont(6);
+	bhText->SetColor(Gold);
+
+	bhText2 = new Texthook(Perm, 2, 592, "BH v0.1.8(beta2) (SlashDiablo Branch)");
+	bhText2->SetFont(6);
+
 	if (BH::cGuardLoaded) {
 		Texthook* cGuardText = new Texthook(Perm, 790, 23, "ÿc4cGuard Loaded");
 		cGuardText->SetAlignment(Right);
