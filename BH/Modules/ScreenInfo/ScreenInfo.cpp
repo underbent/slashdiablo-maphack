@@ -219,7 +219,7 @@ void ScreenInfo::drawExperienceInfo(){
 	}
 	sprintf_s(sExp, "%00.2f%% (%s%00.2f%%) [%s%.2f%s/s]", pExp, expGainPct >= 0 ? "+" : "", expGainPct, expPerSecond >= 0 ? "+" : "", expPerSecond, unit);
 
-	Texthook::Draw(300, 600 - 60, Center, 0, White, "%s", sExp);
+	Texthook::Draw(300, 600 - 60, Center, 6, White, "%s", sExp);
 }
 
 void ScreenInfo::OnAutomapDraw() {
