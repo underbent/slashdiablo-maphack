@@ -21,6 +21,7 @@ public:
 
 	// Pushes a draw function into the back buffer
 	void push(std::function<void()> drawCall);
+	void push_top_layer(std::function<void()> drawCall);
 
 	// Clears the backbuffer
 	void clear();
