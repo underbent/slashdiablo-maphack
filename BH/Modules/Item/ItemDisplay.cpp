@@ -294,7 +294,9 @@ namespace ItemDisplay {
 			RuleList.push_back(r);
 			if (r->action.colorOnMap != 0xff ||
 					r->action.borderColor != 0xff ||
-					r->action.dotColor != 0xff ) {
+					r->action.dotColor != 0xff ||
+					r->action.pxColor != 0xff ||
+					r->action.lineColor != 0xff) {
 				MapRuleList.push_back(r);
 			}
 			else if (r->action.name.length() == 0) {
@@ -330,6 +332,7 @@ void BuildAction(string *str, Action *act) {
 				);
 	}
 
+	// legacy support:
 	size_t map = act->name.find("%MAP%");
 	if (map != string::npos) {
 		int mapColor = MAP_COLOR_WHITE;
@@ -351,16 +354,7 @@ void BuildAction(string *str, Action *act) {
 			act->borderColor = act->colorOnMap;
 	}
 
-	std::regex map_color_reg("%MAP-([a-f0-9]{2})%",
-		std::regex_constants::ECMAScript | std::regex_constants::icase);
-	std::smatch map_match;
-	if (std::regex_search(act->name, map_match, map_color_reg)) {
-		act->colorOnMap = stoi(map_match[1].str(), nullptr, 16);
-		act->name.replace(
-				map_match.prefix().length(),
-				map_match[0].length(), "");
-	}
-
+	// new stuff:
 	std::regex border_color_reg("%BORDER-([a-f0-9]{2})%",
 		std::regex_constants::ECMAScript | std::regex_constants::icase);
 	std::smatch border_match;
@@ -369,6 +363,16 @@ void BuildAction(string *str, Action *act) {
 		act->name.replace(
 				border_match.prefix().length(),
 				border_match[0].length(), "");
+	}
+
+	std::regex map_color_reg("%MAP-([a-f0-9]{2})%",
+		std::regex_constants::ECMAScript | std::regex_constants::icase);
+	std::smatch map_match;
+	if (std::regex_search(act->name, map_match, map_color_reg)) {
+		act->colorOnMap = stoi(map_match[1].str(), nullptr, 16);
+		act->name.replace(
+				map_match.prefix().length(),
+				map_match[0].length(), "");
 	}
 
 	std::regex dot_color_reg("%DOT-([a-f0-9]{2})%",
@@ -381,12 +385,25 @@ void BuildAction(string *str, Action *act) {
 				dot_match[0].length(), "");
 	}
 
-	size_t line = act->name.find("%LINE%");
-	if (line != string::npos) {
-		act->name.replace(line, 6, "");
-		act->drawLine = true;
-	} else
-		act->drawLine = false;
+	std::regex px_color_reg("%PX-([a-f0-9]{2})%",
+		std::regex_constants::ECMAScript | std::regex_constants::icase);
+	std::smatch px_match;
+	if (std::regex_search(act->name, px_match, px_color_reg)) {
+		act->pxColor = stoi(px_match[1].str(), nullptr, 16);
+		act->name.replace(
+				px_match.prefix().length(),
+				px_match[0].length(), "");
+	}
+
+	std::regex line_color_reg("%LINE-([a-f0-9]{2})%",
+		std::regex_constants::ECMAScript | std::regex_constants::icase);
+	std::smatch the_match;
+	if (std::regex_search(act->name, the_match, line_color_reg)) {
+		act->lineColor = stoi(the_match[1].str(), nullptr, 16);
+		act->name.replace(
+				the_match.prefix().length(),
+				the_match[0].length(), "");
+	}
 
 	size_t done = act->name.find("%CONTINUE%");
 	if (done != string::npos) {

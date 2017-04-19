@@ -387,11 +387,14 @@ struct Action {
 	int colorOnMap;
 	int borderColor;
 	int dotColor;
-	bool drawLine;
+	int pxColor;
+	int lineColor;
 	Action() :
 		colorOnMap(0xff),
 		borderColor(0xff),
 		dotColor(0xff),
+		pxColor(0xff),
+		lineColor(0xff),
 		stopProcessing(true),
 		name("") {}
 };

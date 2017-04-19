@@ -415,11 +415,13 @@ void Maphack::OnAutomapDraw() {
 								auto color = (*it)->action.colorOnMap;
 								auto borderColor = (*it)->action.borderColor;
 								auto dotColor = (*it)->action.dotColor;
-								auto drawLine = (*it)->action.drawLine;
+								auto pxColor = (*it)->action.pxColor;
+								auto lineColor = (*it)->action.lineColor;
 								
 								xPos = unit->pItemPath->dwPosX;
 								yPos = unit->pItemPath->dwPosY;
-								automapBuffer.push([color, unit, xPos, yPos, MyPos, drawLine, borderColor, dotColor]()->void{
+								automapBuffer.push_top_layer(
+										[color, unit, xPos, yPos, MyPos, borderColor, dotColor, pxColor, lineColor]()->void{
 									POINT automapLoc;
 									Drawing::Hook::ScreenToAutomap(&automapLoc, xPos, yPos);
 									if (borderColor != 0xff)
@@ -428,8 +430,11 @@ void Maphack::OnAutomapDraw() {
 										Drawing::Boxhook::Draw(automapLoc.x - 3, automapLoc.y - 3, 6, 6, color, Drawing::BTHighlight);
 									if (dotColor != 0xff)
 										Drawing::Boxhook::Draw(automapLoc.x - 2, automapLoc.y - 2, 4, 4, dotColor, Drawing::BTHighlight);
-									if (drawLine)
-										Drawing::Linehook::Draw(MyPos.x, MyPos.y, automapLoc.x, automapLoc.y, color);
+									if (pxColor != 0xff)
+										Drawing::Boxhook::Draw(automapLoc.x - 1, automapLoc.y - 1, 2, 2, pxColor, Drawing::BTHighlight);
+									if (lineColor != 0xff) {
+										Drawing::Linehook::Draw(MyPos.x, MyPos.y, automapLoc.x, automapLoc.y, lineColor);
+									}
 								});
 								break;
 							}
