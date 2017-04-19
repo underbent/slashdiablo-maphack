@@ -436,7 +436,6 @@ void Maphack::OnAutomapDraw() {
 										Drawing::Linehook::Draw(MyPos.x, MyPos.y, automapLoc.x, automapLoc.y, lineColor);
 									}
 								});
-								break;
 							}
 						}
 					}

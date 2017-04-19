@@ -17,7 +17,7 @@ class Config {
 	private:
 		std::string configName;
 		std::map<std::string,std::string> contents;
-		std::vector<std::string> orderedKeys;
+		vector<pair<string,string>> orderedKeyVals;
 
 	public:
 		Config(std::string name) : configName(name) {};
