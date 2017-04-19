@@ -332,6 +332,13 @@ void BuildAction(string *str, Action *act) {
 				);
 	}
 
+	// new stuff:
+	act->borderColor = ParseMapColor(act, "BORDER");
+	act->colorOnMap = ParseMapColor(act, "MAP");
+	act->dotColor = ParseMapColor(act, "DOT");
+	act->pxColor = ParseMapColor(act, "PX");
+	act->lineColor = ParseMapColor(act, "LINE");
+
 	// legacy support:
 	size_t map = act->name.find("%MAP%");
 	if (map != string::npos) {
@@ -353,13 +360,6 @@ void BuildAction(string *str, Action *act) {
 		if (act->borderColor == 0xff)
 			act->borderColor = act->colorOnMap;
 	}
-
-	// new stuff:
-	act->borderColor = ParseMapColor(act, "BORDER");
-	act->colorOnMap = ParseMapColor(act, "MAP");
-	act->dotColor = ParseMapColor(act, "DOT");
-	act->pxColor = ParseMapColor(act, "PX");
-	act->lineColor = ParseMapColor(act, "LINE");
 
 	size_t done = act->name.find("%CONTINUE%");
 	if (done != string::npos) {
