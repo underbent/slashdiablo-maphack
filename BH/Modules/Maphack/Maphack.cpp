@@ -215,7 +215,8 @@ void Maphack::OnLoad() {
 }
 
 void Maphack::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
-	if (key == reloadConfig) {
+	bool ctrlState = ((GetKeyState(VK_LCONTROL) & 0x80) || (GetKeyState(VK_RCONTROL) & 0x80));
+	if (key == 0x52 && ctrlState || key == reloadConfig) {
 		*block = true;
 		if (up)
 			BH::ReloadConfig();
