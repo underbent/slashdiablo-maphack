@@ -110,7 +110,11 @@ void Item::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
 		if (up)
 			return;
 		UnitAny* selectedUnit = D2CLIENT_GetSelectedUnit();
-		if (selectedUnit && selectedUnit->dwMode != 0 && selectedUnit->dwMode != 17 && selectedUnit->dwType == 0) {
+		if (selectedUnit && selectedUnit->dwMode != 0 && selectedUnit->dwMode != 17 && ( // Alive
+					selectedUnit->dwType == 0 ||					// Player
+					selectedUnit->dwTxtFileNo == 291 ||		// Iron Golem
+					selectedUnit->dwTxtFileNo == 357 ||		// Valkerie
+					selectedUnit->dwTxtFileNo == 418)) {	// Shadow Master
 			viewingUnit = selectedUnit;
 			if (!D2CLIENT_GetUIState(0x01))
 				D2CLIENT_SetUIVar(0x01, 0, 0);
