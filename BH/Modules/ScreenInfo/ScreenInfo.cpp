@@ -290,7 +290,7 @@ void ScreenInfo::OnAutomapDraw() {
 				key.replace(key.find("%" + automap[n].key + "%"), automap[n].key.length() + 2, automap[n].value);
 		}
 		if (key.length() > 0)
-			Texthook::Draw(790, (y+=16), Right,0,Gold,"%s", key.c_str());
+			Texthook::Draw(*p_D2CLIENT_ScreenSizeX - 10, (y+=16), Right,0,Gold,"%s", key.c_str());
 	}
 
 	delete [] level;
