@@ -39,7 +39,7 @@ void ItemMover::Init() {
 	int screenHeight = *p_D2CLIENT_ScreenSizeY;
 	//PrintText(1, "Got screensize %d, %d", screenWidth, screenHeight);
 
-	if (screenWidth == 640 && screenHeight == 480) {
+	if (screenWidth != 800 || screenHeight != 600) {
 		classicStashLayout = InventoryLayoutMap["Bank Page 1"];
 		lodStashLayout = InventoryLayoutMap["Big Bank Page 1"];
 		inventoryLayout = InventoryLayoutMap["Amazon"];  // all character types have the same layout
