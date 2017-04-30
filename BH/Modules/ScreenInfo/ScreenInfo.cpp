@@ -204,6 +204,9 @@ void ScreenInfo::OnDraw() {
 	if (Toggles["Experience Meter"].state) {
 		drawExperienceInfo();
 	}
+
+	bhText->SetBaseX(*p_D2CLIENT_ScreenSizeX - 5);
+	bhText2->SetBaseY(*p_D2CLIENT_ScreenSizeY - 8);
 }
 
 void ScreenInfo::drawExperienceInfo(){
@@ -238,7 +241,7 @@ void ScreenInfo::drawExperienceInfo(){
 	}
 	sprintf_s(sExp, "%00.2f%% (%s%00.2f%%) [%s%.2f%s/s]", pExp, expGainPct >= 0 ? "+" : "", expGainPct, expPerSecond >= 0 ? "+" : "", expPerSecond, unit);
 
-	Texthook::Draw(300, 600 - 60, Center, 6, White, "%s", sExp);
+	Texthook::Draw((*p_D2CLIENT_ScreenSizeX / 2) - 100, *p_D2CLIENT_ScreenSizeY - 60, Center, 6, White, "%s", sExp);
 }
 
 void ScreenInfo::OnAutomapDraw() {
@@ -287,7 +290,7 @@ void ScreenInfo::OnAutomapDraw() {
 				key.replace(key.find("%" + automap[n].key + "%"), automap[n].key.length() + 2, automap[n].value);
 		}
 		if (key.length() > 0)
-			Texthook::Draw(790, (y+=16), Right,0,Gold,"%s", key.c_str());
+			Texthook::Draw(*p_D2CLIENT_ScreenSizeX - 10, (y+=16), Right,0,Gold,"%s", key.c_str());
 	}
 
 	delete [] level;
@@ -370,6 +373,9 @@ void ScreenInfo::OnGameExit() {
 	DiabloBlocked = false;
 	BaalBlocked = false;
 	ReceivedQuestPacket = false;
+
+	bhText->SetBaseX(795);
+	bhText2->SetBaseY(592);
 }
 
 
