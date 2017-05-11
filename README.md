@@ -52,10 +52,6 @@ Mustache[item]: {{>header}}{{>stats}}{{^isRuneword}}{{#socketed}}\n\n  * {{>>ite
 Mustache[stash]: {{#this}}* {{>item}}\n\n{{/this}}
 ```
 
-Github no longer offers binary downloads, so to get the latest release
-(currently v0.1.5) or any older release go to
-http://bitly.com/bundles/underbent/1.
-
 #Release Notes for BH Maphack v1.7a
 - A fork of Underbent's v1.6 by Slayergod13
 
