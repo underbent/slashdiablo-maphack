@@ -52,10 +52,10 @@ Mustache[item]: {{>header}}{{>stats}}{{^isRuneword}}{{#socketed}}\n\n  * {{>>ite
 Mustache[stash]: {{#this}}* {{>item}}\n\n{{/this}}
 ```
 
-#Release Notes for BH Maphack v1.7a
+# Release Notes for BH Maphack v1.7a
 - A fork of Underbent's v1.6 by Slayergod13
 
-##Updates to Underbent's v1.6 changes:
+## Updates to Underbent's v1.6 changes:
 - BH.Injector
 	- Refactored the injection process so that it no longer executes the core maphack logic inside of the loader lock.
 		- This resulted in a minor frame rate increase
@@ -68,13 +68,13 @@ Mustache[stash]: {{#this}}* {{>item}}\n\n{{/this}}
 - Item Module
 	- Now relies on the data read from the MPQ files within the maphack dll
 	
-##New Features & Bug Fixes:
+## New Features & Bug Fixes:
 
-###BH Config
+### BH Config
 - Can now read lines of arbitrary length
 - Fixed a bug where lines with a single '/' would be truncated instead of waiting for a double slash "//"
 
-###StashExport
+### StashExport
 - New Module Capable of exporting the current characters inventory in [JSON](http://www.json.org) or custom formats using mustache templates
 - Uses the MPQ data to figure out the item information
 - Templates can be specified in the BH.cfg using mustache syntax: https://mustache.github.io/mustache.5.html
@@ -112,24 +112,24 @@ Mustache[stash]: {{#this}}* {{>item}}\n\n{{/this}}
 -  Can get stats for jewels that have been placed into a socketed item
 -  See sample output further down
 
-###D2Structs
+### D2Structs
 - Adjusted some structures to better state the purpose of some previously "unknown" or unspecified bytes
 
-###ScreenInfo
+### ScreenInfo
 - Added display for current/added/rate of gain for experience
 	 - BH Toggle: "Experience Meter"
 	 
-###Maphack
+### Maphack
 - Refactored the rendering pipeline for the automap objects (monsters, items, missiles, etc) so that the frames could be recycled. 
 	- This allows the system to reuse calculations from previous frames and only store the draw commands.
 	- This can result in a large frame rate increase on slower machines
 - Added ability to display chests on the automap
 
-###ItemDisplay
+### ItemDisplay
 - The predicate parser will no longer use exceptions for control flow.
 	- The old design was resulting in a large frame rate penalty that has been aleviated
 	
-##New Configuration Items & Defaults:
+## New Configuration Items & Defaults:
 ```
 // Maphack section:
 // Toggles whether or not to show chests on the automap
@@ -152,7 +152,7 @@ Mustache[item]: {{>header}}{{>stats}}{{^isRuneword}}{{#socketed}}\n\n  * {{>>ite
 Mustache[stash]: {{#this}}* {{>item}}\n\n{{/this}}
 ```
 
-##Stash Export Sample:
+## Stash Export Sample:
 Raw JSON:
 ````json
 [
