@@ -40,7 +40,7 @@ StatsDisplay::~StatsDisplay() {
 }
 
 void StatsDisplay::LoadConfig(){
-	int height = 342 + 8 * 3 + 16 * 4;
+	int height = 342 + 8 * 3 + 16 * 5;
 	customStats.clear();
 
 	vector<pair<string, string>> stats = BH::config->ReadMapList("Stat Screen");
@@ -269,6 +269,11 @@ void StatsDisplay::OnDraw() {
 		Texthook::Draw(column2, y, None, 6, Gold,
 				"Mana Leech:ÿc0 %d",
 				(int)D2COMMON_GetUnitStat(unit, STAT_MANALEECH, 0));
+		Texthook::Draw(15, (y += 16), None, 6, Gold,
+				"Projectile Pierce:ÿc0 %d",
+				(int)D2COMMON_GetUnitStat(unit, STAT_PIERCINGATTACK, 0) +
+				(int)D2COMMON_GetUnitStat(unit, STAT_PIERCE, 0)
+				);
 
 		y += 8;
 
