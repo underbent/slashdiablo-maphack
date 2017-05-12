@@ -13,13 +13,9 @@ void ScreenInfo::OnLoad() {
 	Toggles["Experience Meter"] = BH::config->ReadToggle("Experience Meter", "VK_NUMPAD7", false);
 
 	automapInfo = BH::config->ReadArray("AutomapInfo");
-	bhText = new Texthook(Perm, 795, 6, "BH v0.1.8(beta3)");
+	bhText = new Texthook(OutOfGame, 795, 6, BH_VERSION " (planqi Resurgence/Slash branch)");
 	bhText->SetAlignment(Right);
-	bhText->SetFont(6);
 	bhText->SetColor(Gold);
-
-	bhText2 = new Texthook(Perm, 2, 592, "BH v0.1.8(beta3) (SlashDiablo Branch)");
-	bhText2->SetFont(6);
 
 	if (BH::cGuardLoaded) {
 		Texthook* cGuardText = new Texthook(Perm, 790, 23, "ÿc4cGuard Loaded");
@@ -204,9 +200,6 @@ void ScreenInfo::OnDraw() {
 	if (Toggles["Experience Meter"].state) {
 		drawExperienceInfo();
 	}
-
-	bhText->SetBaseX(*p_D2CLIENT_ScreenSizeX - 5);
-	bhText2->SetBaseY(*p_D2CLIENT_ScreenSizeY - 8);
 }
 
 void ScreenInfo::drawExperienceInfo(){
@@ -373,9 +366,6 @@ void ScreenInfo::OnGameExit() {
 	DiabloBlocked = false;
 	BaalBlocked = false;
 	ReceivedQuestPacket = false;
-
-	bhText->SetBaseX(795);
-	bhText2->SetBaseY(592);
 }
 
 
