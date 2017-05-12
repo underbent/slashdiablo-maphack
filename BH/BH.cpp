@@ -92,7 +92,10 @@ void BH::Initialize()
 {
 	moduleManager = new ModuleManager();
 	config = new Config("BH.cfg");
-	config->Parse();
+	if(!config->Parse()) {
+		config->SetConfigName("BH_Default.cfg");
+		config->Parse();
+	}
 
 	// Do this asynchronously because D2GFX_GetHwnd() will be null if
 	// we inject on process start
@@ -176,8 +179,9 @@ bool BH::Shutdown() {
 
 bool BH::ReloadConfig() {
 	if (initialized){
-		if (D2CLIENT_GetPlayerUnit())
-			PrintText(0, "Reloading BH config");
+		if (D2CLIENT_GetPlayerUnit()) {
+			PrintText(0, "Reloading config: %s", config->GetConfigName().c_str());
+		}
 		config->Parse();
 		moduleManager->ReloadConfig();
 		statsDisplay->LoadConfig();

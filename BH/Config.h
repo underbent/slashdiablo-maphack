@@ -27,6 +27,9 @@ class Config {
 		bool Parse();
 		bool Write();
 
+		std::string GetConfigName();
+		void SetConfigName(std::string name);
+
 		//Functions to read values from the configuration
 		bool						ReadBoolean	(std::string key, bool value);
 		std::string					ReadString	(std::string key, std::string value) { return (contents[key].size() == 0) ? value : contents[key]; };

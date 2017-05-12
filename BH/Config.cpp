@@ -74,6 +74,14 @@ bool Config::Write() {
 	return true;
 }
 
+std::string Config::GetConfigName() {
+	return BH::path + configName;
+}
+
+void Config::SetConfigName(std::string name) {
+	configName = name;
+}
+
 /* ReadBoolean(std::string key, bool value)
  *	Reads in a boolean from the key-pair.
  */
