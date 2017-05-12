@@ -153,6 +153,8 @@ VARPTR(D2CLIENT, InventoryLayout, InventoryLayout*, 0x10B3E0)
 VARPTR(D2CLIENT, MercLayout, InventoryLayout*, 0x11BD94)
 ASMPTR(D2CLIENT, clickParty_I, 0x9E180)
 
+VARPTR(D2CLIENT, PanelOffsetX, int, 0x11B9A0);
+
 VARPTR(D2CLIENT, RegularCursorType, DWORD, 0x11B864)
 VARPTR(D2CLIENT, ShopCursorType, DWORD, 0x11BC34)
 

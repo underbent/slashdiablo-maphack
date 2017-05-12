@@ -27,16 +27,20 @@ void Party::OnUnload() {
 void Party::OnLoop() {
 	if(Toggles["Enabled"].state || Toggles["LootEnabled"].state)
 		CheckParty();
-	if(D2CLIENT_GetUIState(0x16) && PartyHook->IsActive() == 0)
+	if(D2CLIENT_GetUIState(0x16) && PartyHook->IsActive() == 0) {
+		PartyHook->SetBaseX(*p_D2CLIENT_PanelOffsetX + 20);
 		PartyHook->SetActive(1);
+	}
 	else if(D2CLIENT_GetUIState(0x16) == 0 && PartyHook->IsActive())
 		PartyHook->SetActive(0);
 
 	BnetData* pData = (*p_D2LAUNCH_BnData);
 	if(!pData)
 		return;
-	if(D2CLIENT_GetUIState(0x16) && LootHook->IsActive() == 0 && pData->nCharFlags & PLAYER_TYPE_HARDCORE)
+	if(D2CLIENT_GetUIState(0x16) && LootHook->IsActive() == 0 && pData->nCharFlags & PLAYER_TYPE_HARDCORE) {
+		LootHook->SetBaseX(*p_D2CLIENT_PanelOffsetX + 160);
 		LootHook->SetActive(1);
+	}
 	else if(D2CLIENT_GetUIState(0x16) == 0 && LootHook->IsActive())
 		LootHook->SetActive(0);
 }
