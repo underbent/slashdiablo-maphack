@@ -684,5 +684,10 @@ Vector vVector[] = {
 	{0},													//0x87
 	{UNIT_MONSTER, 706},					//uber izual
 	{0},
+	{0},
+
+	{0},													//0x88 uber trist
+	{0},
+	{0},
 	{0}
 };
