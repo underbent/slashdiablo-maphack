@@ -10,12 +10,10 @@ using namespace Drawing;
 StatsDisplay *StatsDisplay::display;
 
 StatsDisplay::StatsDisplay(std::string name) {
-	int xPos = 10;
 	int yPos = 10;
 	int width = 240;
 
 	InitializeCriticalSection(&crit);
-	SetX(xPos);
 	SetY(yPos);
 	SetXSize(width);
 
@@ -43,6 +41,8 @@ void StatsDisplay::LoadConfig(){
 	int height = 342 + 8 * 3 + 16 * 5;
 	customStats.clear();
 
+	Toggles["Stats on Right"] = BH::config->ReadToggle("Stats on Right", "None", false);
+
 	vector<pair<string, string>> stats = BH::config->ReadMapList("Stat Screen");
 	for (unsigned int i = 0; i < stats.size(); i++) {
 		std::transform(stats[i].first.begin(), stats[i].first.end(), stats[i].first.begin(), ::tolower);
@@ -67,7 +67,8 @@ void StatsDisplay::LoadConfig(){
 		height += (customStats.size() * 16) + 8;
 	}
 
-	int xPos = *p_D2CLIENT_ScreenSizeX - 10 - GetXSize();
+	int xPos = Toggles["Stats on Right"].state ?
+		*p_D2CLIENT_ScreenSizeX - 10 - GetXSize() : 10;
 	SetX(xPos);
 	SetYSize(height);
 }
