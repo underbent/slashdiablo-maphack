@@ -51,6 +51,7 @@ class ScreenInfo : public Module {
 			startExperience(0), startLevel(0) {};
 
 		void OnLoad();
+		void LoadConfig();
 		void OnKey(bool up, BYTE key, LPARAM lParam, bool* block);
 		void OnGameJoin(const string& name, const string& pass, int diff);
 		void OnGameExit();

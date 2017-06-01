@@ -10,9 +10,8 @@ using namespace Drawing;
 map<std::string, Toggle> ScreenInfo::Toggles;
 
 void ScreenInfo::OnLoad() {
-	Toggles["Experience Meter"] = BH::config->ReadToggle("Experience Meter", "VK_NUMPAD7", false);
+	LoadConfig();
 
-	automapInfo = BH::config->ReadArray("AutomapInfo");
 	bhText = new Texthook(OutOfGame, 795, 6, BH_VERSION " (planqi Resurgence/Slash branch)");
 	bhText->SetAlignment(Right);
 	bhText->SetColor(Gold);
@@ -22,8 +21,15 @@ void ScreenInfo::OnLoad() {
 		cGuardText->SetAlignment(Right);
 	}
 	gameTimer = GetTickCount();
+}
+
+void ScreenInfo::LoadConfig() {
+	Toggles["Experience Meter"] = BH::config->ReadToggle("Experience Meter", "VK_NUMPAD7", false);
+
+	automapInfo = BH::config->ReadArray("AutomapInfo");
 
 	map<string, string> SkillWarnings = BH::config->ReadAssoc("Skill Warning");
+	SkillWarningMap.clear();
 	for (auto it = SkillWarnings.cbegin(); it != SkillWarnings.cend(); it++) {
 		if (StringToBool((*it).second)) {
 			// If the key is a number, it means warn when that state expires
@@ -259,6 +265,9 @@ void ScreenInfo::OnAutomapDraw() {
 
 	char *level = UnicodeToAnsi(D2CLIENT_GetLevelName(pUnit->pPath->pRoom1->pRoom2->pLevel->dwLevelNo));
 
+	CHAR szPing[10] = "";
+	sprintf_s(szPing, sizeof(szPing), "%d", *p_D2CLIENT_Ping);
+
 	AutomapReplace automap[] = {
 		{"GAMENAME", pData->szGameName},
 		{"GAMEPASS", pData->szGamePass},
@@ -267,6 +276,7 @@ void ScreenInfo::OnAutomapDraw() {
 		{"ACCOUNTNAME", pData->szAccountName},
 		{"CHARNAME", pUnit->pPlayerData->szName},
 		{"LEVEL", level},
+		{"PING", szPing},
 		{"GAMETIME", gameTime},
 		{"REALTIME", szTime}
 	};
