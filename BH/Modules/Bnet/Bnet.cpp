@@ -149,8 +149,16 @@ void Bnet::RemovePassPatch() {
 	Control* box = *p_D2MULTI_PassBox;
 	BOOL(__stdcall *FunCallBack)(Control*, DWORD, DWORD) = D2MULTI_NeededForPassRemovalIDontKnowRenameIt;
 
-	if (Bnet::lastPass.size() == 0)
+	if (Bnet::lastPass.size() == 0) {
+		__asm {
+			pop esi
+			pop edi
+			popad
+			xor eax, eax
+			sub ecx, 01
+		}
 		return;
+	}
 
 	wchar_t *wszLastPass = AnsiToUnicode("");
 	D2WIN_SetControlText(box, wszLastPass);
