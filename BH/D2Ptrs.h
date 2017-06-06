@@ -359,6 +359,7 @@ FUNCPTR(D2GFX, GetHwnd, HWND __stdcall, (void), -10048)
 
 FUNCPTR(D2MULTI, DoChat, void __fastcall, (void), 0xCB30)
 FUNCPTR(D2MULTI, PrintChannelText, void __stdcall, (char *szText, DWORD dwColor),  0xFC90)
+FUNCPTR(D2MULTI, NeededForPassRemovalIDontKnowRenameIt, BOOL __stdcall , (Control*, DWORD, DWORD), 0x118D0)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -368,6 +369,8 @@ FUNCPTR(D2MULTI, PrintChannelText, void __stdcall, (char *szText, DWORD dwColor)
 VARPTR(D2MULTI, ChatBoxMsg, char*, 0x38F18)
 VARPTR(D2MULTI, GameListControl, Control*, 0x39CC0)//1.13c - Unchanged
 VARPTR(D2MULTI, EditboxPreferences, ControlPreferences*, 0x19C60)
+VARPTR(D2MULTI, PassBox, Control*, 0x39CD8)
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // D2Multi Stubs
