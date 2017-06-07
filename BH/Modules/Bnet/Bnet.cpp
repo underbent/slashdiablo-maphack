@@ -149,7 +149,7 @@ void Bnet::RemovePassPatch() {
 	Control* box = *p_D2MULTI_PassBox;
 	BOOL(__stdcall *FunCallBack)(Control*, DWORD, DWORD) = D2MULTI_NeededForPassRemovalIDontKnowRenameIt;
 
-	if (Bnet::lastPass.size() == 0) {
+	if (Bnet::lastPass.size() == 0 || box == nullptr) {
 		__asm {
 			pop esi
 			pop edi
