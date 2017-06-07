@@ -44,8 +44,7 @@ void ScreenInfo::LoadConfig() {
 }
 
 void ScreenInfo::MpqLoaded() {
-	versionText = new Texthook(OutOfGame, 795, 23, MpqVersion);
-	versionText->SetAlignment(Right);
+	versionText = new Texthook(Perm, 5, 589, MpqVersion);
 	versionText->SetColor(Gold);
 }
 
