@@ -3,6 +3,7 @@
 #include "../../D2Ptrs.h"
 #include "../../D2Stubs.h"
 #include "../Item/ItemDisplay.h"
+#include "../../MPQReader.h"
 #include <time.h>
 
 using namespace Drawing;
@@ -40,6 +41,12 @@ void ScreenInfo::LoadConfig() {
 			}
 		}
 	}
+}
+
+void ScreenInfo::MpqLoaded() {
+	versionText = new Texthook(OutOfGame, 795, 23, MpqVersion);
+	versionText->SetAlignment(Right);
+	versionText->SetColor(Gold);
 }
 
 void ScreenInfo::OnGameJoin(const string& name, const string& pass, int diff) {

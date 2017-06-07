@@ -116,6 +116,7 @@ void BH::Initialize()
 	//CreateThread(0, 0, LoadMPQData, 0, 0, 0);
 	Task::Enqueue([]() -> void {
 		LoadMPQData(NULL);
+		moduleManager->MpqLoaded();
 	});
 
 	

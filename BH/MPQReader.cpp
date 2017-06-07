@@ -2,6 +2,7 @@
 #include "BH.h"
 
 std::map<std::string, MPQData*> MpqDataMap;
+std::string MpqVersion;
 
 #define SFILE_INVALID_SIZE 0xFFFFFFFF
 
@@ -149,6 +150,13 @@ bool ReadMPQFiles(std::string fileName) {
 						MpqDataMap[key] = new MPQData(&mpqFile);
 					}
 				}
+			}
+			// read mpq version
+			std::string path = "data\\version.txt";
+			MPQFile mpqFile(&archive, path.c_str());
+			if (mpqFile.error == ERROR_SUCCESS) {
+				MPQData mpqversion(&mpqFile);
+				MpqVersion = mpqversion.fields[0];
 			}
 		}
 		FreeLibrary(dllHandle);

@@ -97,6 +97,7 @@ private:
 };
 
 extern std::map<std::string, MPQData*> MpqDataMap;
+extern std::string MpqVersion;
 
 extern "C" __declspec(dllexport) bool ReadMPQFiles(std::string fileName);
 void FindAncestorTypes(std::string type, std::set<std::string>& ancestors, std::map<std::string, std::string>& map1, std::map<std::string, std::string>& map2);

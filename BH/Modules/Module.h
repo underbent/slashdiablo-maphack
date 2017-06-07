@@ -26,6 +26,7 @@ class Module {
 		virtual void OnUnload() {};
 
 		virtual void LoadConfig() {};
+		virtual void MpqLoaded() {};
 
 		virtual void OnLoop() {};
 
