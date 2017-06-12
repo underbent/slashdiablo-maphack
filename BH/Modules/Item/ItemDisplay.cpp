@@ -554,9 +554,42 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		Condition::AddOperand(conditions, new ResistAllCondition(operation, value));
 	} else if (key.compare(0, 3, "IAS") == 0) {
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_IAS, 0, operation, value));
+	} else if (key.compare(0, 3, "FCR") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_FASTERCAST, 0, operation, value));
+	} else if (key.compare(0, 3, "FHR") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_FASTERHITRECOVERY, 0, operation, value));
+	} else if (key.compare(0, 3, "FBR") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_FASTERBLOCK, 0, operation, value));
 	} else if (key.compare(0, 4, "LIFE") == 0) {
 		// For unknown reasons, the game's internal HP stat is 256 for every 1 displayed on item
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_MAXHP, 0, operation, value * 256));
+	} else if (key.compare(0, 4, "MANA") == 0) {
+		// For unknown reasons, the game's internal Mana stat is 256 for every 1 displayed on item
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_MAXMANA, 0, operation, value * 256));
+	} else if (key.compare(0, 5, "ARPER") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_TOHITPERCENT, 0, operation, value));
+	} else if (key.compare(0, 5, "MFIND") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_MAGICFIND, 0, operation, value));
+	} else if (key.compare(0, 5, "GFIND") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_GOLDFIND, 0, operation, value));
+	} else if (key.compare(0, 3, "STR") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_STRENGTH, 0, operation, value));
+	} else if (key.compare(0, 3, "DEX") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_DEXTERITY, 0, operation, value));
+	} else if (key.compare(0, 3, "FRW") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_FASTERRUNWALK, 0, operation, value));
+	} else if (key.compare(0, 6, "MAXDMG") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_MAXIMUMDAMAGE, 0, operation, value));
+	} else if (key.compare(0, 2, "AR") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_ATTACKRATING, 0, operation, value));
+	} else if (key.compare(0, 3, "DTM") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_DAMAGETOMANA, 0, operation, value));
+	} else if (key.compare(0, 7, "REPLIFE") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_REPLENISHLIFE, 0, operation, value));
+	} else if (key.compare(0, 8, "REPQUANT") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_REPLENISHESQUANTITY, 0, operation, value));
+	} else if (key.compare(0, 6, "REPAIR") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_REPAIRSDURABILITY, 0, operation, value));
 	} else if (key.compare(0, 5, "ARMOR") == 0) {
 		Condition::AddOperand(conditions, new ItemGroupCondition(ITEM_GROUP_ALLARMOR));
 	} else if (key.compare(0, 2, "EQ") == 0 && keylen == 3) {
