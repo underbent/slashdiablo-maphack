@@ -1185,7 +1185,7 @@ void InitializeMPQData() {
 			attrs->unusedFlags = 0;
 			attrs->flags = flags;
 			attrs->flags2 = flags2;
-			attrs->qualityLevel = (*d)["level"].at(0) - '0';
+			attrs->qualityLevel = stoi((*d)["level"], nullptr, 10);
 			ItemAttributeMap[(*d)["code"]] = attrs;
 		}
 
@@ -1266,7 +1266,7 @@ void InitializeMPQData() {
 				attrs->unusedFlags = 0;
 				attrs->flags = flags;
 				attrs->flags2 = flags2;
-				attrs->qualityLevel = (*d)["level"].at(0) - '0';
+				attrs->qualityLevel = stoi((*d)["level"], nullptr, 10);
 				ItemAttributeMap[(*d)["code"]] = attrs;
 			}
 		}
@@ -1337,7 +1337,7 @@ void InitializeMPQData() {
 				attrs->unusedFlags = 0;
 				attrs->flags = flags;
 				attrs->flags2 = flags2;
-				attrs->qualityLevel = (*d)["level"].at(0) - '0';
+				attrs->qualityLevel = stoi((*d)["level"], nullptr, 10);
 				ItemAttributeMap[(*d)["code"]] = attrs;
 			}
 		}
