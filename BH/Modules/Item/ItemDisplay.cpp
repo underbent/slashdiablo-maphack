@@ -145,7 +145,7 @@ void SubstituteNameVariables(UnitItemInfo *uInfo, string &name, Action *action) 
 	code[3] = '\0';
 	sprintf_s(sockets, "%d", D2COMMON_GetUnitStat(item, STAT_SOCKETS, 0));
 	sprintf_s(ilvl, "%d", item->pItemData->dwItemLevel);
-	sprintf_s(alvl, "%d", GetAffixLevel((BYTE)item->pItemData->dwItemLevel, (BYTE)uInfo->attrs->qualityLevel, uInfo->attrs->flags, code));
+	sprintf_s(alvl, "%d", GetAffixLevel((BYTE)item->pItemData->dwItemLevel, (BYTE)uInfo->attrs->qualityLevel, uInfo->attrs->magicLevel));
 	sprintf_s(origName, "%s", name.c_str());
 
 	UnitAny* pUnit = D2CLIENT_GetPlayerUnit();
@@ -203,24 +203,7 @@ void SubstituteNameVariables(UnitItemInfo *uInfo, string &name, Action *action) 
 	}
 }
 
-BYTE GetAffixLevel(BYTE ilvl, BYTE qlvl, unsigned int flags, char *code) {
-	BYTE mlvl = 0;
-	if ((code[0] == 'r' && code[1] == 'i' && code[2] == 'n') ||
-		(code[0] == 'a' && code[1] == 'm' && code[2] == 'u') ||
-		(code[0] == 'j' && code[1] == 'e' && code[2] == 'w') ||
-		(code[0] == 'c' && code[1] == 'm' && code[2] >= '1' && code[2] <= '3')) {
-		qlvl = ilvl;
-	} else if (code[0] == 'c' && code[1] == 'i' && code[2] == '0') {
-		mlvl = 3;
-	} else if (code[0] == 'c' && code[1] == 'i' && code[2] == '1') {
-		mlvl = 8;
-	} else if (code[0] == 'c' && code[1] == 'i' && code[2] == '2') {
-		mlvl = 13;
-	} else if (code[0] == 'c' && code[1] == 'i' && code[2] == '3') {
-		mlvl = 18;
-	} else if (flags & ITEM_GROUP_WAND || flags & ITEM_GROUP_STAFF || flags & ITEM_GROUP_SORCERESS_ORB) {
-		mlvl = 1;
-	}
+BYTE GetAffixLevel(BYTE ilvl, BYTE qlvl, BYTE mlvl) {
 	if (ilvl > 99) {
 		ilvl = 99;
 	}
@@ -891,12 +874,12 @@ bool ItemLevelCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *a
 
 bool AffixLevelCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
 	BYTE qlvl = uInfo->attrs->qualityLevel;
-	BYTE alvl = GetAffixLevel((BYTE)uInfo->item->pItemData->dwItemLevel, (BYTE)uInfo->attrs->qualityLevel, uInfo->attrs->flags, uInfo->itemCode);
+	BYTE alvl = GetAffixLevel((BYTE)uInfo->item->pItemData->dwItemLevel, (BYTE)uInfo->attrs->qualityLevel, uInfo->attrs->magicLevel);
 	return IntegerCompare(alvl, operation, affixLevel);
 }
 bool AffixLevelCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
 	int qlvl = info->attrs->qualityLevel;
-	BYTE alvl = GetAffixLevel(info->level, info->attrs->qualityLevel, info->attrs->flags, info->code);
+	BYTE alvl = GetAffixLevel(info->level, info->attrs->qualityLevel, info->attrs->magicLevel);
 	return IntegerCompare(alvl, operation, affixLevel);
 }
 

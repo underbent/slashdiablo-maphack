@@ -34,6 +34,7 @@ struct ItemAttributes {
 	unsigned int flags;
 	unsigned int flags2;
 	BYTE qualityLevel;
+	BYTE magicLevel;
 };
 
 // Properties from ItemStatCost.txt that we need for parsing incoming 0x9c packets, among other things

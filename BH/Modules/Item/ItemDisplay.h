@@ -466,5 +466,5 @@ inline bool IntegerCompare(unsigned int Lvalue, int operation, unsigned int Rval
 void GetItemName(UnitItemInfo *uInfo, string &name);
 void SubstituteNameVariables(UnitItemInfo *uInfo, string &name, Action *action);
 int GetDefense(ItemInfo *item);
-BYTE GetAffixLevel(BYTE ilvl, BYTE qlvl, unsigned int flags, char *code);
+BYTE GetAffixLevel(BYTE ilvl, BYTE qlvl, BYTE mlvl);
 BYTE RuneNumberFromItemCode(char *code);
