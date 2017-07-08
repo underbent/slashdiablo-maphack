@@ -521,6 +521,8 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		Condition::AddOperand(conditions, new ItemLevelCondition(operation, value));
 	} else if (key.compare(0, 4, "ALVL") == 0) {
 		Condition::AddOperand(conditions, new AffixLevelCondition(operation, value));
+	} else if (key.compare(0, 4, "CLVL") == 0) {
+		Condition::AddOperand(conditions, new CharStatCondition(STAT_LEVEL, 0, operation, value));
 	} else if (key.compare(0, 4, "RUNE") == 0) {
 		Condition::AddOperand(conditions, new RuneCondition(operation, value));
 	} else if (key.compare(0, 4, "GOLD") == 0) {
@@ -678,6 +680,13 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 			return;
 		}
 		Condition::AddOperand(conditions, new ItemStatCondition(num, 0, operation, value));
+	} else if (key.compare(0, 8, "CHARSTAT") == 0) {
+		int num = -1;
+		stringstream ss(key.substr(8));
+		if ((ss >> num).fail() || num < 0 || num > (int)STAT_MAX) {
+			return;
+		}
+		Condition::AddOperand(conditions, new CharStatCondition(num, 0, operation, value));
 	} else if (key.compare(0, 5, "MULTI") == 0) {
 
 		std::regex multi_reg("([0-9]{1,4}),([0-9]{1,4})",
@@ -931,6 +940,13 @@ bool EDCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Co
 		}
 	}
 	return IntegerCompare(value, operation, targetED);
+}
+
+bool CharStatCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
+	return IntegerCompare(D2COMMON_GetUnitStat(D2CLIENT_GetPlayerUnit(), stat1, stat2), operation, targetStat);
+}
+bool CharStatCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
+	return IntegerCompare(D2COMMON_GetUnitStat(D2CLIENT_GetPlayerUnit(), stat1, stat2), operation, targetStat);
 }
 
 bool ItemStatCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {

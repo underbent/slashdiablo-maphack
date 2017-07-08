@@ -343,6 +343,20 @@ private:
 	bool EvaluateED(unsigned int flags);
 };
 
+class CharStatCondition : public Condition
+{
+public:
+	CharStatCondition(unsigned int stat, unsigned int stat2, BYTE op, unsigned int target)
+		: stat1(stat), stat2(stat2), operation(op), targetStat(target) { conditionType = CT_Operand; };
+private:
+	unsigned int stat1;
+	unsigned int stat2;
+	BYTE operation;
+	unsigned int targetStat;
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
+};
+
 class ItemStatCondition : public Condition
 {
 public:
