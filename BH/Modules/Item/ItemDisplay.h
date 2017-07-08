@@ -357,6 +357,18 @@ private:
 	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
+class DifficultyCondition : public Condition
+{
+public:
+	DifficultyCondition(BYTE op, unsigned int target)
+		: operation(op), targetDiff(target) { conditionType = CT_Operand; };
+private:
+	BYTE operation;
+	unsigned int targetDiff;
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
+};
+
 class ItemStatCondition : public Condition
 {
 public:

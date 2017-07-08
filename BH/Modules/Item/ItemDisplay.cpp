@@ -523,6 +523,8 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		Condition::AddOperand(conditions, new AffixLevelCondition(operation, value));
 	} else if (key.compare(0, 4, "CLVL") == 0) {
 		Condition::AddOperand(conditions, new CharStatCondition(STAT_LEVEL, 0, operation, value));
+	} else if (key.compare(0, 4, "DIFF") == 0) {
+		Condition::AddOperand(conditions, new DifficultyCondition(operation, value));
 	} else if (key.compare(0, 4, "RUNE") == 0) {
 		Condition::AddOperand(conditions, new RuneCondition(operation, value));
 	} else if (key.compare(0, 4, "GOLD") == 0) {
@@ -947,6 +949,13 @@ bool CharStatCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, C
 }
 bool CharStatCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
 	return IntegerCompare(D2COMMON_GetUnitStat(D2CLIENT_GetPlayerUnit(), stat1, stat2), operation, targetStat);
+}
+
+bool DifficultyCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
+	return IntegerCompare(D2CLIENT_GetDifficulty(), operation, targetDiff);
+}
+bool DifficultyCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
+	return IntegerCompare(D2CLIENT_GetDifficulty(), operation, targetDiff);
 }
 
 bool ItemStatCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
