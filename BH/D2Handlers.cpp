@@ -165,7 +165,7 @@ DWORD __fastcall ChannelInput(wchar_t* wMsg)
 		if(len > 0)
 		{
 			if(!BH::moduleManager->UserInput(token, wparam, false)) hasCmd = false;
-			D2WIN_SetControlText(*p_D2WIN_ChatInputBox, L"");
+			D2WIN_SetControlText(*p_D2MULTI_ChatInputBox, L"");
 		}
 	}
 
