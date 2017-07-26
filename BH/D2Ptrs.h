@@ -6,15 +6,14 @@
 
 #ifdef _DEFINE_PTRS
 #define FUNCPTR(dll, name, callingret, args, ...) \
+	static Offsets f##dll##_##name##_offsets = { __VA_ARGS__ }; \
 	__declspec(naked) callingret dll##_##name##args \
 	{ \
 		static DWORD f##dll##_##name = NULL; \
 		if(f##dll##_##name == NULL) \
 		{ \
 		__asm { pushad } \
-		Offsets f##dll##_##name##_offsets = { __VA_ARGS__ }; \
-		int address = *(&f##dll##_##name##_offsets._113c + D2Version::GetGameVersionID()); \
-		f##dll##_##name = Patch::GetDllOffset(dll, address); \
+		f##dll##_##name = Patch::GetDllOffset(dll, *(&f##dll##_##name##_offsets._113c + D2Version::GetGameVersionID())); \
 		__asm { popad } \
 		} \
 		__asm jmp [f##dll##_##name] \
@@ -26,8 +25,8 @@
 		static DWORD f##Asm_##dll##_##name = NULL; \
 		if(f##Asm_##dll##_##name## == NULL) \
 		{ \
-		Offsets f##Asm_##_##name##_offsets = { __VA_ARGS__ }; \
-		int address = *(&f##Asm_##_##name##_offsets._113c + D2Version::GetGameVersionID()); \
+		static Offsets f##Asm_##_##name##_offsets = { __VA_ARGS__ }; \
+		static int address = *(&f##Asm_##_##name##_offsets._113c + D2Version::GetGameVersionID()); \
 		f##Asm_##dll##_##name## = Patch::GetDllOffset(dll, address); \
 		} \
 		return &##f##Asm_##dll##_##name; \
@@ -39,8 +38,8 @@
 		static DWORD f##Var_##dll##_##name = NULL; \
 		if(f##Var_##dll##_##name## == NULL) \
 		{ \
-		Offsets f##Var_##_##name##_offsets = { __VA_ARGS__ }; \
-		int address = *(&f##Var_##_##name##_offsets._113c + D2Version::GetGameVersionID()); \
+		static Offsets f##Var_##_##name##_offsets = { __VA_ARGS__ }; \
+		static int address = *(&f##Var_##_##name##_offsets._113c + D2Version::GetGameVersionID()); \
 		f##Var_##dll##_##name## = Patch::GetDllOffset(dll, address); \
 		} \
 		return (type**)&##f##Var_##dll##_##name; \
@@ -376,7 +375,7 @@ VARPTR(D2MULTI, ChatBoxMsg, char*, 0x38F18, 0x1C150)
 VARPTR(D2MULTI, GameListControl, Control*, 0x39CC0, 0x39FF0)//1.13c - Unchanged
 VARPTR(D2MULTI, EditboxPreferences, ControlPreferences*, 0x19C60, 0x19C60)
 VARPTR(D2MULTI, PassBox, Control*, 0x39CD8, 0x3A060)
-VARPTR(D2MULTI, ChatInputBox, DWORD*, 0x3A0D0, 0x39FC0)
+VARPTR(D2MULTI, ChatInputBox, Control*, 0x3A0D0, 0x39FC0)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -421,7 +420,6 @@ VARPTR(D2LAUNCH, BnData, BnetData *, 0x25ABC, 0x25B30)
 // D2Win Functions
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-FUNCPTR(D2WIN, SetControlText, void* __fastcall, (DWORD* box, wchar_t* txt), -10042, -10007)
 FUNCPTR(D2WIN, DrawSprites, void __fastcall, (void), 0x18750, 0xEAA0)
 
 
