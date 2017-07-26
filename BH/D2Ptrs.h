@@ -359,7 +359,6 @@ FUNCPTR(D2GFX, GetHwnd, HWND __stdcall, (void), -10048)
 
 FUNCPTR(D2MULTI, DoChat, void __fastcall, (void), 0xCB30)
 FUNCPTR(D2MULTI, PrintChannelText, void __stdcall, (char *szText, DWORD dwColor),  0xFC90)
-FUNCPTR(D2MULTI, NeededForPassRemovalIDontKnowRenameIt, BOOL __stdcall , (Control*, DWORD, DWORD), 0x118D0)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////

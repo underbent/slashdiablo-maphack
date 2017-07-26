@@ -140,37 +140,29 @@ VOID __fastcall Bnet::NextPassPatch(Control* box, BOOL(__stdcall *FunCallBack)(C
 	delete[] wszLastPass;
 }
 
-void Bnet::RemovePassPatch() {
+void __declspec(naked) RemovePass_Interception() {
 	__asm {
-		pushad
-		push edi
-		push esi
+		PUSHAD
+		CALL [Bnet::RemovePassPatch]
+		POPAD
+
+		; Original code
+		XOR EAX, EAX
+		SUB ECX, 01
+		RET
 	}
+}
+
+void Bnet::RemovePassPatch() {
 	Control* box = *p_D2MULTI_PassBox;
-	BOOL(__stdcall *FunCallBack)(Control*, DWORD, DWORD) = D2MULTI_NeededForPassRemovalIDontKnowRenameIt;
 
 	if (Bnet::lastPass.size() == 0 || box == nullptr) {
-		__asm {
-			pop esi
-			pop edi
-			popad
-			xor eax, eax
-			sub ecx, 01
-		}
 		return;
 	}
 
 	wchar_t *wszLastPass = AnsiToUnicode("");
 	D2WIN_SetControlText(box, wszLastPass);
 	delete[] wszLastPass;
-
-	__asm {
-		pop esi
-		pop edi
-		popad
-		xor eax, eax
-		sub ecx, 01
-	}
 }
 
 void __declspec(naked) FailToJoin_Interception()
