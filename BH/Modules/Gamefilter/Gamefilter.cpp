@@ -11,9 +11,9 @@ list<GameListEntry*> Gamefilter::gameList;
 Control* Gamefilter::filterBox;
 int Gamefilter::refreshTime;
 
-Patch* createGameBox = new Patch(Call, D2MULTI, 0x149EF, (int)D2MULTI_CreateGameBox_Interception, 5);
-Patch* destoryGameList = new Patch(Call, D2MULTI, 0x11DC3, (int)Gamefilter::DestroyGamelist, 5);
-Patch* listRefresh = new Patch(Call, D2MULTI, 0xDF4E, (int)D2MULTI_GameListRefresh_Interception, 5);
+Patch* createGameBox = new Patch(Call, D2MULTI, { 0x149EF, 0xAD8F }, (int)D2MULTI_CreateGameBox_Interception, 5);
+Patch* destoryGameList = new Patch(Call, D2MULTI, { 0x11DC3, 0x8413 }, (int)Gamefilter::DestroyGamelist, 5);
+Patch* listRefresh = new Patch(Call, D2MULTI, { 0xDF4E, 0x121EE }, (int)D2MULTI_GameListRefresh_Interception, 5);
 
 void Gamefilter::OnLoad() {
 	if (!D2CLIENT_GetPlayerUnit()) {

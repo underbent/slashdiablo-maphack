@@ -118,6 +118,9 @@
     <Filter Include="BH\Modules\StashExport">
       <UniqueIdentifier>{f61bd38d-3389-48ea-a3e2-74cd416ce3f7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Diablo II\Version">
+      <UniqueIdentifier>{80220f1e-bef8-4a74-a003-cbc270e7c906}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DllMain.cpp">
@@ -254,6 +257,9 @@
     </ClCompile>
     <ClCompile Include="AsyncDrawBuffer.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D2Version.cpp">
+      <Filter>Diablo II\Version</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -424,6 +430,9 @@
     </ClInclude>
     <ClInclude Include="AsyncDrawBuffer.h">
       <Filter>Diablo II</Filter>
+    </ClInclude>
+    <ClInclude Include="D2Version.h">
+      <Filter>Diablo II\Version</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

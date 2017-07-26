@@ -1,39 +1,46 @@
 #pragma once
 // Macros adapted from lord2800's macros.
 #include "Patch.h"
+#include "D2Version.h"
 #include "D2Structs.h"
 
 #ifdef _DEFINE_PTRS
-#define FUNCPTR(dll, name, callingret, args, address) \
+#define FUNCPTR(dll, name, callingret, args, ...) \
 	__declspec(naked) callingret dll##_##name##args \
 	{ \
 		static DWORD f##dll##_##name = NULL; \
 		if(f##dll##_##name == NULL) \
 		{ \
 		__asm { pushad } \
+		Offsets f##dll##_##name##_offsets = { __VA_ARGS__ }; \
+		int address = *(&f##dll##_##name##_offsets._113c + D2Version::GetGameVersionID()); \
 		f##dll##_##name = Patch::GetDllOffset(dll, address); \
 		__asm { popad } \
 		} \
 		__asm jmp [f##dll##_##name] \
 	}
 
-#define ASMPTR(dll, name, address) \
+#define ASMPTR(dll, name, ...) \
 	DWORD* Asm_##dll##_##name##(VOID) \
 	{ \
 		static DWORD f##Asm_##dll##_##name = NULL; \
 		if(f##Asm_##dll##_##name## == NULL) \
 		{ \
+		Offsets f##Asm_##_##name##_offsets = { __VA_ARGS__ }; \
+		int address = *(&f##Asm_##_##name##_offsets._113c + D2Version::GetGameVersionID()); \
 		f##Asm_##dll##_##name## = Patch::GetDllOffset(dll, address); \
 		} \
 		return &##f##Asm_##dll##_##name; \
 	} 
 
-#define VARPTR(dll, name, type, address) \
+#define VARPTR(dll, name, type, ...) \
 	type** Var_##dll##_##name##(VOID) \
 	{ \
 		static DWORD f##Var_##dll##_##name = NULL; \
 		if(f##Var_##dll##_##name## == NULL) \
 		{ \
+		Offsets f##Var_##_##name##_offsets = { __VA_ARGS__ }; \
+		int address = *(&f##Var_##_##name##_offsets._113c + D2Version::GetGameVersionID()); \
 		f##Var_##dll##_##name## = Patch::GetDllOffset(dll, address); \
 		} \
 		return (type**)&##f##Var_##dll##_##name; \
