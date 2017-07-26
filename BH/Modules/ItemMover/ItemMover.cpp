@@ -44,13 +44,30 @@ void ItemMover::Init() {
 		lodStashLayout = InventoryLayoutMap["Big Bank Page 1"];
 		inventoryLayout = InventoryLayoutMap["Amazon"];  // all character types have the same layout
 		cubeLayout = InventoryLayoutMap["Transmogrify Box Page 1"];
+
+		INVENTORY_LEFT = ((inventoryLayout->Left - 320) + (*p_D2CLIENT_ScreenSizeX / 2));
+		INVENTORY_TOP = (*p_D2CLIENT_ScreenSizeY / 2) - ((inventoryLayout->Bottom - inventoryLayout->Top) / 2) + 71;
+		STASH_LEFT = ((*p_D2CLIENT_ScreenSizeX / 2) - 320) + lodStashLayout->Left;
+		LOD_STASH_TOP = (*p_D2CLIENT_ScreenSizeY / 2) - ((lodStashLayout->Bottom - lodStashLayout->Top) / 2) - 43;
+		CLASSIC_STASH_TOP = (*p_D2CLIENT_ScreenSizeY / 2) - ((classicStashLayout->Bottom - classicStashLayout->Top) / 2) + 89;
+		CUBE_LEFT = ((*p_D2CLIENT_ScreenSizeX / 2) - 320) + cubeLayout->Left;
+		CUBE_TOP = (*p_D2CLIENT_ScreenSizeY / 2) - ((cubeLayout->Bottom - cubeLayout->Top) / 2) - 44;
 	} else {
-		// Currently we don't support non-standard screen sizes; default to 800x600
 		classicStashLayout = InventoryLayoutMap["Bank Page2"];
 		lodStashLayout = InventoryLayoutMap["Big Bank Page2"];
 		inventoryLayout = InventoryLayoutMap["Amazon2"];  // all character types have the same layout
 		cubeLayout = InventoryLayoutMap["Transmogrify Box2"];
+
+		INVENTORY_LEFT = inventoryLayout->Left;
+		INVENTORY_TOP = inventoryLayout->Top;
+		STASH_LEFT = lodStashLayout->Left;
+		LOD_STASH_TOP = lodStashLayout->Top;
+		CLASSIC_STASH_TOP = classicStashLayout->Top;
+		CUBE_LEFT = cubeLayout->Left;
+		CUBE_TOP = cubeLayout->Top;
 	}
+
+	CELL_SIZE = inventoryLayout->SlotPixelHeight;
 
 	INVENTORY_WIDTH = inventoryLayout->SlotWidth;
 	INVENTORY_HEIGHT = inventoryLayout->SlotHeight;
@@ -59,15 +76,6 @@ void ItemMover::Init() {
 	CLASSIC_STASH_HEIGHT = classicStashLayout->SlotHeight;
 	CUBE_WIDTH = cubeLayout->SlotWidth;
 	CUBE_HEIGHT = cubeLayout->SlotHeight;
-
-	INVENTORY_LEFT = inventoryLayout->Left;
-	INVENTORY_TOP = inventoryLayout->Top;
-	STASH_LEFT = lodStashLayout->Left;
-	LOD_STASH_TOP = lodStashLayout->Top;
-	CLASSIC_STASH_TOP = classicStashLayout->Top;
-	CUBE_LEFT = cubeLayout->Left;
-	CUBE_TOP = cubeLayout->Top;
-	CELL_SIZE = inventoryLayout->SlotPixelHeight;
 
 	if (!InventoryItemIds) {
 		InventoryItemIds = new int[INVENTORY_WIDTH * INVENTORY_HEIGHT];
