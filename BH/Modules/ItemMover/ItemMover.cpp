@@ -46,12 +46,12 @@ void ItemMover::Init() {
 		cubeLayout = InventoryLayoutMap["Transmogrify Box Page 1"];
 
 		INVENTORY_LEFT = ((inventoryLayout->Left - 320) + (*p_D2CLIENT_ScreenSizeX / 2));
-		INVENTORY_TOP = (*p_D2CLIENT_ScreenSizeY / 2) - ((inventoryLayout->Bottom - inventoryLayout->Top) / 2) + 71;
+		INVENTORY_TOP = ((*p_D2CLIENT_ScreenSizeY / 2) - 240) + inventoryLayout->Top;
 		STASH_LEFT = ((*p_D2CLIENT_ScreenSizeX / 2) - 320) + lodStashLayout->Left;
-		LOD_STASH_TOP = (*p_D2CLIENT_ScreenSizeY / 2) - ((lodStashLayout->Bottom - lodStashLayout->Top) / 2) - 43;
-		CLASSIC_STASH_TOP = (*p_D2CLIENT_ScreenSizeY / 2) - ((classicStashLayout->Bottom - classicStashLayout->Top) / 2) + 89;
+		LOD_STASH_TOP = ((*p_D2CLIENT_ScreenSizeY / 2) - 240) + lodStashLayout->Top;
+		CLASSIC_STASH_TOP = ((*p_D2CLIENT_ScreenSizeY / 2) - 240) + classicStashLayout->Top;
 		CUBE_LEFT = ((*p_D2CLIENT_ScreenSizeX / 2) - 320) + cubeLayout->Left;
-		CUBE_TOP = (*p_D2CLIENT_ScreenSizeY / 2) - ((cubeLayout->Bottom - cubeLayout->Top) / 2) - 44;
+		CUBE_TOP = ((*p_D2CLIENT_ScreenSizeY / 2) - 240) + cubeLayout->Top;
 	} else {
 		classicStashLayout = InventoryLayoutMap["Bank Page2"];
 		lodStashLayout = InventoryLayoutMap["Big Bank Page2"];
