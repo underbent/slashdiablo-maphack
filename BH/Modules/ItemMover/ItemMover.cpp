@@ -24,6 +24,17 @@ int CUBE_LEFT = 197;
 int CUBE_TOP = 199;
 int CELL_SIZE = 29;
 
+TextColor quality_to_color[] = {
+	White, // none
+	White, // inferior
+	White, // normal
+	White, // superior
+	Blue, // magic
+	DarkGreen, // set
+	Yellow, // rare
+	Gold, // unique
+	Orange // craft
+};
 
 void ItemMover::Init() {
 	// We should be able to get the layout from *p_D2CLIENT_StashLayout and friends,
@@ -327,9 +338,13 @@ void ItemMover::OnRightClick(bool up, int x, int y, bool* block) {
 	*block = true;
 }
 
-void ItemMover::OnLoad() {
+void ItemMover::LoadConfig() {
 	HealKey = BH::config->ReadKey("Use Healing Potion", "VK_NUMPADMULTIPLY");
 	ManaKey = BH::config->ReadKey("Use Mana Potion", "VK_NUMPADSUBTRACT");
+}
+
+void ItemMover::OnLoad() {
+	LoadConfig();
 }
 
 void ItemMover::OnKey(bool up, BYTE key, LPARAM lParam, bool* block)  {
@@ -407,12 +422,29 @@ void ItemMover::OnGamePacketRecv(BYTE* packet, bool* block) {
 				ParseItem((unsigned char*)packet, &item, &success);
 				//PrintText(1, "Item packet: %s, %s, %X, %d, %d", item.name.c_str(), item.code, item.attrs->flags, item.sockets, GetDefense(&item));
 				if ((item.action == ITEM_ACTION_NEW_GROUND || item.action == ITEM_ACTION_OLD_GROUND) && success) {
-					//PrintText(1, "Item on ground: %s, %s, %s, %X", item.name.c_str(), item.code, item.attrs->category.c_str(), item.attrs->flags);
-					for (vector<Rule*>::iterator it = IgnoreRuleList.begin(); it != IgnoreRuleList.end(); it++) {
+					bool showOnMap = false;
+
+					for (vector<Rule*>::iterator it = MapRuleList.begin(); it != MapRuleList.end(); it++) {
 						if ((*it)->Evaluate(NULL, &item)) {
-							*block = true;
-							//PrintText(1, "Blocking item: %s, %s, %d", item.name.c_str(), item.code, item.amount);
+							if ((*BH::MiscToggles2)["Item Drop Notifications"].state && item.action == ITEM_ACTION_NEW_GROUND) {
+								PrintText(0, "Item dropped: ÿc%d%s", quality_to_color[item.quality], item.name.c_str());
+							}
+							if ((*BH::MiscToggles2)["Item Close Notifications"].state && item.action == ITEM_ACTION_OLD_GROUND) {
+								PrintText(0, "Item close: ÿc%d%s", quality_to_color[item.quality], item.name.c_str());
+							}
+							showOnMap = true;
 							break;
+						}
+					}
+
+					//PrintText(1, "Item on ground: %s, %s, %s, %X", item.name.c_str(), item.code, item.attrs->category.c_str(), item.attrs->flags);
+					if(!showOnMap) {
+						for (vector<Rule*>::iterator it = IgnoreRuleList.begin(); it != IgnoreRuleList.end(); it++) {
+							if ((*it)->Evaluate(NULL, &item)) {
+								*block = true;
+								//PrintText(1, "Blocking item: %s, %s, %d", item.name.c_str(), item.code, item.amount);
+								break;
+							}
 						}
 					}
 				}
