@@ -62,11 +62,15 @@ bool Patch::Install() {
 	memset(code, 0x90, length);
 
 	if (type != NOP) {
-		//Set the JMP or CALL opcode
-		code[0] = (type == Call) ? 0xE8 : 0xE9;
+		//Set the opcode
+		code[0] = type;
 
 		//Set the address to redirect to
-		*(DWORD*)&code[1] = function - (address + 5);
+		if (type == Call || type == Jump) {
+			*(DWORD*)&code[1] = function - (address + 5);
+		} else {
+			code[1] = function;
+		}
 	}
 
 	//Write the patch in
