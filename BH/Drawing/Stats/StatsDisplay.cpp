@@ -119,12 +119,17 @@ void StatsDisplay::Draw() {
 
 void StatsDisplay::OnDraw() {
 	UnitAny *unit = D2CLIENT_GetPlayerUnit();
+	bool isMerc = false;
 	if (!unit)
 		return;
 	int column1 = GetX() + 5;
 	int column2 = column1 + GetXSize() / 2;
 
 	if (!IsMinimized()) {
+		if (D2CLIENT_GetUIState(UI_MERC)) {
+			unit = D2CLIENT_GetMercUnit();
+			isMerc = true;
+		}
 		for(std::list<Hook*>::iterator it = Hooks.begin(); it != Hooks.end(); it++)
 			(*it)->OnDraw();
 
@@ -140,7 +145,7 @@ void StatsDisplay::OnDraw() {
 
 		Texthook::Draw(column1, (y += 8), None, 6, Gold,
 				"Name:ÿc0 %s",
-				unit->pPlayerData->szName);
+				isMerc ? "ÿc;Mercenary" : unit->pPlayerData->szName);
 		Texthook::Draw(pRect.right - 5, y, Right, 6, Gold,
 				"Level:ÿc0 %d",
 				(int)D2COMMON_GetUnitStat(unit, STAT_LEVEL, 0));
@@ -268,10 +273,10 @@ void StatsDisplay::OnDraw() {
 				"Critical Strike: ÿc0%d",
 				(int)D2COMMON_GetUnitStat(unit, STAT_CRITICALSTRIKE, 0));
 		Texthook::Draw(column1, (y += 16), None, 6, Gold,
-				"Life Leech:ÿc0 %d",
+				"Life Leech:ÿc1 %d",
 				(int)D2COMMON_GetUnitStat(unit, STAT_LIFELEECH, 0));
 		Texthook::Draw(column2, y, None, 6, Gold,
-				"Mana Leech:ÿc0 %d",
+				"Mana Leech:ÿc3 %d",
 				(int)D2COMMON_GetUnitStat(unit, STAT_MANALEECH, 0));
 		Texthook::Draw(column1, (y += 16), None, 6, Gold,
 				"Projectile Pierce:ÿc0 %d",
@@ -321,11 +326,11 @@ void StatsDisplay::OnDraw() {
 		y += 8;
 
 		Texthook::Draw(column1, (y += 16), None, 6, Gold,
-				"Magic Find:ÿc0 %d",
+				"Magic Find:ÿc3 %d",
 				(int)D2COMMON_GetUnitStat(unit, STAT_MAGICFIND, 0)
 				);
 		Texthook::Draw(column2, y, None, 6, Gold,
-				"Gold Find:ÿc0 %d",
+				"Gold Find:ÿc9 %d",
 				(int)D2COMMON_GetUnitStat(unit, STAT_GOLDFIND, 0));
 
 		Texthook::Draw(column1, (y += 16), None, 6, Gold,

@@ -2,6 +2,8 @@
 // Macros adapted from lord2800's macros.
 #include "Patch.h"
 #include "D2Structs.h"
+#include "D2Stubs.h"
+
 
 #ifdef _DEFINE_PTRS
 #define FUNCPTR(dll, name, callingret, args, address) \
