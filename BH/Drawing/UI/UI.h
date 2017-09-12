@@ -11,7 +11,7 @@ namespace Drawing {
 
 	#define TITLE_BAR_HEIGHT 15
 	#define MINIMIZED_Y_POS 585
-	#define MINIMIZED_X_POS 320
+	#define MINIMIZED_X_POS 234
 
 	class UI : public HookGroup {
 		private:
