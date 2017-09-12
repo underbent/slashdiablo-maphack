@@ -24,16 +24,16 @@ int CUBE_LEFT = 197;
 int CUBE_TOP = 199;
 int CELL_SIZE = 29;
 
-TextColor quality_to_color[] = {
-	White, // none
-	White, // inferior
-	White, // normal
-	White, // superior
-	Blue, // magic
-	DarkGreen, // set
-	Yellow, // rare
-	Gold, // unique
-	Orange // craft
+char quality_to_color[] = {
+	'0' + White, // none
+	'0' + White, // inferior
+	'0' + White, // normal
+	'0' + White, // superior
+	'0' + Blue, // magic
+	'0' + Green, // set
+	'0' + Yellow, // rare
+	'0' + Gold, // unique
+	'0' + Orange // craft
 };
 
 void ItemMover::Init() {
@@ -427,10 +427,10 @@ void ItemMover::OnGamePacketRecv(BYTE* packet, bool* block) {
 					for (vector<Rule*>::iterator it = MapRuleList.begin(); it != MapRuleList.end(); it++) {
 						if ((*it)->Evaluate(NULL, &item)) {
 							if ((*BH::MiscToggles2)["Item Drop Notifications"].state && item.action == ITEM_ACTION_NEW_GROUND) {
-								PrintText(0, "Item dropped: ÿc%d%s", quality_to_color[item.quality], item.name.c_str());
+								PrintText(0, "Item dropped: \377c%c%s", quality_to_color[item.quality], item.name.c_str());
 							}
 							if ((*BH::MiscToggles2)["Item Close Notifications"].state && item.action == ITEM_ACTION_OLD_GROUND) {
-								PrintText(0, "Item close: ÿc%d%s", quality_to_color[item.quality], item.name.c_str());
+								PrintText(0, "Item close: \377c%c%s", quality_to_color[item.quality], item.name.c_str());
 							}
 							showOnMap = true;
 							break;
