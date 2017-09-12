@@ -24,23 +24,23 @@ map<string, Toggle>* BH::MiscToggles;
 map<string, Toggle>* BH::MiscToggles2;
 
 Patch* patches[] = {
-	new Patch(Call, D2CLIENT, 0x44230, (int)GameLoop_Interception, 7),
+	new Patch(Call, D2CLIENT, { 0x44230, 0x45280 }, (int)GameLoop_Interception, 7),
 
-	new Patch(Jump, D2CLIENT, 0xC3DB4, (int)GameDraw_Interception, 6),
-	new Patch(Jump, D2CLIENT, 0x626C9, (int)GameAutomapDraw_Interception, 5),
+	new Patch(Jump, D2CLIENT, { 0xC3DB4, 0x1D7B4 }, (int)GameDraw_Interception, 6),
+	new Patch(Jump, D2CLIENT, { 0x626C9, 0x73469 }, (int)GameAutomapDraw_Interception, 5),
 
-	new Patch(Call, BNCLIENT, 0xEABC, (int)ChatPacketRecv_Interception, 12),
-	new Patch(Call, D2MCPCLIENT, 0x69D7, (int)RealmPacketRecv_Interception, 5),
-	new Patch(Call, D2CLIENT, 0xACE61, (int)GamePacketRecv_Interception, 5),
-	new Patch(Call, D2CLIENT, 0x70B75, (int)GameInput_Interception, 5),
-	new Patch(Call, D2MULTI, 0xD753, (int)ChannelInput_Interception, 5),
-	new Patch(Call, D2MULTI, 0x10781, (int)ChannelWhisper_Interception, 5),
-	new Patch(Jump, D2MULTI, 0x108A0, (int)ChannelChat_Interception, 6),
-	new Patch(Jump, D2MULTI, 0x107A0, (int)ChannelEmote_Interception, 6),
-	new Patch(NOP, D2CLIENT, 0x3CB7C, 0, 9),
+	new Patch(Call, BNCLIENT, { 0xEABC, 0xCEBC }, (int)ChatPacketRecv_Interception, 12),
+	new Patch(Call, D2MCPCLIENT, { 0x69D7, 0x6297 }, (int)RealmPacketRecv_Interception, 5),
+	new Patch(Call, D2CLIENT, { 0xACE61, 0x83301 }, (int)GamePacketRecv_Interception, 5),
+	new Patch(Call, D2CLIENT, { 0x70B75, 0xB24FF }, (int)GameInput_Interception, 5),
+	new Patch(Call, D2MULTI, { 0xD753, 0x11D63 }, (int)ChannelInput_Interception, 5),
+	new Patch(Call, D2MULTI, { 0x10781, 0x14A9A }, (int)ChannelWhisper_Interception, 5),
+	new Patch(Jump, D2MULTI, { 0x108A0, 0x14BE0 }, (int)ChannelChat_Interception, 6),
+	new Patch(Jump, D2MULTI, { 0x107A0, 0x14850 }, (int)ChannelEmote_Interception, 6),
+	new Patch(NOP, D2CLIENT, { 0x3CB7C, 0x2770C }, 0, 9),
 };
 
-Patch* BH::oogDraw = new Patch(Call, D2WIN, 0x18911, (int)OOGDraw_Interception, 5);
+Patch* BH::oogDraw = new Patch(Call, D2WIN, { 0x18911, 0xEC61 }, (int)OOGDraw_Interception, 5);
 
 unsigned int index = 0;
 bool BH::Startup(HINSTANCE instance, VOID* reserved) {

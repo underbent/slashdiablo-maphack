@@ -31,3 +31,4 @@ class Bnet : public Module {
 };
 
 void FailToJoin_Interception();
+void RemovePass_Interception();

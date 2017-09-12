@@ -1,8 +1,9 @@
 #include "Patch.h"
+#include "D2Version.h"
 std::vector<Patch*> Patch::Patches;
 
-Patch::Patch(PatchType type, Dll dll, int offset, int function, int length) 
-: type(type), dll(dll), offset(offset), function(function), length(length) {
+Patch::Patch(PatchType type, Dll dll, Offsets offsets, int function, int length) 
+: type(type), dll(dll), offsets(offsets), function(function), length(length) {
 	oldCode = new BYTE[length];
 	injected = false;
 	Patches.push_back(this);
@@ -52,6 +53,9 @@ bool Patch::Install() {
 	BYTE* code = new BYTE[length];
 	DWORD protect;
 
+	// Select an offset based on D2 version
+	int offset = *(&offsets._113c + D2Version::GetGameVersionID());
+
 	//Get the proper address that we are patching
 	int address = GetDllOffset(dll, offset);
 
@@ -88,6 +92,9 @@ bool Patch::Install() {
 bool Patch::Remove() {
 	if (!IsInstalled())
 		return true;
+
+	// Select an offset based on D2 version
+	int offset = *(&offsets._113c + D2Version::GetGameVersionID());
 
 	//Get the proper address
 	int address = GetDllOffset(dll, offset);

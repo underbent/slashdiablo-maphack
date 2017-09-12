@@ -7,12 +7,12 @@ std::string Bnet::lastName;
 std::string Bnet::lastPass;
 std::regex Bnet::reg = std::regex("^(.*?)(\\d+)$");
 
-Patch* nextGame1 = new Patch(Call, D2MULTI, 0x14D29, (int)Bnet::NextGamePatch, 5);
-Patch* nextGame2 = new Patch(Call, D2MULTI, 0x14A0B, (int)Bnet::NextGamePatch, 5);
-Patch* nextPass1 = new Patch(Call, D2MULTI, 0x14D64, (int)Bnet::NextPassPatch, 5);
-Patch* nextPass2 = new Patch(Call, D2MULTI, 0x14A46, (int)Bnet::NextPassPatch, 5);
-Patch* ftjPatch = new Patch(Call, D2CLIENT, 0x4363E, (int)FailToJoin_Interception, 6);
-Patch* removePass = new Patch(Call, D2MULTI, 0x1250, (int)Bnet::RemovePassPatch, 5);
+Patch* nextGame1 = new Patch(Call, D2MULTI, { 0x14D29, 0xADAB }, (int)Bnet::NextGamePatch, 5);
+Patch* nextGame2 = new Patch(Call, D2MULTI, { 0x14A0B, 0xB5E9 }, (int)Bnet::NextGamePatch, 5);
+Patch* nextPass1 = new Patch(Call, D2MULTI, { 0x14D64, 0xADE6 }, (int)Bnet::NextPassPatch, 5);
+Patch* nextPass2 = new Patch(Call, D2MULTI, { 0x14A46, 0xB624 }, (int)Bnet::NextPassPatch, 5);
+Patch* ftjPatch = new Patch(Call, D2CLIENT, { 0x4363E, 0x443FE }, (int)FailToJoin_Interception, 6);
+Patch* removePass = new Patch(Call, D2MULTI, { 0x1250, 0x1AD0 }, (int)Bnet::RemovePassPatch, 5);
 
 void Bnet::OnLoad() {
 	LoadConfig();
@@ -140,37 +140,29 @@ VOID __fastcall Bnet::NextPassPatch(Control* box, BOOL(__stdcall *FunCallBack)(C
 	delete[] wszLastPass;
 }
 
-void Bnet::RemovePassPatch() {
+void __declspec(naked) RemovePass_Interception() {
 	__asm {
-		pushad
-		push edi
-		push esi
+		PUSHAD
+		CALL [Bnet::RemovePassPatch]
+		POPAD
+
+		; Original code
+		XOR EAX, EAX
+		SUB ECX, 01
+		RET
 	}
+}
+
+void Bnet::RemovePassPatch() {
 	Control* box = *p_D2MULTI_PassBox;
-	BOOL(__stdcall *FunCallBack)(Control*, DWORD, DWORD) = D2MULTI_NeededForPassRemovalIDontKnowRenameIt;
 
 	if (Bnet::lastPass.size() == 0 || box == nullptr) {
-		__asm {
-			pop esi
-			pop edi
-			popad
-			xor eax, eax
-			sub ecx, 01
-		}
 		return;
 	}
 
 	wchar_t *wszLastPass = AnsiToUnicode("");
 	D2WIN_SetControlText(box, wszLastPass);
 	delete[] wszLastPass;
-
-	__asm {
-		pop esi
-		pop edi
-		popad
-		xor eax, eax
-		sub ecx, 01
-	}
 }
 
 void __declspec(naked) FailToJoin_Interception()

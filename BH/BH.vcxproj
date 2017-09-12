@@ -124,6 +124,7 @@
     <ClCompile Include="D2Helpers.cpp" />
     <ClCompile Include="D2Intercepts.cpp" />
     <ClCompile Include="D2Stubs.cpp" />
+    <ClCompile Include="D2Version.cpp" />
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="Drawing\Advanced\Checkhook\Checkhook.cpp" />
     <ClCompile Include="Drawing\Advanced\Colorhook\Colorhook.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="D2Ptrs.h" />
     <ClInclude Include="D2Structs.h" />
     <ClInclude Include="D2Stubs.h" />
+    <ClInclude Include="D2Version.h" />
     <ClInclude Include="Drawing.h" />
     <ClInclude Include="Drawing\Advanced\Checkhook\Checkhook.h" />
     <ClInclude Include="Drawing\Advanced\Colorhook\Colorhook.h" />
