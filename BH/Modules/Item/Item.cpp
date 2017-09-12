@@ -38,6 +38,8 @@ void Item::LoadConfig() {
 	Toggles["Color Mod"] = BH::config->ReadToggle("Color Mod", "None", false);
 	Toggles["Shorten Item Names"] = BH::config->ReadToggle("Shorten Item Names", "None", false);
 	Toggles["Advanced Item Display"] = BH::config->ReadToggle("Advanced Item Display", "None", false);
+	Toggles["Item Drop Notifications"] = BH::config->ReadToggle("Item Drop Notifications", "None", false);
+	Toggles["Item Close Notifications"] = BH::config->ReadToggle("Item Close Notifications", "None", false);
 	Toggles["Allow Unknown Items"] = BH::config->ReadToggle("Allow Unknown Items", "None", false);
 
 	ItemDisplay::UninitializeItemRules();
@@ -74,7 +76,13 @@ void Item::DrawSettings() {
 	new Checkhook(settingsTab, 4, 120, &Toggles["Advanced Item Display"].state, "Advanced Item Display");
 	new Keyhook(settingsTab, 200, 122, &Toggles["Advanced Item Display"].toggle, "");
 
-	new Keyhook(settingsTab, 4, 137, &showPlayer, "Show Players Gear");
+	new Checkhook(settingsTab, 4, 135, &Toggles["Item Drop Notifications"].state, "Item Drop Notifications");
+	new Keyhook(settingsTab, 200, 137, &Toggles["Item Drop Notifications"].toggle, "");
+
+	new Checkhook(settingsTab, 4, 150, &Toggles["Item Close Notifications"].state, "Item Close Notifications");
+	new Keyhook(settingsTab, 200, 152, &Toggles["Item Close Notifications"].toggle, "");
+
+	new Keyhook(settingsTab, 4, 167, &showPlayer, "Show Players Gear");
 }
 
 void Item::OnUnload() {
@@ -464,7 +472,7 @@ UnitAny* Item::GetViewUnit ()
 	if (view->dwUnitId == D2CLIENT_GetPlayerUnit()->dwUnitId)
 		return D2CLIENT_GetPlayerUnit();
 
-	Drawing::Texthook::Draw(560, 300, Drawing::Center, 0, White, "%s", viewingUnit->pPlayerData->szName);
+	Drawing::Texthook::Draw(*p_D2CLIENT_PanelOffsetX + 160 + 320, 300, Drawing::Center, 0, White, "%s", viewingUnit->pPlayerData->szName);
 	return viewingUnit;
 }
 

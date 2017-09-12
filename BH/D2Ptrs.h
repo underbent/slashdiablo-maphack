@@ -3,6 +3,8 @@
 #include "Patch.h"
 #include "D2Version.h"
 #include "D2Structs.h"
+#include "D2Stubs.h"
+
 
 #ifdef _DEFINE_PTRS
 #define FUNCPTR(dll, name, callingret, args, ...) \

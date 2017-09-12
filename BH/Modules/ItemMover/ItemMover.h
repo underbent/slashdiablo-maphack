@@ -72,6 +72,8 @@ public:
 	void PutItemInContainer();
 	void PutItemOnGround();
 
+	void LoadConfig();
+
 	void OnLoad();
 	void OnKey(bool up, BYTE key, LPARAM lParam, bool* block);
 	void OnRightClick(bool up, int x, int y, bool* block);
