@@ -135,6 +135,7 @@ void GetItemName(UnitItemInfo *uInfo, string &name) {
 void SubstituteNameVariables(UnitItemInfo *uInfo, string &name, Action *action) {
 	char origName[128], sockets[4], code[4], ilvl[4], alvl[4], runename[16] = "", runenum[4] = "0";
 	char gemtype[16] = "", gemlevel[16] = "", sellValue[16] = "", statVal[16] = "";
+	char lvlreq[4], wpnspd[4], rangeadder[4];
 
 	UnitAny *item = uInfo->item;
 	ItemText *txt = D2COMMON_GetItemText(item->dwTxtFileNo);
@@ -147,6 +148,10 @@ void SubstituteNameVariables(UnitItemInfo *uInfo, string &name, Action *action) 
 	sprintf_s(ilvl, "%d", item->pItemData->dwItemLevel);
 	sprintf_s(alvl, "%d", GetAffixLevel((BYTE)item->pItemData->dwItemLevel, (BYTE)uInfo->attrs->qualityLevel, uInfo->attrs->magicLevel));
 	sprintf_s(origName, "%s", name.c_str());
+
+	sprintf_s(lvlreq, "%d", GetRequiredLevel(uInfo->item));
+	sprintf_s(wpnspd, "%d", txt->speed); //Add these as matchable stats too, maybe?
+	sprintf_s(rangeadder, "%d", txt->rangeadder);
 
 	UnitAny* pUnit = D2CLIENT_GetPlayerUnit();
 	if (pUnit && txt->fQuest == 0) {
@@ -169,6 +174,9 @@ void SubstituteNameVariables(UnitItemInfo *uInfo, string &name, Action *action) 
 		{"GEMTYPE", gemtype},
 		{"ILVL", ilvl},
 		{"ALVL", alvl},
+		{"LVLREQ", lvlreq},
+		{"WPNSPD", wpnspd},
+		{"RANGE", rangeadder},
 		{"CODE", code},
 		{"NL", "\n"},
 		{"PRICE", sellValue},
@@ -214,6 +222,42 @@ BYTE GetAffixLevel(BYTE ilvl, BYTE qlvl, BYTE mlvl) {
 		return ilvl + mlvl > 99 ? 99 : ilvl + mlvl;
 	}
 	return ((ilvl) < (99 - ((qlvl)/2)) ? (ilvl) - ((qlvl)/2) : (ilvl) * 2 - 99);
+}
+
+// Returns the (lowest) level requirement (for any class) of an item
+BYTE GetRequiredLevel(UnitAny* item) {
+	// Some crafted items can supposedly go above 100, but it's practically the same as 100
+	BYTE rlvl = 100;
+
+	// The unit for which the required level is calculated
+	UnitAny* character = D2CLIENT_GetPlayerUnit();
+
+	// Extra checks for these as they can have charges
+	if (item->pItemData->dwQuality == ITEM_QUALITY_RARE || item->pItemData->dwQuality == ITEM_QUALITY_MAGIC) {
+
+		// Save the original class of the character (0-6)
+		DWORD temp = character->dwTxtFileNo;
+
+		// Pretend to be every class once, use the lowest req lvl (for charged items)
+		for (DWORD i = 0; i < 7; i++) {
+
+			character->dwTxtFileNo = i;
+			BYTE temprlvl = (BYTE)D2COMMON_GetItemLevelRequirement(item, character);
+
+			if (temprlvl < rlvl) {
+
+				rlvl = temprlvl;
+				//Only one class will have a lower req than the others, so if a lower one is found we can stop
+				if (i > 0) { break; }
+			}
+		}
+		// Go back to being original class
+		character->dwTxtFileNo = temp;
+	} else {
+		rlvl = (BYTE)D2COMMON_GetItemLevelRequirement(item, character);
+	}
+
+	return rlvl;
 }
 
 BYTE GetOperation(string *op) {
@@ -553,6 +597,8 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 	} else if (key.compare(0, 4, "MANA") == 0) {
 		// For unknown reasons, the game's internal Mana stat is 256 for every 1 displayed on item
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_MAXMANA, 0, operation, value * 256));
+	} else if (key.compare(0, 6, "LVLREQ") == 0) {
+		Condition::AddOperand(conditions, new RequiredLevelCondition(operation, value));
 	} else if (key.compare(0, 5, "ARPER") == 0) {
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_TOHITPERCENT, 0, operation, value));
 	} else if (key.compare(0, 5, "MFIND") == 0) {
@@ -892,6 +938,19 @@ bool AffixLevelCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *
 	int qlvl = info->attrs->qualityLevel;
 	BYTE alvl = GetAffixLevel(info->level, info->attrs->qualityLevel, info->attrs->magicLevel);
 	return IntegerCompare(alvl, operation, affixLevel);
+}
+
+bool RequiredLevelCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
+
+	unsigned int rlvl = GetRequiredLevel(uInfo->item);
+
+	return IntegerCompare(rlvl, operation, requiredLevel);
+}
+bool RequiredLevelCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
+
+	//Not Done Yet (is it necessary? I think this might have something to do with the exact moment something drops?)
+
+	return true;
 }
 
 bool ItemGroupCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {

@@ -464,15 +464,22 @@ struct ItemText {
 		DWORD dwCode;
 		char szCode[4];
 	};								//0x40
-	BYTE _2[0x70];					//0x84
-	WORD nLocaleTxtNo;				//0xF4
-	BYTE _2a[0x19];					//0xF7
-	BYTE xSize;						//0xFC
-	BYTE ySize;						//0xFD
-	BYTE _2b[13];					//0xFE
-	BYTE nType;						//0x11E
-	BYTE _3[0x0d];					//0x11F
-	BYTE fQuest;					//0x12A
+	BYTE _uncharted1[0x54];			//0x44
+	DWORD speed;					//0x98
+	BYTE _uncharted2[0x18];			//0x9C
+	WORD nLocaleTxtNo;				//0xB4
+	BYTE _uncharted3[0x0E];			//0xB6
+	WORD rangeadder;				//0xC4
+	BYTE _uncharted4[0x09];			//0xC6
+	BYTE xSize;						//0xCF
+	BYTE ySize;						//0xD0
+	BYTE _uncharted5[0x0d];			//0xD1
+	BYTE nType;						//0xDE
+	BYTE _uncharted6[0x0d];			//0xDF
+	BYTE fQuest;					//0xEC
+	BYTE _uncharted7[0x12];			//0xED
+	BYTE reqlvl;					//0xFF 
+	BYTE magiclvl;					//0x100
 };
 
 struct MonsterText {
