@@ -693,7 +693,7 @@ void Maphack::RevealRoom(Room2* room) {
 		} else if (preset->dwType == 2) {
 			// Uber Chest in Lower Kurast Check
 			if (preset->dwTxtFileNo == 580 && room->pLevel->dwLevelNo == 79)		
-				cellNo = 9;
+				cellNo = 318;
 
 			// Countess Chest Check
 			if (preset->dwTxtFileNo == 371) 
