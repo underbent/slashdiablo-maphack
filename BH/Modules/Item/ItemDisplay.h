@@ -354,6 +354,55 @@ private:
 	bool EvaluateED(unsigned int flags);
 };
 
+class FoolsCondition : public Condition
+{
+public:
+	FoolsCondition() { conditionType = CT_Operand; };
+private:
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
+};
+
+class ComboStatCondition : public Condition
+{
+public:
+	ComboStatCondition(unsigned int * list, unsigned int arraySize, BYTE op, unsigned int target)
+		: statNums(list), size(arraySize), operation(op), targetStat(target) {
+		conditionType = CT_Operand;
+	};
+private:
+	BYTE operation;
+	unsigned int * statNums;
+	unsigned int targetStat;
+	unsigned int size;
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
+};
+
+class SkillListCondition : public Condition
+{
+public:
+	SkillListCondition(unsigned int classList[], unsigned int tabList[], unsigned int classSize, unsigned int tabSize, BYTE op, unsigned int target)
+		: classSkillSize(classSize), tabSkillSize(tabSize), operation(op), targetStat(target) {
+		conditionType = CT_Operand;
+		for (unsigned int i = 0; i < classSize; i++) {
+			classSkills[i] = classList[i];
+		}
+		for (unsigned int i = 0; i < tabSize; i++) {
+			tabSkills[i] = tabList[i];
+		}
+	};
+private:
+	BYTE operation;
+	unsigned int classSkills[CLASS_NA];
+	unsigned int tabSkills[SKILLTAB_MAX];
+	unsigned int targetStat;
+	unsigned int classSkillSize;
+	unsigned int tabSkillSize;
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
+};
+
 class CharStatCondition : public Condition
 {
 public:

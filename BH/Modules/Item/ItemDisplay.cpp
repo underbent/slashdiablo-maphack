@@ -47,6 +47,50 @@ BYTE LastConditionType;
 TrueCondition *trueCondition = new TrueCondition();
 FalseCondition *falseCondition = new FalseCondition();
 
+unsigned int GOOD_SKILL_CLASSES[] = {
+	CLASS_ASN,
+	CLASS_BAR,
+	CLASS_DRU,
+	CLASS_NEC,
+	CLASS_PAL,
+	CLASS_SOR
+};
+
+unsigned int GOOD_SKILL_TABS[] = {
+	SKILLTAB_AMAZON_JAVELIN,
+	SKILLTAB_ASSASSIN_TRAPS,
+	SKILLTAB_BARBARIAN_WARCRIES,
+	SKILLTAB_DRUID_ELEMENTAL,
+	SKILLTAB_NECROMANCER_POISON,
+	SKILLTAB_PALADIN_COMBAT,
+	SKILLTAB_SORCERESS_COLD,
+	SKILLTAB_SORCERESS_FIRE,
+	SKILLTAB_SORCERESS_LIGHTNING
+};
+
+unsigned int ALL_RESISTANCES_COMBO[] = {
+	STAT_FIRERESIST,
+	STAT_COLDRESIST,
+	STAT_LIGHTNINGRESIST,
+	STAT_POISONRESIST
+};
+
+unsigned int ELEMENTAL_RESISTANCES_COMBO[] = {
+	STAT_FIRERESIST,
+	STAT_COLDRESIST,
+	STAT_LIGHTNINGRESIST
+};
+
+unsigned int LIFE_MANA_COMBO[] = {
+	STAT_MAXHP,
+	STAT_MAXMANA
+};
+
+unsigned int STR_DEX_COMBO[] = {
+	STAT_STRENGTH,
+	STAT_DEXTERITY
+};
+
 char* GemLevels[] = {
 	"NONE",
 	"Chipped",
@@ -581,8 +625,22 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		Condition::AddOperand(conditions, new EDCondition(operation, value));
 	} else if (key.compare(0, 3, "DEF") == 0) {
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_DEFENSE, 0, operation, value));
+	} else if (key.compare(0, 6, "MAXDUR") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_ENHANCEDMAXDURABILITY, 0, operation, value));
 	} else if (key.compare(0, 3, "RES") == 0) {
 		Condition::AddOperand(conditions, new ResistAllCondition(operation, value));
+	} else if (key.compare(0, 7, "ELE_RES") == 0) {
+		Condition::AddOperand(conditions, new ComboStatCondition(ELEMENTAL_RESISTANCES_COMBO, 3, operation, value));
+	} else if (key.compare(0, 7, "ALL_RES") == 0) {
+		Condition::AddOperand(conditions, new ComboStatCondition(ALL_RESISTANCES_COMBO, 4, operation, value));
+	} else if (key.compare(0, 7, "FIRERES") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_FIRERESIST, 0, operation, value));
+	} else if (key.compare(0, 7, "COLDRES") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_COLDRESIST, 0, operation, value));
+	} else if (key.compare(0, 8, "LIGHTRES") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_LIGHTNINGRESIST, 0, operation, value));
+	} else if (key.compare(0, 6, "PSNRES") == 0) {
+		Condition::AddOperand(conditions, new ItemStatCondition(STAT_POISONRESIST, 0, operation, value));
 	} else if (key.compare(0, 3, "IAS") == 0) {
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_IAS, 0, operation, value));
 	} else if (key.compare(0, 3, "FCR") == 0) {
@@ -591,12 +649,20 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_FASTERHITRECOVERY, 0, operation, value));
 	} else if (key.compare(0, 3, "FBR") == 0) {
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_FASTERBLOCK, 0, operation, value));
+	} else if (key.compare(0, 8, "LIFEMANA") == 0 || key.compare(0, 8, "MANALIFE") == 0) {
+		Condition::AddOperand(conditions, new ComboStatCondition(LIFE_MANA_COMBO, 2, operation, value * 256));
 	} else if (key.compare(0, 4, "LIFE") == 0) {
 		// For unknown reasons, the game's internal HP stat is 256 for every 1 displayed on item
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_MAXHP, 0, operation, value * 256));
 	} else if (key.compare(0, 4, "MANA") == 0) {
 		// For unknown reasons, the game's internal Mana stat is 256 for every 1 displayed on item
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_MAXMANA, 0, operation, value * 256));
+	} else if (key.compare(0, 9, "GOOD_TBSK") == 0) {
+		Condition::AddOperand(conditions, new SkillListCondition(NULL, GOOD_SKILL_TABS, 0, 9, operation, value));
+	} else if (key.compare(0, 10, "GOOD_SKILL") == 0) {
+		Condition::AddOperand(conditions, new SkillListCondition(GOOD_SKILL_CLASSES, GOOD_SKILL_TABS, 6, 9, operation, value));
+	} else if (key.compare(0, 5, "FOOLS") == 0) {
+		Condition::AddOperand(conditions, new FoolsCondition());
 	} else if (key.compare(0, 6, "LVLREQ") == 0) {
 		Condition::AddOperand(conditions, new RequiredLevelCondition(operation, value));
 	} else if (key.compare(0, 5, "ARPER") == 0) {
@@ -605,6 +671,8 @@ void Condition::BuildConditions(vector<Condition*> &conditions, string token) {
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_MAGICFIND, 0, operation, value));
 	} else if (key.compare(0, 5, "GFIND") == 0) {
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_GOLDFIND, 0, operation, value));
+	} else if (key.compare(0, 6, "STRDEX") == 0 || key.compare(0, 6, "DEXSTR") == 0) {
+		Condition::AddOperand(conditions, new ComboStatCondition(STR_DEX_COMBO, 2, operation, value));
 	} else if (key.compare(0, 3, "STR") == 0) {
 		Condition::AddOperand(conditions, new ItemStatCondition(STAT_STRENGTH, 0, operation, value));
 	} else if (key.compare(0, 3, "DEX") == 0) {
@@ -1001,6 +1069,105 @@ bool EDCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Co
 		}
 	}
 	return IntegerCompare(value, operation, targetED);
+}
+
+bool FoolsCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
+	// 1 = MAX DMG / level
+	// 2 = AR / level
+	// 3 = Fools
+
+	// Pulled from JSUnit.cpp in d2bs
+	unsigned int value = 0;
+	Stat aStatList[256] = { NULL };
+	StatList* pStatList = D2COMMON_GetStatList(uInfo->item, NULL, 0x40);
+	if (pStatList) {
+		DWORD dwStats = D2COMMON_CopyStatList(pStatList, (Stat*)aStatList, 256);
+		for (UINT i = 0; i < dwStats; i++) {
+			if (aStatList[i].wStatIndex == STAT_MAXDAMAGEPERLEVEL && aStatList[i].wSubIndex == 0) {
+				value += 1;
+			}
+			if (aStatList[i].wStatIndex == STAT_ATTACKRATINGPERLEVEL && aStatList[i].wSubIndex == 0) {
+				value += 2;
+			}
+		}
+	}
+	// We are returning a comparison on 3 here instead of any the actual number because the way it is setup is
+	// to just write FOOLS in the mh file instead of FOOLS=3 this could be changed to accept 1-3 for the different
+	// types it can produce
+	return IntegerCompare(value, (BYTE)EQUAL, 3);
+}
+bool FoolsCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
+	// 1 = MAX DMG / level
+	// 2 = AR / level
+	// 3 = Fools
+
+	unsigned int value = 0;
+	for (vector<ItemProperty>::iterator prop = info->properties.begin(); prop < info->properties.end(); prop++) {
+		if (prop->stat == STAT_MAXDAMAGEPERLEVEL) {
+			value += 1;
+		}
+		if (prop->stat == STAT_ATTACKRATINGPERLEVEL) {
+			value += 2;
+		}
+	}
+	// We are returning a comparison on 3 here instead of any the actual number because the way it is setup is
+	// to just write FOOLS in the mh file instead of FOOLS=3 this could be changed to accept 1-3 for the different
+	// types it can produce
+	return IntegerCompare(value, (BYTE)EQUAL, 3);
+}
+
+
+bool ComboStatCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
+	int value = 0;
+	for (unsigned int i = 0; i < size; i++) {
+		value += D2COMMON_GetUnitStat(uInfo->item, statNums[i], 0);
+	}
+	return IntegerCompare(value, operation, targetStat);
+}
+bool ComboStatCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
+	int value = 0;
+	for (unsigned int i = 0; i < size; i++) {
+		for (vector<ItemProperty>::iterator prop = info->properties.begin(); prop < info->properties.end(); prop++) {
+			if (prop->stat == statNums[i]) {
+				value += prop->value;
+			}
+		}
+	}
+	return (IntegerCompare(value, operation, targetStat));
+}
+
+bool SkillListCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {
+	unsigned int value = 0;
+
+	for (unsigned int i = 0; i < classSkillSize; i++) {
+		if (classSkills[i] < CLASS_NA) {
+			value += D2COMMON_GetUnitStat(uInfo->item, STAT_CLASSSKILLS, classSkills[i]);
+		}
+	}
+	for (unsigned int i = 0; i < tabSkillSize; i++) {
+		if (tabSkills[i] < SKILLTAB_MAX) {
+			value += D2COMMON_GetUnitStat(uInfo->item, STAT_SKILLTAB, tabSkills[i]);
+		}
+	}
+	return IntegerCompare(value, operation, targetStat);
+}
+bool SkillListCondition::EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2) {
+
+	for (unsigned int i = 0; i < classSkillSize; i++) {
+		for (vector<ItemProperty>::iterator prop = info->properties.begin(); prop < info->properties.end(); prop++) {
+			if (prop->stat == STAT_CLASSSKILLS && prop->characterClass == classSkills[i]) {
+				return IntegerCompare(prop->value, operation, targetStat);
+			}
+		}
+	}
+	for (unsigned int i = 0; i < tabSkillSize; i++) {
+		for (vector<ItemProperty>::iterator prop = info->properties.begin(); prop < info->properties.end(); prop++) {
+			if (prop->stat == STAT_SKILLTAB && (prop->characterClass * 8 + prop->tab) == tabSkills[i]) {
+				return IntegerCompare(prop->value, operation, targetStat);
+			}
+		}
+	}
+	return IntegerCompare(0, operation, targetStat);
 }
 
 bool CharStatCondition::EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2) {

@@ -64,9 +64,22 @@ Mustache[item]: {{>header}}{{>stats}}{{^isRuneword}}{{#socketed}}\n\n  * {{>>ite
 Mustache[stash]: {{#this}}* {{>item}}\n\n{{/this}}
 ```
 
+# Release Notes for JimmyTheJ's 1.8.12 changes
+* Added several keywords to ItemDisplay
+  * MAXDUR for enhanced durability
+  * ELE_RES for any combination of Light, Fire, Cold resist
+  * ALL_RES for any combination of all resistances
+  * FIRE_RES for fire resistance
+  * COLD_RES for cold resistance
+  * LIGHT_RES for lightning resistance
+  * PSN_RES for poison resistance
+  * LIFEMANA or MANALIFE for any combination of life and mana
+  * STRDEX or DEXSTR for any combination of strength and dexterity
+
+
 # Release Notes for BH Maphack v1.8
 * Stash export improvements:
-  * Add account name to sash export file name
+  * Add account name to stash export file name
   * Add rare and crafted item names to stash export
 * Map boxes are drawn on top of other things
 * Add four possible box sizes to draw on the map
