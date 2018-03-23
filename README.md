@@ -66,15 +66,26 @@ Mustache[stash]: {{#this}}* {{>item}}\n\n{{/this}}
 
 # Release Notes for JimmyTheJ's 1.8.12 changes
 * Added several keywords to ItemDisplay
-  * MAXDUR for enhanced durability
-  * ELE_RES for any combination of Light, Fire, Cold resist
-  * ALL_RES for any combination of all resistances
-  * FIRE_RES for fire resistance
-  * COLD_RES for cold resistance
-  * LIGHT_RES for lightning resistance
-  * PSN_RES for poison resistance
-  * LIFEMANA or MANALIFE for any combination of life and mana
-  * STRDEX or DEXSTR for any combination of strength and dexterity
+  * MAXDUR for enhanced durability percent
+  * FRES for fire resistance
+  * CRES for cold resistance
+  * LRES for lightning resistance
+  * PRES for poison resistance
+  * Stats can now be combined in a limited pool by adding a + between them:
+	* STR, DEX, LIFE, MANA, FRES, LRES, CRES, PRES
+	* EX: STR+DEX+FRES>40
+  * FOOLS for Fool's mod. Used without any operators or numbers
+  * GOODSK for + skills of any of the user defined good classes
+  * GOODTBSK for + skills tab of any of the user defined good tab skills
+  * Configuration file has two new lines:
+    * Skills:				True, None
+    * ClassSkills:			True, None
+	* This is followed by a line for each Class skill and Tab skill like so:
+      * SkillsList[6]:			False		// Assassin
+      * ClassSkillsList[2]:		True		// Amazon Javelin
+      * ClassSkillsList[8]:		True		// Sorceress Fire
+	* The numbers in braces corresponds to the internal code for the skill so it is important
+
 
 
 # Release Notes for BH Maphack v1.8

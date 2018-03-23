@@ -13,6 +13,9 @@ Patch* viewInvPatch1 = new Patch(Call, D2CLIENT, { 0x953E2, 0x997B2 }, (int)View
 Patch* viewInvPatch2 = new Patch(Call, D2CLIENT, { 0x94AB4, 0x98E84 }, (int)ViewInventoryPatch2_ASM, 6);
 Patch* viewInvPatch3 = new Patch(Call, D2CLIENT, { 0x93A6F, 0x97E3F }, (int)ViewInventoryPatch3_ASM, 5);
 
+vector<int> goodSkills;
+vector<int> goodTabSkills;
+
 using namespace Drawing;
 
 void Item::OnLoad() {
@@ -41,6 +44,37 @@ void Item::LoadConfig() {
 	Toggles["Item Drop Notifications"] = BH::config->ReadToggle("Item Drop Notifications", "None", false);
 	Toggles["Item Close Notifications"] = BH::config->ReadToggle("Item Close Notifications", "None", false);
 	Toggles["Allow Unknown Items"] = BH::config->ReadToggle("Allow Unknown Items", "None", false);
+
+	// To enable good character skills and good skill tab lists
+	Toggles["Skills"] = BH::config->ReadToggle("Skills", "None", false);
+	Toggles["ClassSkills"] = BH::config->ReadToggle("ClassSkills", "None", false);
+
+	goodSkills.clear();
+	goodTabSkills.clear();
+	if (Toggles["Skills"].state == true) {
+		map<string, string> skillList = BH::config->ReadAssoc("SkillsList");
+		for (auto it = skillList.cbegin(); it != skillList.cend(); it++) {
+			if (StringToBool((*it).second)) {
+				goodSkills.push_back(stoi((*it).first));
+			}
+		}
+		//vector<string> skillList = BH::config->ReadArray("SkillsList");
+		//for (unsigned int i = 0; i < skillList.size(); i++) {
+		//	if (strcmp(skillList[i].c_str(), "True") == 0) {
+		//		goodSkills.push_back(i);
+		//	}
+		//}
+	}
+	if (Toggles["ClassSkills"].state == true) {
+		//vector<string> classSkillList = BH::config->ReadArray("ClassSkillsList");
+		map<string, string> classSkillList = BH::config->ReadAssoc("ClassSkillsList");
+		//for (unsigned int i = 0; i < classSkillList.size(); i++) {
+		for (auto it = classSkillList.cbegin(); it != classSkillList.cend(); it++) {
+			if (StringToBool((*it).second)) {
+				goodTabSkills.push_back(stoi((*it).first));
+			}
+		}
+	}
 
 	ItemDisplay::UninitializeItemRules();
 
