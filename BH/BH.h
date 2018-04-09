@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include <Windows.h>
+#include <thread>
+#include <chrono>
 #include "Modules/ModuleManager.h"
 #include "Config.h"
 #include "Drawing.h"
@@ -35,4 +37,5 @@ namespace BH {
 	extern bool Startup(HINSTANCE instance, VOID* reserved);
 	extern "C" __declspec(dllexport) void Initialize();
 	extern bool Shutdown();
+	extern bool ReloadConfig();
 };

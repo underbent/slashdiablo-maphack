@@ -13,25 +13,9 @@ int CS[] = {392, 394, 396, 255};
 using namespace Drawing;
 
 void AutoTele::OnLoad() {
+	LoadConfig();
 
 	settingsTab = new UITab("Miscellaneous", BH::settingsUI);
-
-	Toggles["CP to cave"] = BH::config->ReadToggle("CP to cave", "None", false);
-	Toggles["Display Messages"] = BH::config->ReadToggle("Display Messages", "None", true);
-	Toggles["Draw Path"] = BH::config->ReadToggle("Draw Path", "None", true);	
-	Toggles["Draw Destination"] = BH::config->ReadToggle("Draw Destination", "None", true);
-	Toggles["Fast Teleport"] = BH::config->ReadToggle("Fast Teleport", "None", true);
-	Toggles["Quest Drop Warning"] = BH::config->ReadToggle("Quest Drop Warning", "None", false);
-
-	NextKey = BH::config->ReadKey("Next Tele", "VK_NUMPAD0");
-	OtherKey = BH::config->ReadKey("Other Tele", "VK_NUMPAD1");
-	WPKey = BH::config->ReadKey("Waypoint Tele", "VK_NUMPAD2");
-	PrevKey = BH::config->ReadKey("Prev Tele", "VK_NUMPAD3");
-	Colors[0] = BH::config->ReadInt("Path Color", 97);
-	Colors[1] = BH::config->ReadInt("Next Color", 0x97);
-	Colors[2] = BH::config->ReadInt("Other Color", 0x0A);
-	Colors[3] = BH::config->ReadInt("WP Color", 0x84);
-	Colors[4] = BH::config->ReadInt("Prev Color", 0x5B);
 
 	new Texthook(settingsTab, 60, 12, "Toggles");
 
@@ -53,6 +37,28 @@ void AutoTele::OnLoad() {
 	new Colorhook(settingsTab, 250, 72, &Colors[3], "WP");
 
 	new Colorhook(settingsTab, 250, 87, &Colors[4], "Prev");
+
+	new Colorhook(settingsTab, 250, 102, &Colors[5], "Other Extra");
+}
+
+void AutoTele::LoadConfig() {
+	Toggles["CP to cave"] = BH::config->ReadToggle("CP to cave", "None", false);
+	Toggles["Display Messages"] = BH::config->ReadToggle("Display Messages", "None", true);
+	Toggles["Draw Path"] = BH::config->ReadToggle("Draw Path", "None", true);	
+	Toggles["Draw Destination"] = BH::config->ReadToggle("Draw Destination", "None", true);
+	Toggles["Fast Teleport"] = BH::config->ReadToggle("Fast Teleport", "None", true);
+	Toggles["Quest Drop Warning"] = BH::config->ReadToggle("Quest Drop Warning", "None", false);
+
+	NextKey = BH::config->ReadKey("Next Tele", "VK_NUMPAD0");
+	OtherKey = BH::config->ReadKey("Other Tele", "VK_NUMPAD1");
+	WPKey = BH::config->ReadKey("Waypoint Tele", "VK_NUMPAD2");
+	PrevKey = BH::config->ReadKey("Prev Tele", "VK_NUMPAD3");
+	Colors[0] = BH::config->ReadInt("Path Color", 97);
+	Colors[1] = BH::config->ReadInt("Next Color", 0x97);
+	Colors[2] = BH::config->ReadInt("Other Color", 0x0A);
+	Colors[3] = BH::config->ReadInt("WP Color", 0x84);
+	Colors[4] = BH::config->ReadInt("Prev Color", 0x5B);
+	Colors[5] = BH::config->ReadInt("Other Extra Color", 0xA8);
 }
 
 void AutoTele::OnAutomapDraw() {
@@ -77,7 +83,7 @@ void AutoTele::OnAutomapDraw() {
 	}
 
 	if(Toggles["Draw Destination"].state) {
-		for(int i = 0;i<4;i++) {
+		for(int i = 0;i<5;i++) {
 			if(Vectors[i].x && Vectors[i].y) {
 				Drawing::Hook::ScreenToAutomap(&Pos, Vectors[i].x, Vectors[i].y);
 				Drawing::Linehook::Draw(MyPos.x, MyPos.y, Pos.x, Pos.y, Colors[i+1]);
@@ -254,6 +260,10 @@ void AutoTele::GetVectors() {
 		buildCollisionMap = g_collisionMap.CreateMap(Areas, AreaCount);  //create a cmap for the current area
 	}
 
+  // hack to reset 'other extra'
+  Vectors[4].x = 0;
+  Vectors[4].y = 0;
+
 	for(int i = 0;i<4;i++) {
 		Vectors[i].x = 0;
 		Vectors[i].y = 0;
@@ -281,7 +291,7 @@ void AutoTele::GetVectors() {
 				Vectors[i] = FindPresetLocation(V.dwType, V.Id, MyArea);
 		}
 
-		if(V.dwType == EXIT) {
+		if(V.dwType == EXIT || V.dwType == EXIT_MULTI) {
 			if (!buildCollisionMap) {
 				continue;
 			}
@@ -293,11 +303,16 @@ void AutoTele::GetVectors() {
 			if(!ExitCount)//if there are 0 tele positions we can stop here :p
 				continue;
 
+      bool bIsMulti = V.dwType == EXIT_MULTI;
+
 			for(int j = 0;j<ExitCount;j++) {//loop over evey exit to see if it matches our target
 				if(ExitArray[j]->dwTargetLevel == V.Id) {
 					Vectors[i] = ExitArray[j]->ptPos;
-				}
-				delete ExitArray[j];
+				} else if(bIsMulti && ExitArray[j]->dwTargetLevel == V.Id2) {
+					Vectors[4] = ExitArray[j]->ptPos;
+ 				}
+
+			  delete ExitArray[j];
 			}
 		}
 	}
@@ -516,7 +531,8 @@ int AutoTele::MakePath(int x, int y, DWORD Areas[], DWORD count, bool MoveThroug
 
 POINT AutoTele::FindPresetLocation(DWORD dwType, DWORD dwTxtFileNo, DWORD Area)
 {
-	Level* pLevel = GetLevel(D2CLIENT_GetPlayerUnit()->pAct, Area);
+	UnitAny* player = D2CLIENT_GetPlayerUnit();
+	Level* pLevel = GetLevel(player->pAct, Area);
 
 	POINT loc;
 	loc.x = 0;
@@ -533,7 +549,7 @@ POINT AutoTele::FindPresetLocation(DWORD dwType, DWORD dwTxtFileNo, DWORD Area)
 		bAddedRoom = false;
 		if(!VALIDPTR(pRoom->pPreset) && !VALIDPTR(pRoom->pRoomTiles) && !VALIDPTR(pRoom->pRoom1))
 		{
-			D2COMMON_AddRoomData(D2CLIENT_GetPlayerUnit()->pAct, pLevel->dwLevelNo, pRoom->dwPosX, pRoom->dwPosY, D2CLIENT_GetPlayerUnit()->pPath->pRoom1);
+			D2COMMON_AddRoomData(player->pAct, pLevel->dwLevelNo, pRoom->dwPosX, pRoom->dwPosY, player->pPath->pRoom1);
 			bAddedRoom = true;
 		}
 

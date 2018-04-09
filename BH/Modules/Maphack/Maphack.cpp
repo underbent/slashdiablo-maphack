@@ -11,11 +11,13 @@
 #include "../Item/ItemDisplay.h"
 #include "../../AsyncDrawBuffer.h"
 
+#pragma optimize( "", off)
+
 using namespace Drawing;
-Patch* weatherPatch = new Patch(Jump, D2COMMON, 0x6CC56, (int)Weather_Interception, 5);
-Patch* lightingPatch = new Patch(Call, D2CLIENT, 0xA9A37, (int)Lighting_Interception, 6);
-Patch* infraPatch = new Patch(Call, D2CLIENT, 0x66623, (int)Infravision_Interception, 7);
-Patch* shakePatch = new Patch(Call, D2CLIENT, 0x442A2,(int)Shake_Interception, 5);
+Patch* weatherPatch = new Patch(Jump, D2COMMON, { 0x6CC56, 0x30C36 }, (int)Weather_Interception, 5);
+Patch* lightingPatch = new Patch(Call, D2CLIENT, { 0xA9A37, 0x233A7 }, (int)Lighting_Interception, 6);
+Patch* infraPatch = new Patch(Call, D2CLIENT, { 0x66623, 0xB4A23 }, (int)Infravision_Interception, 7);
+Patch* shakePatch = new Patch(Call, D2CLIENT, { 0x442A2, 0x452F2 }, (int)Shake_Interception, 5);
 
 DrawDirective automapDraw(true, 5);
 
@@ -25,9 +27,19 @@ Maphack::Maphack() : Module("Maphack") {
 	ReadConfig();
 }
 
+void Maphack::LoadConfig() {
+	automapMonsterColors.clear();
+	automapMonsterLines.clear();
+	automapHiddenMonsters.clear();
+
+	ReadConfig();
+}
+
 void Maphack::ReadConfig() {
 	revealType = (MaphackReveal)BH::config->ReadInt("RevealMode", 0);
 	monsterResistanceThreshold = BH::config->ReadInt("Show Monster Resistance", 100);
+
+	reloadConfig = BH::config->ReadKey("Reload Config", "VK_NUMPAD0");
 
 	Config automap(BH::config->ReadAssoc("Missile Color"));
 	automapColors["Player Missile"] = automap.ReadInt("Player", 0x97);
@@ -46,6 +58,7 @@ void Maphack::ReadConfig() {
 	TextColorMap["ÿc8"] = 0x60;  // orange
 	TextColorMap["ÿc9"] = 0x0C;  // yellow
 	TextColorMap["ÿc;"] = 0x9B;  // purple
+	TextColorMap["ÿc:"] = 0x76;  // dark green
 
 	map<string, string> MonsterColors = BH::config->ReadAssoc("Monster Color");
 	for (auto it = MonsterColors.cbegin(); it != MonsterColors.cend(); ) {
@@ -58,6 +71,33 @@ void Maphack::ReadConfig() {
 			int monsterColor = StringToNumber((*it).second);
 			automapMonsterColors[monsterId] = monsterColor;
 			MonsterColors.erase(it++);
+		}
+	}
+
+	map<string, string> MonsterLines = BH::config->ReadAssoc("Monster Line");
+	for (auto it = MonsterLines.cbegin(); it != MonsterLines.cend(); ) {
+		// If the key is a number, it means a monster we've assigned a specific color
+		int monsterId = -1;
+		stringstream ss((*it).first);
+		if ((ss >> monsterId).fail()) {
+			++it;
+		} else {
+			int lineColor = StringToNumber((*it).second);
+			automapMonsterLines[monsterId] = lineColor;
+			MonsterLines.erase(it++);
+		}
+	}
+
+	map<string, string> MonsterHides = BH::config->ReadAssoc("Monster Hide");
+	for (auto it = MonsterHides.cbegin(); it != MonsterHides.cend(); ) {
+		// If the key is a number, it means do not draw this monster on map
+		int monsterId = -1;
+		stringstream ss((*it).first);
+		if ((ss >> monsterId).fail()) {
+			++it;
+		} else {
+			automapHiddenMonsters.push_back(monsterId);
+			MonsterHides.erase(it++);
 		}
 	}
 
@@ -175,6 +215,13 @@ void Maphack::OnLoad() {
 }
 
 void Maphack::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
+	bool ctrlState = ((GetKeyState(VK_LCONTROL) & 0x80) || (GetKeyState(VK_RCONTROL) & 0x80));
+	if (key == 0x52 && ctrlState || key == reloadConfig) {
+		*block = true;
+		if (up)
+			BH::ReloadConfig();
+		return;
+	}
 	for (map<string,Toggle>::iterator it = Toggles.begin(); it != Toggles.end(); it++) {
 		if (key == (*it).second.toggle) {
 			*block = true;
@@ -257,6 +304,10 @@ void Maphack::OnAutomapDraw() {
 	}
 	
 	automapDraw.draw([=](AsyncDrawBuffer &automapBuffer) -> void {
+		POINT MyPos;
+		Drawing::Hook::ScreenToAutomap(&MyPos,
+			D2CLIENT_GetUnitX(D2CLIENT_GetPlayerUnit()),
+			D2CLIENT_GetUnitY(D2CLIENT_GetPlayerUnit()));
 		for (Room1* room1 = player->pAct->pRoom1; room1; room1 = room1->pRoomNext) {
 			for (UnitAny* unit = room1->pUnitFirst; unit; unit = unit->pListNext) {
 				//POINT automapLoc;
@@ -265,16 +316,30 @@ void Maphack::OnAutomapDraw() {
 				// Draw monster on automap
 				if (unit->dwType == UNIT_MONSTER && IsValidMonster(unit) && Toggles["Show Monsters"].state) {
 					int color = automapColors["Normal Monster"];
+					int lineColor = -1;
 					if (unit->pMonsterData->fBoss)
 						color = automapColors["Boss Monster"];
 					if (unit->pMonsterData->fChamp)
 						color = automapColors["Champion Monster"];
 					if (unit->pMonsterData->fMinion)
 						color = automapColors["Minion Monster"];
+					//Cow king pack
+					if (unit->dwTxtFileNo == 391 && unit->pMonsterData->anEnchants[0] == 8 && unit->pMonsterData->anEnchants[1] == 17 && unit->pMonsterData->anEnchants[3] != 0)
+						color = 0xE1;
 
 					// User can override colors of non-boss monsters
 					if (automapMonsterColors.find(unit->dwTxtFileNo) != automapMonsterColors.end() && !unit->pMonsterData->fBoss) {
 						color = automapMonsterColors[unit->dwTxtFileNo];
+					}
+
+					// User can hide monsters from map
+					if (std::find(automapHiddenMonsters.begin(), automapHiddenMonsters.end(), unit->dwTxtFileNo) != automapHiddenMonsters.end() ) {
+						continue;
+					}
+
+					// User can make it draw lines to monsters
+					if (automapMonsterLines.find(unit->dwTxtFileNo) != automapMonsterLines.end() ) {
+						lineColor = automapMonsterLines[unit->dwTxtFileNo];
 					}
 
 					//Determine immunities
@@ -301,12 +366,15 @@ void Maphack::OnAutomapDraw() {
 
 					xPos = unit->pPath->xPos;
 					yPos = unit->pPath->yPos;
-					automapBuffer.push([immunityText, color, xPos, yPos]()->void{
+					automapBuffer.push([immunityText, color, xPos, yPos, lineColor, MyPos]()->void{
 						POINT automapLoc;
 						Drawing::Hook::ScreenToAutomap(&automapLoc, xPos, yPos);
 						if (immunityText.length() > 0)
 							Drawing::Texthook::Draw(automapLoc.x, automapLoc.y - 8, Drawing::Center, 6, White, immunityText);
 						Drawing::Crosshook::Draw(automapLoc.x, automapLoc.y, color);
+						if (lineColor != -1) {
+							Drawing::Linehook::Draw(MyPos.x, MyPos.y, automapLoc.x, automapLoc.y, lineColor);
+						}
 					});
 				}
 				else if (unit->dwType == UNIT_MISSILE && Toggles["Show Missiles"].state) {
@@ -348,16 +416,30 @@ void Maphack::OnAutomapDraw() {
 						uInfo.attrs = ItemAttributeMap[uInfo.itemCode];
 						for (vector<Rule*>::iterator it = MapRuleList.begin(); it != MapRuleList.end(); it++) {
 							if ((*it)->Evaluate(&uInfo, NULL)) {
-								auto color = TextColorMap[(*it)->action.colorOnMap];
+								auto color = (*it)->action.colorOnMap;
+								auto borderColor = (*it)->action.borderColor;
+								auto dotColor = (*it)->action.dotColor;
+								auto pxColor = (*it)->action.pxColor;
+								auto lineColor = (*it)->action.lineColor;
 								
 								xPos = unit->pItemPath->dwPosX;
 								yPos = unit->pItemPath->dwPosY;
-								automapBuffer.push([color, unit, xPos, yPos]()->void{
+								automapBuffer.push_top_layer(
+										[color, unit, xPos, yPos, MyPos, borderColor, dotColor, pxColor, lineColor]()->void{
 									POINT automapLoc;
 									Drawing::Hook::ScreenToAutomap(&automapLoc, xPos, yPos);
-									Drawing::Boxhook::Draw(automapLoc.x - 4, automapLoc.y - 4, 8, 8, color, Drawing::BTHighlight);
+									if (borderColor != 0xff)
+										Drawing::Boxhook::Draw(automapLoc.x - 4, automapLoc.y - 4, 8, 8, borderColor, Drawing::BTHighlight);
+									if (color != 0xff)
+										Drawing::Boxhook::Draw(automapLoc.x - 3, automapLoc.y - 3, 6, 6, color, Drawing::BTHighlight);
+									if (dotColor != 0xff)
+										Drawing::Boxhook::Draw(automapLoc.x - 2, automapLoc.y - 2, 4, 4, dotColor, Drawing::BTHighlight);
+									if (pxColor != 0xff)
+										Drawing::Boxhook::Draw(automapLoc.x - 1, automapLoc.y - 1, 2, 2, pxColor, Drawing::BTHighlight);
+									if (lineColor != 0xff) {
+										Drawing::Linehook::Draw(MyPos.x, MyPos.y, automapLoc.x, automapLoc.y, lineColor);
+									}
 								});
-								break;
 							}
 						}
 					}
@@ -611,7 +693,7 @@ void Maphack::RevealRoom(Room2* room) {
 		} else if (preset->dwType == 2) {
 			// Uber Chest in Lower Kurast Check
 			if (preset->dwTxtFileNo == 580 && room->pLevel->dwLevelNo == 79)		
-				cellNo = 9;
+				cellNo = 318;
 
 			// Countess Chest Check
 			if (preset->dwTxtFileNo == 371) 
@@ -750,3 +832,5 @@ VOID __stdcall Shake_Interception(LPDWORD lpX, LPDWORD lpY)
 	*p_D2CLIENT_yShake = 0;
 
 }
+
+#pragma optimize( "", on)

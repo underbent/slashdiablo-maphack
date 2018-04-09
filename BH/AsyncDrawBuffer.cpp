@@ -15,6 +15,7 @@ private:
 	CRITICAL_SECTION cSec;
 public:
 	std::vector<DrawItem> drawItems;
+	std::vector<DrawItem> drawItemsTop;
 
 	DrawBuffer(){
 		InitializeCriticalSection(&cSec);
@@ -29,12 +30,16 @@ public:
 		for (auto it = drawItems.begin(); it != drawItems.end(); it++){
 			it->drawFunc();
 		}
+		for (auto it = drawItemsTop.begin(); it != drawItemsTop.end(); it++){
+			it->drawFunc();
+		}
 		unlock();
 	}
 
 	void clear(){
 		//lock();
 		drawItems.clear();
+		drawItemsTop.clear();
 		//unlock();
 	}
 
@@ -72,6 +77,12 @@ void AsyncDrawBuffer::drawAll()
 void AsyncDrawBuffer::push(std::function<void()> drawCall)
 {
 	bg->drawItems.push_back(DrawItem(drawCall));
+}
+
+// Pushes a draw function into the buffer that gets drawn last
+void AsyncDrawBuffer::push_top_layer(std::function<void()> drawCall)
+{
+	bg->drawItemsTop.push_back(DrawItem(drawCall));
 }
 
 void AsyncDrawBuffer::clear()

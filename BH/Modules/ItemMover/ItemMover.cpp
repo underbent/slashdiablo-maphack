@@ -24,6 +24,17 @@ int CUBE_LEFT = 197;
 int CUBE_TOP = 199;
 int CELL_SIZE = 29;
 
+char quality_to_color[] = {
+	'0' + White, // none
+	'0' + White, // inferior
+	'0' + White, // normal
+	'0' + White, // superior
+	'0' + Blue, // magic
+	'0' + Green, // set
+	'0' + Yellow, // rare
+	'0' + Gold, // unique
+	'0' + Orange // craft
+};
 
 void ItemMover::Init() {
 	// We should be able to get the layout from *p_D2CLIENT_StashLayout and friends,
@@ -39,18 +50,35 @@ void ItemMover::Init() {
 	int screenHeight = *p_D2CLIENT_ScreenSizeY;
 	//PrintText(1, "Got screensize %d, %d", screenWidth, screenHeight);
 
-	if (screenWidth == 640 && screenHeight == 480) {
+	if (screenWidth != 800 || screenHeight != 600) {
 		classicStashLayout = InventoryLayoutMap["Bank Page 1"];
 		lodStashLayout = InventoryLayoutMap["Big Bank Page 1"];
 		inventoryLayout = InventoryLayoutMap["Amazon"];  // all character types have the same layout
 		cubeLayout = InventoryLayoutMap["Transmogrify Box Page 1"];
+
+		INVENTORY_LEFT = ((inventoryLayout->Left - 320) + (*p_D2CLIENT_ScreenSizeX / 2));
+		INVENTORY_TOP = ((*p_D2CLIENT_ScreenSizeY / 2) - 240) + inventoryLayout->Top;
+		STASH_LEFT = ((*p_D2CLIENT_ScreenSizeX / 2) - 320) + lodStashLayout->Left;
+		LOD_STASH_TOP = ((*p_D2CLIENT_ScreenSizeY / 2) - 240) + lodStashLayout->Top;
+		CLASSIC_STASH_TOP = ((*p_D2CLIENT_ScreenSizeY / 2) - 240) + classicStashLayout->Top;
+		CUBE_LEFT = ((*p_D2CLIENT_ScreenSizeX / 2) - 320) + cubeLayout->Left;
+		CUBE_TOP = ((*p_D2CLIENT_ScreenSizeY / 2) - 240) + cubeLayout->Top;
 	} else {
-		// Currently we don't support non-standard screen sizes; default to 800x600
 		classicStashLayout = InventoryLayoutMap["Bank Page2"];
 		lodStashLayout = InventoryLayoutMap["Big Bank Page2"];
 		inventoryLayout = InventoryLayoutMap["Amazon2"];  // all character types have the same layout
 		cubeLayout = InventoryLayoutMap["Transmogrify Box2"];
+
+		INVENTORY_LEFT = inventoryLayout->Left;
+		INVENTORY_TOP = inventoryLayout->Top;
+		STASH_LEFT = lodStashLayout->Left;
+		LOD_STASH_TOP = lodStashLayout->Top;
+		CLASSIC_STASH_TOP = classicStashLayout->Top;
+		CUBE_LEFT = cubeLayout->Left;
+		CUBE_TOP = cubeLayout->Top;
 	}
+
+	CELL_SIZE = inventoryLayout->SlotPixelHeight;
 
 	INVENTORY_WIDTH = inventoryLayout->SlotWidth;
 	INVENTORY_HEIGHT = inventoryLayout->SlotHeight;
@@ -59,15 +87,6 @@ void ItemMover::Init() {
 	CLASSIC_STASH_HEIGHT = classicStashLayout->SlotHeight;
 	CUBE_WIDTH = cubeLayout->SlotWidth;
 	CUBE_HEIGHT = cubeLayout->SlotHeight;
-
-	INVENTORY_LEFT = inventoryLayout->Left;
-	INVENTORY_TOP = inventoryLayout->Top;
-	STASH_LEFT = lodStashLayout->Left;
-	LOD_STASH_TOP = lodStashLayout->Top;
-	CLASSIC_STASH_TOP = classicStashLayout->Top;
-	CUBE_LEFT = cubeLayout->Left;
-	CUBE_TOP = cubeLayout->Top;
-	CELL_SIZE = inventoryLayout->SlotPixelHeight;
 
 	if (!InventoryItemIds) {
 		InventoryItemIds = new int[INVENTORY_WIDTH * INVENTORY_HEIGHT];
@@ -327,9 +346,13 @@ void ItemMover::OnRightClick(bool up, int x, int y, bool* block) {
 	*block = true;
 }
 
-void ItemMover::OnLoad() {
+void ItemMover::LoadConfig() {
 	HealKey = BH::config->ReadKey("Use Healing Potion", "VK_NUMPADMULTIPLY");
 	ManaKey = BH::config->ReadKey("Use Mana Potion", "VK_NUMPADSUBTRACT");
+}
+
+void ItemMover::OnLoad() {
+	LoadConfig();
 }
 
 void ItemMover::OnKey(bool up, BYTE key, LPARAM lParam, bool* block)  {
@@ -407,12 +430,29 @@ void ItemMover::OnGamePacketRecv(BYTE* packet, bool* block) {
 				ParseItem((unsigned char*)packet, &item, &success);
 				//PrintText(1, "Item packet: %s, %s, %X, %d, %d", item.name.c_str(), item.code, item.attrs->flags, item.sockets, GetDefense(&item));
 				if ((item.action == ITEM_ACTION_NEW_GROUND || item.action == ITEM_ACTION_OLD_GROUND) && success) {
-					//PrintText(1, "Item on ground: %s, %s, %s, %X", item.name.c_str(), item.code, item.attrs->category.c_str(), item.attrs->flags);
-					for (vector<Rule*>::iterator it = IgnoreRuleList.begin(); it != IgnoreRuleList.end(); it++) {
+					bool showOnMap = false;
+
+					for (vector<Rule*>::iterator it = MapRuleList.begin(); it != MapRuleList.end(); it++) {
 						if ((*it)->Evaluate(NULL, &item)) {
-							*block = true;
-							//PrintText(1, "Blocking item: %s, %s, %d", item.name.c_str(), item.code, item.amount);
+							if ((*BH::MiscToggles2)["Item Drop Notifications"].state && item.action == ITEM_ACTION_NEW_GROUND) {
+								PrintText(0, "Item dropped: \377c%c%s", quality_to_color[item.quality], item.name.c_str());
+							}
+							if ((*BH::MiscToggles2)["Item Close Notifications"].state && item.action == ITEM_ACTION_OLD_GROUND) {
+								PrintText(0, "Item close: \377c%c%s", quality_to_color[item.quality], item.name.c_str());
+							}
+							showOnMap = true;
 							break;
+						}
+					}
+
+					//PrintText(1, "Item on ground: %s, %s, %s, %X", item.name.c_str(), item.code, item.attrs->category.c_str(), item.attrs->flags);
+					if(!showOnMap) {
+						for (vector<Rule*>::iterator it = IgnoreRuleList.begin(); it != IgnoreRuleList.end(); it++) {
+							if ((*it)->Evaluate(NULL, &item)) {
+								*block = true;
+								//PrintText(1, "Blocking item: %s, %s, %d", item.name.c_str(), item.code, item.amount);
+								break;
+							}
 						}
 					}
 				}

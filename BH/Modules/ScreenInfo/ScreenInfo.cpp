@@ -3,6 +3,7 @@
 #include "../../D2Ptrs.h"
 #include "../../D2Stubs.h"
 #include "../Item/ItemDisplay.h"
+#include "../../MPQReader.h"
 #include <time.h>
 
 using namespace Drawing;
@@ -10,18 +11,26 @@ using namespace Drawing;
 map<std::string, Toggle> ScreenInfo::Toggles;
 
 void ScreenInfo::OnLoad() {
-	Toggles["Experience Meter"] = BH::config->ReadToggle("Experience Meter", "VK_NUMPAD7", false);
+	LoadConfig();
 
-	automapInfo = BH::config->ReadArray("AutomapInfo");
-	bhText = new Texthook(Perm, 790, 6, "ÿc4BH v0.1.7e (SlashDiablo Branch)");
+	bhText = new Texthook(OutOfGame, 795, 6, BH_VERSION " (planqi Resurgence/Slash branch)");
 	bhText->SetAlignment(Right);
+	bhText->SetColor(Gold);
+
 	if (BH::cGuardLoaded) {
 		Texthook* cGuardText = new Texthook(Perm, 790, 23, "ÿc4cGuard Loaded");
 		cGuardText->SetAlignment(Right);
 	}
 	gameTimer = GetTickCount();
+}
+
+void ScreenInfo::LoadConfig() {
+	Toggles["Experience Meter"] = BH::config->ReadToggle("Experience Meter", "VK_NUMPAD7", false);
+
+	automapInfo = BH::config->ReadArray("AutomapInfo");
 
 	map<string, string> SkillWarnings = BH::config->ReadAssoc("Skill Warning");
+	SkillWarningMap.clear();
 	for (auto it = SkillWarnings.cbegin(); it != SkillWarnings.cend(); it++) {
 		if (StringToBool((*it).second)) {
 			// If the key is a number, it means warn when that state expires
@@ -34,12 +43,44 @@ void ScreenInfo::OnLoad() {
 	}
 }
 
+void ScreenInfo::MpqLoaded() {
+	versionText = new Texthook(Perm, 5, 589, MpqVersion);
+	versionText->SetColor(Gold);
+}
+
 void ScreenInfo::OnGameJoin(const string& name, const string& pass, int diff) {
+	BnetData* pInfo = (*p_D2LAUNCH_BnData);
+	UnitAny *unit = D2CLIENT_GetPlayerUnit();
+	if (unit) {
+		std::string title = (std::string)"Diablo II - ";
+		if (strlen(pInfo->szAccountName) > 0) {
+			title += (std::string)pInfo->szAccountName + " - ";
+		}
+		title += unit->pPlayerData->szName;
+		if (!SetWindowText(D2GFX_GetHwnd(), title.c_str())) {
+			printf("Failed setting window text, error: %d\n\n", GetLastError());
+		}
+	}
+
 	gameTimer = GetTickCount();
 	UnitAny* pUnit = D2CLIENT_GetPlayerUnit();
 	startExperience = (int)D2COMMON_GetUnitStat(pUnit, STAT_EXP, 0);
 	startLevel = (int)D2COMMON_GetUnitStat(pUnit, STAT_LEVEL, 0);
 }
+
+void ScreenInfo::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
+	for (map<string,Toggle>::iterator it = Toggles.begin(); it != Toggles.end(); it++) {
+		if (key == (*it).second.toggle) {
+			*block = true;
+			if (up) {
+				(*it).second.state = !(*it).second.state;
+			}
+			return;
+		}
+	}
+	return;
+}
+
 
 // Right-clicking in the chat console pastes from the clipboard
 void ScreenInfo::OnRightClick(bool up, int x, int y, bool* block) {
@@ -205,7 +246,7 @@ void ScreenInfo::drawExperienceInfo(){
 	}
 	sprintf_s(sExp, "%00.2f%% (%s%00.2f%%) [%s%.2f%s/s]", pExp, expGainPct >= 0 ? "+" : "", expGainPct, expPerSecond >= 0 ? "+" : "", expPerSecond, unit);
 
-	Texthook::Draw(300, 600 - 60, Center, 0, White, "%s", sExp);
+	Texthook::Draw((*p_D2CLIENT_ScreenSizeX / 2) - 100, *p_D2CLIENT_ScreenSizeY - 60, Center, 6, White, "%s", sExp);
 }
 
 void ScreenInfo::OnAutomapDraw() {
@@ -230,6 +271,9 @@ void ScreenInfo::OnAutomapDraw() {
 
 	char *level = UnicodeToAnsi(D2CLIENT_GetLevelName(pUnit->pPath->pRoom1->pRoom2->pLevel->dwLevelNo));
 
+	CHAR szPing[10] = "";
+	sprintf_s(szPing, sizeof(szPing), "%d", *p_D2CLIENT_Ping);
+
 	AutomapReplace automap[] = {
 		{"GAMENAME", pData->szGameName},
 		{"GAMEPASS", pData->szGamePass},
@@ -238,6 +282,7 @@ void ScreenInfo::OnAutomapDraw() {
 		{"ACCOUNTNAME", pData->szAccountName},
 		{"CHARNAME", pUnit->pPlayerData->szName},
 		{"LEVEL", level},
+		{"PING", szPing},
 		{"GAMETIME", gameTime},
 		{"REALTIME", szTime}
 	};
@@ -253,8 +298,10 @@ void ScreenInfo::OnAutomapDraw() {
 			else
 				key.replace(key.find("%" + automap[n].key + "%"), automap[n].key.length() + 2, automap[n].value);
 		}
-		if (key.length() > 0)
-			Texthook::Draw(790, (y+=16), Right,0,Gold,"%s", key.c_str());
+		if (key.length() > 0) {
+			Texthook::Draw(*p_D2CLIENT_ScreenSizeX - 10, y, Right,0,Gold,"%s", key.c_str());
+			y += 16;
+		}
 	}
 
 	delete [] level;

@@ -21,6 +21,7 @@ public:
 	JSONObject* findEntry(std::string field, std::string value);
 	JSONObject* binarySearch(std::string field, int value);
 	JSONObject* entryAt(int index);
+	int size();
 
 	bool dump(std::string filePath);
 };
@@ -52,6 +53,9 @@ public:
 	static Table Skills;
 	static Table MagicPrefix;
 	static Table MagicSuffix;
+	static Table RarePrefix;
+	static Table RareSuffix;
+	static Table CharStats;
 	/*static Table Armor;
 	static Table Weapons;
 	static Table Misc;*/

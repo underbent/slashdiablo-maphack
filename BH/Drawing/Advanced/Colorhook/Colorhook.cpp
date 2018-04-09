@@ -93,7 +93,7 @@ unsigned int Colorhook::GetXSize() {
 	return width; 
 }
 
-/* GetXSize()
+/* GetYSize()
  *	Returns how tall the text is.
  */
 unsigned int Colorhook::GetYSize() {
@@ -106,26 +106,35 @@ void Colorhook::OnDraw() {
 		//Draw the shaded background
 		Boxhook::Draw(0, 0, Hook::GetScreenWidth(), Hook::GetScreenHeight(), 0, BTOneHalf);
 		//Draw the actual choose color box
-		Framehook::Draw(300, 200, 200, 200, 0, BTNormal);
+		Framehook::Draw(310, 180, 180, 220, 0, BTNormal);
 		//Draw title
-		Texthook::Draw(360, 205, false, 0, White, "Choose Color");
-		int col = 1;
+		Texthook::Draw(360, 186, false, 0, White, "Choose Color");
+		int col = 1, boxX1, boxX2, boxY1, boxY2;
 		int mX = (*p_D2CLIENT_MouseX);
 		int mY = (*p_D2CLIENT_MouseY);
-		for (int n = 0, row = 1; n <= 255; n++, row++) {
-			if (row == 18) {
+		for (int n = 1, row = 1; n <= 255; n++, row++) {
+			if (row == 16) {
 				col++;
 				row = 0;
 			}
-			if (mX >= 310 + (row * 10) && mY >= 205 + (col * 10) && mX <= 320 + (row * 10) && mY <= 215 + (col * 10))
+			//Color square begin/end pixel coordinates
+			boxX1 = 321 + (row * 10);
+			boxX2 = 331 + (row * 10);
+			boxY1 = 190 + (col * 10);
+			boxY2 = 200 + (col * 10);
+			//Set current color based on mouse location
+			if (mX >= boxX1 && mY >= boxY1 && mX <= boxX2 && mY <= boxY2)
 				curColor = n;
-			D2GFX_DrawRectangle(310 + (row * 10), 205 + (col * 10), 320 + (row * 10), 215 + (col * 10), n, 5);
+			//Draw each color box
+			D2GFX_DrawRectangle(boxX1, boxY1, boxX2, boxY2, n, 5);
 		}
-		CHAR szLines[][2] = {0,-2, 4,-4, 8,-2, 4,0, 8,2, 4,4, 0,2, -4,4, -8,2, -4,0, -8,-2, -4,-4, 0,-2};
-		for(unsigned int x = 0; x < 12; x++)
-			D2GFX_DrawLine(372 + szLines[x][0], 368 + szLines[x][1], 372 + szLines[x+1][0], 368 + szLines[x+1][1], curColor, -1);
-		Texthook::Draw(312, 383, false, 0, White, "Left Click - Select");
-		Texthook::Draw(385, 364, false, 0, White, "Right Click - Close");
+		//Draw the +ish symbol showing the currently hovered color
+		CHAR szLines[][2] = { 0,-2, 4,-4, 8,-2, 4,0, 8,2, 4,4, 0,2, -4,4, -8,2, -4,0, -8,-2, -4,-4, 0,-2 };
+		for (unsigned int x = 0; x < 12; x++)
+			D2GFX_DrawLine(457 + szLines[x][0], 380 + szLines[x][1], 457 + szLines[x + 1][0], 380 + szLines[x + 1][1], curColor, -1);
+		//Draw instructions
+		Texthook::Draw(320, 384, false, 0, White, "Left Click - Select");
+		Texthook::Draw(320, 368, false, 0, White, "Right Click - Close");
 	} else {
 		DWORD size = D2WIN_SetTextSize(0);
 		wchar_t* wText = AnsiToUnicode(GetText().c_str());

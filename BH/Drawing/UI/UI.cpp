@@ -87,7 +87,10 @@ void UI::SetYSize(unsigned int newYSize) {
 }
 
 void UI::SetMinimizedX(unsigned int newX) {
-	if (newX >= 0 && newX <= Hook::GetScreenWidth()) {
+	// If we limit by width injecting on load won't work
+	// Just don't give invalid params :)
+	// if (newX >= 0 && newX <= Hook::GetScreenWidth()) {
+	if (newX >= 0) {
 		Lock();
 		minimizedX = newX;
 		Unlock();
@@ -95,7 +98,10 @@ void UI::SetMinimizedX(unsigned int newX) {
 }
 
 void UI::SetMinimizedY(unsigned int newY) {
-	if (newY >= 0 && newY <= Hook::GetScreenHeight()) {
+	// If we limit by height injecting on load won't work
+	// Just don't give invalid params :)
+	// if (newY >= 0 && newY <= Hook::GetScreenHeight()) {
+	if (newY >= 0) {
 		Lock();
 		minimizedY = newY;
 		Unlock();

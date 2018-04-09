@@ -8,27 +8,18 @@
 map<std::string, Toggle> Item::Toggles;
 UnitAny* Item::viewingUnit;
 
-Patch* itemNamePatch = new Patch(Call, D2CLIENT, 0x92366, (int)ItemName_Interception, 6);
-Patch* viewInvPatch1 = new Patch(Call, D2CLIENT, 0x953E2, (int)ViewInventoryPatch1_ASM, 6);
-Patch* viewInvPatch2 = new Patch(Call, D2CLIENT, 0x94AB4, (int)ViewInventoryPatch2_ASM, 6);
-Patch* viewInvPatch3 = new Patch(Call, D2CLIENT, 0x93A6F, (int)ViewInventoryPatch3_ASM, 5);
+Patch* itemNamePatch = new Patch(Call, D2CLIENT, { 0x92366, 0x96736 }, (int)ItemName_Interception, 6);
+Patch* viewInvPatch1 = new Patch(Call, D2CLIENT, { 0x953E2, 0x997B2 }, (int)ViewInventoryPatch1_ASM, 6);
+Patch* viewInvPatch2 = new Patch(Call, D2CLIENT, { 0x94AB4, 0x98E84 }, (int)ViewInventoryPatch2_ASM, 6);
+Patch* viewInvPatch3 = new Patch(Call, D2CLIENT, { 0x93A6F, 0x97E3F }, (int)ViewInventoryPatch3_ASM, 5);
+
+vector<int> goodSkills;
+vector<int> goodTabSkills;
 
 using namespace Drawing;
 
 void Item::OnLoad() {
-	Toggles["Show Ethereal"] = BH::config->ReadToggle("Show Ethereal", "None", true);
-	Toggles["Show Sockets"] = BH::config->ReadToggle("Show Sockets", "None", true);
-	Toggles["Show iLvl"] = BH::config->ReadToggle("Show iLvl", "None", true);
-	Toggles["Show Rune Numbers"] = BH::config->ReadToggle("Show Rune Numbers", "None", true);
-	Toggles["Alt Item Style"] = BH::config->ReadToggle("Alt Item Style", "None", true);
-	Toggles["Color Mod"] = BH::config->ReadToggle("Color Mod", "None", false);
-	Toggles["Shorten Item Names"] = BH::config->ReadToggle("Shorten Item Names", "None", false);
-	Toggles["Advanced Item Display"] = BH::config->ReadToggle("Advanced Item Display", "None", false);
-	Toggles["Allow Unknown Items"] = BH::config->ReadToggle("Allow Unknown Items", "None", false);
-
-	//InitializeMPQData();
-
-	showPlayer = BH::config->ReadKey("Show Players Gear", "VK_0");
+	LoadConfig();
 
 	viewInvPatch1->Install();
 	viewInvPatch2->Install();
@@ -38,6 +29,61 @@ void Item::OnLoad() {
 		Toggles["Show Rune Numbers"].state || Toggles["Alt Item Style"].state || Toggles["Shorten Item Names"].state || Toggles["Advanced Item Display"].state)
 		itemNamePatch->Install();
 
+	DrawSettings();
+}
+
+void Item::LoadConfig() {
+	Toggles["Show Ethereal"] = BH::config->ReadToggle("Show Ethereal", "None", true);
+	Toggles["Show Sockets"] = BH::config->ReadToggle("Show Sockets", "None", true);
+	Toggles["Show iLvl"] = BH::config->ReadToggle("Show iLvl", "None", true);
+	Toggles["Show Rune Numbers"] = BH::config->ReadToggle("Show Rune Numbers", "None", true);
+	Toggles["Alt Item Style"] = BH::config->ReadToggle("Alt Item Style", "None", true);
+	Toggles["Color Mod"] = BH::config->ReadToggle("Color Mod", "None", false);
+	Toggles["Shorten Item Names"] = BH::config->ReadToggle("Shorten Item Names", "None", false);
+	Toggles["Advanced Item Display"] = BH::config->ReadToggle("Advanced Item Display", "None", false);
+	Toggles["Item Drop Notifications"] = BH::config->ReadToggle("Item Drop Notifications", "None", false);
+	Toggles["Item Close Notifications"] = BH::config->ReadToggle("Item Close Notifications", "None", false);
+	Toggles["Allow Unknown Items"] = BH::config->ReadToggle("Allow Unknown Items", "None", false);
+
+	// To enable good character skills and good skill tab lists
+	Toggles["Skills"] = BH::config->ReadToggle("Skills", "None", false);
+	Toggles["ClassSkills"] = BH::config->ReadToggle("ClassSkills", "None", false);
+
+	goodSkills.clear();
+	goodTabSkills.clear();
+	if (Toggles["Skills"].state == true) {
+		map<string, string> skillList = BH::config->ReadAssoc("SkillsList");
+		for (auto it = skillList.cbegin(); it != skillList.cend(); it++) {
+			if (StringToBool((*it).second)) {
+				goodSkills.push_back(stoi((*it).first));
+			}
+		}
+		//vector<string> skillList = BH::config->ReadArray("SkillsList");
+		//for (unsigned int i = 0; i < skillList.size(); i++) {
+		//	if (strcmp(skillList[i].c_str(), "True") == 0) {
+		//		goodSkills.push_back(i);
+		//	}
+		//}
+	}
+	if (Toggles["ClassSkills"].state == true) {
+		//vector<string> classSkillList = BH::config->ReadArray("ClassSkillsList");
+		map<string, string> classSkillList = BH::config->ReadAssoc("ClassSkillsList");
+		//for (unsigned int i = 0; i < classSkillList.size(); i++) {
+		for (auto it = classSkillList.cbegin(); it != classSkillList.cend(); it++) {
+			if (StringToBool((*it).second)) {
+				goodTabSkills.push_back(stoi((*it).first));
+			}
+		}
+	}
+
+	ItemDisplay::UninitializeItemRules();
+
+	//InitializeMPQData();
+
+	showPlayer = BH::config->ReadKey("Show Players Gear", "VK_0");
+}
+
+void Item::DrawSettings() {
 	settingsTab = new UITab("Item", BH::settingsUI);
 
 	new Checkhook(settingsTab, 4, 15, &Toggles["Show Ethereal"].state, "Show Ethereal");
@@ -64,7 +110,13 @@ void Item::OnLoad() {
 	new Checkhook(settingsTab, 4, 120, &Toggles["Advanced Item Display"].state, "Advanced Item Display");
 	new Keyhook(settingsTab, 200, 122, &Toggles["Advanced Item Display"].toggle, "");
 
-	new Keyhook(settingsTab, 4, 137, &showPlayer, "Show Players Gear");
+	new Checkhook(settingsTab, 4, 135, &Toggles["Item Drop Notifications"].state, "Item Drop Notifications");
+	new Keyhook(settingsTab, 200, 137, &Toggles["Item Drop Notifications"].toggle, "");
+
+	new Checkhook(settingsTab, 4, 150, &Toggles["Item Close Notifications"].state, "Item Close Notifications");
+	new Keyhook(settingsTab, 200, 152, &Toggles["Item Close Notifications"].toggle, "");
+
+	new Keyhook(settingsTab, 4, 167, &showPlayer, "Show Players Gear");
 }
 
 void Item::OnUnload() {
@@ -72,6 +124,7 @@ void Item::OnUnload() {
 	viewInvPatch1->Remove();
 	viewInvPatch2->Remove();
 	viewInvPatch3->Remove();
+	ItemDisplay::UninitializeItemRules();
 }
 
 void Item::OnLoop() {
@@ -99,7 +152,11 @@ void Item::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
 		if (up)
 			return;
 		UnitAny* selectedUnit = D2CLIENT_GetSelectedUnit();
-		if (selectedUnit && selectedUnit->dwMode != 0 && selectedUnit->dwMode != 17 && selectedUnit->dwType == 0) {
+		if (selectedUnit && selectedUnit->dwMode != 0 && selectedUnit->dwMode != 17 && ( // Alive
+					selectedUnit->dwType == 0 ||					// Player
+					selectedUnit->dwTxtFileNo == 291 ||		// Iron Golem
+					selectedUnit->dwTxtFileNo == 357 ||		// Valkerie
+					selectedUnit->dwTxtFileNo == 418)) {	// Shadow Master
 			viewingUnit = selectedUnit;
 			if (!D2CLIENT_GetUIState(0x01))
 				D2CLIENT_SetUIVar(0x01, 0, 0);
@@ -449,7 +506,7 @@ UnitAny* Item::GetViewUnit ()
 	if (view->dwUnitId == D2CLIENT_GetPlayerUnit()->dwUnitId)
 		return D2CLIENT_GetPlayerUnit();
 
-	Drawing::Texthook::Draw(560, 300, Drawing::Center, 0, White, "%s", viewingUnit->pPlayerData->szName);
+	Drawing::Texthook::Draw(*p_D2CLIENT_PanelOffsetX + 160 + 320, 300, Drawing::Center, 0, White, "%s", viewingUnit->pPlayerData->szName);
 	return viewingUnit;
 }
 

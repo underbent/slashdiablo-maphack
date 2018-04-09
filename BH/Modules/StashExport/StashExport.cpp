@@ -18,11 +18,7 @@ UnitAny* StashExport::viewingUnit;
 using namespace Drawing;
 
 void StashExport::OnLoad() {
-	Toggles["Include Equipment"] = BH::config->ReadToggle("Include Equipment", "None", true);
-	Toggles["Include Fixed Stats"] = BH::config->ReadToggle("Include Fixed Stats", "None", false);
-	Toggles["Condense Stats"] = BH::config->ReadToggle("Condense Stats", "None", true);
-
-	exportGear = BH::config->ReadKey("Export Gear", "VK_NUMPAD5");
+	LoadConfig();
 
 	settingsTab = new UITab("StashExport", BH::settingsUI);
 
@@ -30,7 +26,9 @@ void StashExport::OnLoad() {
 	new Checkhook(settingsTab, 4, y, &Toggles["Include Equipment"].state, "Include Equipment");
 	new Checkhook(settingsTab, 4, (y+=15), &Toggles["Include Fixed Stats"].state, "Include Fixed Stats");
 	new Checkhook(settingsTab, 4, (y += 15), &Toggles["Condense Stats"].state, "Condense Stats");
+	new Checkhook(settingsTab, 4, (y += 15), &Toggles["Export On Menu"].state, "Export On Menu");
 
+	// the MustacheTemplates will not be reloaded
 	options.clear();
 	options.push_back("json");
 
@@ -51,6 +49,15 @@ void StashExport::OnLoad() {
 	}
 
 	new Combohook(settingsTab, 4, (y += 15), 150, &exportType, options);
+}
+
+void StashExport::LoadConfig() {
+	Toggles["Include Equipment"] = BH::config->ReadToggle("Include Equipment", "None", true);
+	Toggles["Include Fixed Stats"] = BH::config->ReadToggle("Include Fixed Stats", "None", false);
+	Toggles["Condense Stats"] = BH::config->ReadToggle("Condense Stats", "None", true);
+	Toggles["Export On Menu"] = BH::config->ReadToggle("Export On Menu", "None", false);
+
+	exportGear = BH::config->ReadKey("Export Gear", "VK_NUMPAD5");
 }
 
 void StashExport::OnUnload() {
@@ -264,7 +271,19 @@ void StashExport::GetItemInfo(UnitAny* pItem, JSONObject* pBuffer){
 				fillStats(statsObject, setDef, pItem, "prop%d", "par%d", "min%d", "max%d", 13);
 			}
 		}
-		break;
+			break;
+		case ITEM_QUALITY_CRAFT:
+		case ITEM_QUALITY_RARE:{
+			// -155 because that is how big the suffix table is? ... also -1 from that
+			JSONObject *rarePrefix = Tables::RarePrefix.entryAt(pItem->pItemData->wRarePrefix - 156);
+			// zero based vs 1 based?; or the table just doesn't have the header row
+			JSONObject *rareSuffix = Tables::RareSuffix.entryAt(pItem->pItemData->wRareSuffix - 1);
+
+			if (rarePrefix && rareSuffix){
+				pBuffer->set("name", rarePrefix->getString("name") + " " + rareSuffix->getString("name"));
+			}
+		}
+			break;
 		default:
 			break;
 		}
@@ -311,11 +330,9 @@ void StashExport::GetItemInfo(UnitAny* pItem, JSONObject* pBuffer){
 	}
 }
 
-void StashExport::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
-	if (key == exportGear) {
-		*block = true;
-		if (up)
-			return;
+void StashExport::WriteStash() {
+		BnetData* pInfo = (*p_D2LAUNCH_BnData);
+
 		if (!Tables::isInitialized()){
 			PrintText(1, "Waiting for MPQ Data to finish loading...");
 			return;
@@ -327,7 +344,7 @@ void StashExport::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
 		// Make sure the directory exists
 		CreateDirectory((BH::path + "\\stash\\").c_str(), NULL);
 
-		std::string path = BH::path + "\\stash\\" + unit->pPlayerData->szName + ".txt";
+		std::string path = BH::path + "\\stash\\" + pInfo->szAccountName + "_" + unit->pPlayerData->szName + ".txt";
 		fstream file(path, std::ofstream::out | std::ofstream::trunc);
 		if (!file.is_open()){
 			PrintText(1, "Failed to open %s for writing", path.c_str());
@@ -390,6 +407,20 @@ void StashExport::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
 		file.write(buffer.c_str(), buffer.length());
 		delete data;
 		PrintText(White, "Exported stash to: %s", path.c_str());
+}
+
+void StashExport::OnKey(bool up, BYTE key, LPARAM lParam, bool* block) {
+	if (key == exportGear) {
+		*block = true;
+		if (up)
+			return;
+		WriteStash();
+	} else if (key == VK_ESCAPE) {
+		if (up &&
+				StashExport::Toggles["Export On Menu"].state &&
+				D2CLIENT_GetUIState(UI_ESCMENU_MAIN) ) {
+			WriteStash();
+		}
 	}
 	for (map<string, Toggle>::iterator it = Toggles.begin(); it != Toggles.end(); it++) {
 		if (key == (*it).second.toggle) {

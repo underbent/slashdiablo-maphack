@@ -5,6 +5,7 @@
 #include "../../MPQInit.h"
 #include "../../BH.h"
 #include <cstdlib>
+#include <regex>
 
 #define EXCEPTION_INVALID_STAT			1
 #define EXCEPTION_INVALID_OPERATION		2
@@ -320,6 +321,17 @@ private:
 	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
+class RequiredLevelCondition : public Condition
+{
+public:
+	RequiredLevelCondition(BYTE op, BYTE rlvl) : requiredLevel(rlvl), operation(op) { conditionType = CT_Operand; };
+private:
+	BYTE operation;
+	BYTE requiredLevel;
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
+};
+
 class ItemGroupCondition : public Condition
 {
 public:
@@ -340,6 +352,55 @@ private:
 	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
 	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 	bool EvaluateED(unsigned int flags);
+};
+
+class FoolsCondition : public Condition
+{
+public:
+	FoolsCondition() { conditionType = CT_Operand; };
+private:
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
+};
+
+class SkillListCondition : public Condition
+{
+public:
+	SkillListCondition(BYTE op, unsigned int t, unsigned int target) : operation(op), type(t), targetStat(target) {
+		conditionType = CT_Operand;
+	};
+private:
+	BYTE operation;
+	unsigned int type;
+	unsigned int targetStat;
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
+};
+
+class CharStatCondition : public Condition
+{
+public:
+	CharStatCondition(unsigned int stat, unsigned int stat2, BYTE op, unsigned int target)
+		: stat1(stat), stat2(stat2), operation(op), targetStat(target) { conditionType = CT_Operand; };
+private:
+	unsigned int stat1;
+	unsigned int stat2;
+	BYTE operation;
+	unsigned int targetStat;
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
+};
+
+class DifficultyCondition : public Condition
+{
+public:
+	DifficultyCondition(BYTE op, unsigned int target)
+		: operation(op), targetDiff(target) { conditionType = CT_Operand; };
+private:
+	BYTE operation;
+	unsigned int targetDiff;
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
 class ItemStatCondition : public Condition
@@ -367,6 +428,18 @@ private:
 	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
 };
 
+class AddCondition : public Condition
+{
+public:
+	AddCondition(string& k, BYTE op, unsigned int target) : key(k), operation(op), targetStat(target) { conditionType = CT_Operand; };
+private:
+	BYTE operation;
+	unsigned int targetStat;
+	string key;
+	bool EvaluateInternal(UnitItemInfo *uInfo, Condition *arg1, Condition *arg2);
+	bool EvaluateInternalFromPacket(ItemInfo *info, Condition *arg1, Condition *arg2);
+};
+
 extern TrueCondition *trueCondition;
 extern FalseCondition *falseCondition;
 
@@ -375,11 +448,27 @@ struct ActionReplace {
 	string value;
 };
 
+struct ColorReplace {
+	string key;
+	int value;
+};
+
 struct Action {
 	bool stopProcessing;
 	string name;
-	string colorOnMap;
-	Action() : colorOnMap(""), stopProcessing(true), name("") {}
+	int colorOnMap;
+	int borderColor;
+	int dotColor;
+	int pxColor;
+	int lineColor;
+	Action() :
+		colorOnMap(0xff),
+		borderColor(0xff),
+		dotColor(0xff),
+		pxColor(0xff),
+		lineColor(0xff),
+		stopProcessing(true),
+		name("") {}
 };
 
 struct Rule {
@@ -438,14 +527,17 @@ extern vector<Rule*> IgnoreRuleList;
 
 namespace ItemDisplay {
 	void InitializeItemRules();
+	void UninitializeItemRules();
 }
 StatProperties *GetStatProperties(unsigned int stat);
 void BuildAction(string *str, Action *act);
+int ParseMapColor(Action *act, const string& reg_string);
 void HandleUnknownItemCode(char *code, char *tag);
 BYTE GetOperation(string *op);
 inline bool IntegerCompare(unsigned int Lvalue, int operation, unsigned int Rvalue);
 void GetItemName(UnitItemInfo *uInfo, string &name);
 void SubstituteNameVariables(UnitItemInfo *uInfo, string &name, Action *action);
 int GetDefense(ItemInfo *item);
-BYTE GetAffixLevel(BYTE ilvl, BYTE qlvl, unsigned int flags, char *code);
+BYTE GetAffixLevel(BYTE ilvl, BYTE qlvl, BYTE mlvl);
+BYTE GetRequiredLevel(UnitAny* item);
 BYTE RuneNumberFromItemCode(char *code);

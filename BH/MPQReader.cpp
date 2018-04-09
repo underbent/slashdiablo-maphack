@@ -2,6 +2,7 @@
 #include "BH.h"
 
 std::map<std::string, MPQData*> MpqDataMap;
+std::string MpqVersion;
 
 #define SFILE_INVALID_SIZE 0xFFFFFFFF
 
@@ -119,7 +120,7 @@ bool ReadMPQFiles(std::string fileName) {
 
 			MPQArchive archive(copyFileName.c_str());
 
-			const int NUM_MPQS = 13;
+			const int NUM_MPQS = 16;
 			std::string mpqFiles[NUM_MPQS] = {
 				"UniqueItems",
 				"Armor",
@@ -133,7 +134,10 @@ bool ReadMPQFiles(std::string fileName) {
 				"SetItems",
 				"skills",
 				"MagicPrefix",
-				"MagicSuffix"
+				"MagicSuffix",
+				"RarePrefix",
+				"RareSuffix",
+				"CharStats"
 			};
 			if (archive.error == ERROR_SUCCESS) {
 				for (int i = 0; i < NUM_MPQS; i++){
@@ -146,6 +150,13 @@ bool ReadMPQFiles(std::string fileName) {
 						MpqDataMap[key] = new MPQData(&mpqFile);
 					}
 				}
+			}
+			// read mpq version
+			std::string path = "data\\version.txt";
+			MPQFile mpqFile(&archive, path.c_str());
+			if (mpqFile.error == ERROR_SUCCESS) {
+				MPQData mpqversion(&mpqFile);
+				MpqVersion = mpqversion.fields[0];
 			}
 		}
 		FreeLibrary(dllHandle);

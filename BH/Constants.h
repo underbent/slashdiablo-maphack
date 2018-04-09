@@ -1,5 +1,7 @@
 #pragma once
 
+#define BH_VERSION "BH 1.8.12"
+
 enum TextColor {
 	Disabled=-1,
 	White=0,
@@ -697,7 +699,8 @@ enum Type {
 	UNIT_ITEM,
 	UNIT_TILE,
 	EXIT,
-	XY
+	XY,
+  EXIT_MULTI
 };
 
 ///////////////////////////////////////////////////

@@ -269,14 +269,14 @@ bool Hook::InRange(unsigned int x, unsigned int y) {
  *	Returns the height of the screen.
  */
 unsigned int Hook::GetScreenHeight() {
-	return ((D2GFX_GetScreenSize() == 0) ? 480 : 600);
+	return *p_D2CLIENT_ScreenSizeY;
 }
 
 /* Hook::GetScreenWidth()
  *	Returns the width of the screen.
  */
 unsigned int Hook::GetScreenWidth() {
-	return ((D2GFX_GetScreenSize() == 0) ? 640 : 800);
+	return *p_D2CLIENT_ScreenSizeX;
 }
 
 /* Hook::ScreenToAutomap(int x, int y)

@@ -17,6 +17,7 @@
  */
 
 extern unsigned int STAT_MAX;
+extern unsigned int SKILL_MAX;
 
 // Item attributes from ItemTypes.txt and Weapon/Armor/Misc.txt
 struct ItemAttributes {
@@ -33,6 +34,7 @@ struct ItemAttributes {
 	unsigned int flags;
 	unsigned int flags2;
 	BYTE qualityLevel;
+	BYTE magicLevel;
 };
 
 // Properties from ItemStatCost.txt that we need for parsing incoming 0x9c packets, among other things
@@ -46,8 +48,13 @@ struct StatProperties {
 	unsigned short ID;
 };
 
+struct CharStats {
+	int toHitFactor;
+};
+
 extern std::vector<StatProperties*> AllStatList;
 extern std::unordered_map<std::string, StatProperties*> StatMap;
+extern std::vector<CharStats*> CharList;
 extern std::map<std::string, ItemAttributes*> ItemAttributeMap;
 extern std::map<std::string, InventoryLayout*> InventoryLayoutMap;
 

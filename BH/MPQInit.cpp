@@ -2,10 +2,12 @@
 #include "MPQReader.h"
 
 unsigned int STAT_MAX;
+unsigned int SKILL_MAX;
 bool initialized = false;
 
 std::vector<StatProperties*> AllStatList;
 std::unordered_map<std::string, StatProperties*> StatMap;
+std::vector<CharStats*> CharList;
 std::map<std::string, ItemAttributes*> ItemAttributeMap;
 std::map<std::string, InventoryLayout*> InventoryLayoutMap;
 
@@ -1047,6 +1049,23 @@ void InitializeMPQData() {
 	char* end;
 	short lastID = -1;
 
+	for (auto d = MpqDataMap["skills"]->data.begin(); d < MpqDataMap["skills"]->data.end(); d++) {
+		if ((*d)["Id"].length() > 0) {
+			unsigned short id = (unsigned short)std::strtoul((*d)["Id"].c_str(), &end, 10);
+			if (id > SKILL_MAX) {
+				SKILL_MAX = id;
+			}
+    }
+  }
+
+	for (auto d = MpqDataMap["charstats"]->data.begin(); d < MpqDataMap["charstats"]->data.end(); d++) {
+		if ((*d)["ToHitFactor"].length() > 0) {
+			CharStats *bits = new CharStats();
+			bits->toHitFactor = std::stoi((*d)["ToHitFactor"].c_str(), nullptr, 10);
+			CharList.push_back(bits);
+		}
+	}
+
 	for (auto d = MpqDataMap["itemstatcost"]->data.begin(); d < MpqDataMap["itemstatcost"]->data.end(); d++) {
 		if ((*d)["ID"].length() > 0) {
 			unsigned short id = (unsigned short)std::strtoul((*d)["ID"].c_str(), &end, 10);
@@ -1166,7 +1185,8 @@ void InitializeMPQData() {
 			attrs->unusedFlags = 0;
 			attrs->flags = flags;
 			attrs->flags2 = flags2;
-			attrs->qualityLevel = (*d)["level"].at(0) - '0';
+			attrs->qualityLevel = stoi((*d)["level"], nullptr, 10);
+			attrs->magicLevel = atoi((*d)["magic lvl"].c_str());
 			ItemAttributeMap[(*d)["code"]] = attrs;
 		}
 
@@ -1247,7 +1267,8 @@ void InitializeMPQData() {
 				attrs->unusedFlags = 0;
 				attrs->flags = flags;
 				attrs->flags2 = flags2;
-				attrs->qualityLevel = (*d)["level"].at(0) - '0';
+				attrs->qualityLevel = stoi((*d)["level"], nullptr, 10);
+				attrs->magicLevel = atoi((*d)["magic lvl"].c_str());
 				ItemAttributeMap[(*d)["code"]] = attrs;
 			}
 		}
@@ -1318,7 +1339,8 @@ void InitializeMPQData() {
 				attrs->unusedFlags = 0;
 				attrs->flags = flags;
 				attrs->flags2 = flags2;
-				attrs->qualityLevel = (*d)["level"].at(0) - '0';
+				attrs->qualityLevel = stoi((*d)["level"], nullptr, 10);
+				attrs->magicLevel = 0;
 				ItemAttributeMap[(*d)["code"]] = attrs;
 			}
 		}

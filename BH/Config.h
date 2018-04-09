@@ -17,7 +17,7 @@ class Config {
 	private:
 		std::string configName;
 		std::map<std::string,std::string> contents;
-		std::vector<std::string> orderedKeys;
+		vector<pair<string,string>> orderedKeyVals;
 
 	public:
 		Config(std::string name) : configName(name) {};
@@ -26,6 +26,9 @@ class Config {
 		//Parse the config file and store results
 		bool Parse();
 		bool Write();
+
+		std::string GetConfigName();
+		void SetConfigName(std::string name);
 
 		//Functions to read values from the configuration
 		bool						ReadBoolean	(std::string key, bool value);

@@ -6,6 +6,8 @@
 #include <list>
 #include "../Hook.h"
 #include "../../MPQInit.h"
+#include "../../Drawing.h"
+#include "../../Config.h"
 
 struct DisplayedStat {
 	std::string name;
@@ -18,6 +20,7 @@ namespace Drawing {
 
 	class StatsDisplay : public HookGroup {
 		private:
+			std::map<std::string, Toggle> Toggles;
 			static StatsDisplay *display;
 			std::string name;
 			unsigned int x, y, xSize, ySize;
@@ -28,6 +31,8 @@ namespace Drawing {
 		public:
 			StatsDisplay(std::string name);
 			~StatsDisplay();
+
+			void LoadConfig();
 
 			void Lock() { EnterCriticalSection(&crit); };
 			void Unlock() { LeaveCriticalSection(&crit); };

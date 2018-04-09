@@ -19,6 +19,9 @@ class Item : public Module {
 		void OnLoad();
 		void OnUnload();
 
+		void LoadConfig();
+		void DrawSettings();
+
 		void OnLoop();
 		void OnKey(bool up, BYTE key, LPARAM lParam, bool* block);
 		void OnLeftClick(bool up, int x, int y, bool* block);
@@ -28,6 +31,9 @@ class Item : public Module {
 		static void OrigGetItemName(UnitAny *item, string &itemName, char *code);
 		static UnitAny* GetViewUnit();
 };
+
+extern vector<int> goodSkills;
+extern vector<int> goodTabSkills;
 
 void ItemName_Interception();
 void ViewInventoryPatch1_ASM();

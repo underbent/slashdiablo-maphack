@@ -25,6 +25,9 @@ class Module {
 		virtual void OnLoad() {};
 		virtual void OnUnload() {};
 
+		virtual void LoadConfig() {};
+		virtual void MpqLoaded() {};
+
 		virtual void OnLoop() {};
 
 		// Game Events

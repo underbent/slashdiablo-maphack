@@ -19,6 +19,7 @@ bool Config::Parse() {
 
 	//Lock Critical Section then wipe contents incase we are reloading.
 	contents.erase(contents.begin(), contents.end());
+	orderedKeyVals.clear();
 
 	//Begin to loop the configuration file one line at a time.
 	std::string line;
@@ -37,7 +38,7 @@ bool Config::Parse() {
 
 		//Store them!
 		contents.insert(pair<string, string>(key,value));
-		orderedKeys.push_back(key);
+		orderedKeyVals.push_back(pair<string, string>(key,value));
 	}
 	return true;
 }
@@ -71,6 +72,14 @@ bool Config::Write() {
 	}
 
 	return true;
+}
+
+std::string Config::GetConfigName() {
+	return BH::path + configName;
+}
+
+void Config::SetConfigName(std::string name) {
+	configName = name;
 }
 
 /* ReadBoolean(std::string key, bool value)
@@ -186,13 +195,13 @@ map<string, string> Config::ReadAssoc(std::string key) {
 vector<pair<string,string>> Config::ReadMapList(std::string key) {
 	vector<pair<string, string>> ret;
 
-	for (unsigned int i = 0; i < orderedKeys.size(); i++) {
-		if (!orderedKeys[i].find(key + "[")) {
+	for (vector<pair<string, string>>::iterator it = orderedKeyVals.begin(); it != orderedKeyVals.end(); it++) {
+		if (!(*it).first.find(key + "[")) {
 			pair<string, string> assoc;
 			//Pull the value from between the []'s
-			assoc.first = orderedKeys[i].substr(orderedKeys[i].find("[") + 1, orderedKeys[i].length() - orderedKeys[i].find("[") - 2);
+			assoc.first = (*it).first.substr((*it).first.find("[") + 1, (*it).first.length() - (*it).first.find("[") - 2);
 			//Also store the value
-			assoc.second = contents[orderedKeys[i]];
+			assoc.second = (*it).second;
 			ret.push_back(assoc);
 		}
 	}

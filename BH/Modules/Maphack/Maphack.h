@@ -25,10 +25,13 @@ class Maphack : public Module {
 		int monsterResistanceThreshold;
 		unsigned int revealType;
 		unsigned int maxGhostSelection;
+		unsigned int reloadConfig;
 		bool revealedGame, revealedAct[6], revealedLevel[255];
 		std::map<string, unsigned int> TextColorMap;
 		std::map<string, unsigned int> automapColors;
 		std::map<int, unsigned int> automapMonsterColors;
+		std::map<int, unsigned int> automapMonsterLines;
+		std::list<int> automapHiddenMonsters;
 		std::list<LevelList*> automapLevels;
 		map<std::string, Toggle> Toggles;
 		Drawing::UITab* settingsTab;
@@ -40,6 +43,8 @@ class Maphack : public Module {
 	void ReadConfig();
 	void OnLoad();
 	void OnUnload();
+
+	void LoadConfig();
 
 	void OnLoop();
 	void OnAutomapDraw();
